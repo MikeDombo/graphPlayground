@@ -30,6 +30,8 @@
 				</a>
 				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 					<a class="dropdown-item" href="#" onclick="main.togglePhysics();">Enable/Disable Physics</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#" onclick="settings.resetToDefault();">Reset Preferences</a>
 				</div>
 			</li>
 		</ul>
@@ -43,10 +45,10 @@
 				<div class="card-body">
 					<h4>Example Graphs</h4>
 					<nav class="nav flex-lg-column flex-row">
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen);">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen());">
 							Load Petersen Graph
 						</a>
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg);">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg());">
 							Load Königsberg Bridges Graph
 						</a>
 					</nav>
@@ -126,9 +128,10 @@
 
 	require(["vis"], function (v){
 		window.vis = v;
-		require(["main", "predefinedGraphs"], (m, predefined) =>{
+		require(["main", "predefinedGraphs", "settings"], (m, predefined, settings) =>{
 			window.main = m;
 			window.predefined = predefined;
+			window.settings = settings;
 			window.network = new vis.Network(m.container, {}, m.visOptions);
 
 			network.on("doubleClick", (p) =>{
@@ -136,7 +139,9 @@
 					network.editNode();
 				}
 			});
-			main.setData(predefined.Petersen);
+
+			settings.loadSettings();
+			main.setData(predefined.Petersen());
 		});
 	});
 </script>

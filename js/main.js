@@ -1,5 +1,5 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/randomColor"],
-	($, gAlgo, gHelp, help, randomColor) =>{
+define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor"],
+	($, gAlgo, gHelp, help, settings, randomColor) =>{
 		let self = {
 			container: document.getElementById('network'),
 			visOptions: {
@@ -13,7 +13,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 								$("#saveButton").click();
 							}
 						});
-						$popup.find('#saveButton').get(0).onclick = self.saveData.bind(this, data, callback);
+						$popup.find('#saveButton').get(0).onclick = self.saveData.bind(this, data, callback, "add");
 						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this);
 						$popup.modal('show').on('shown.bs.modal', () =>{
 							$("#node-label").focus();
@@ -34,9 +34,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 						});
 					},
 					addEdge: function (data, callback){
+						let apply = function(){
+							callback(data);
+							self.graphState.setUpToDate();
+							self.makeAndPrintProperties(false);
+						};
 						if(data.from === data.to){
 							if(confirm("Do you want to connect the node to itself?")){
-								callback(data);
+								apply();
 							}
 							return;
 						}
@@ -50,13 +55,23 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 
 						if(repeatedEdge){
 							if(confirm("Do you want to doubly connect this node?")){
-								callback(data);
+								apply();
 							}
 							return;
 						}
+						apply();
+					},
+					deleteEdge: function (data, callback){
 						callback(data);
-					}
-				}
+						self.graphState.setUpToDate();
+						self.makeAndPrintProperties(false);
+					},
+					deleteNode: function(data, callback){
+						callback(data);
+						self.graphState.setUpToDate();
+						self.makeAndPrintProperties(false);
+					},
+				},
 			},
 
 			cancelEdit: function (callback){
@@ -66,26 +81,28 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 				}
 			},
 
-			saveData: function (data, callback){
+			saveData: function (data, callback, operation){
 				$('#network-popUp').modal('hide');
 				data.label = document.getElementById('node-label').value;
 				callback(data);
+				if(operation === "add"){
+					self.graphState.setUpToDate();
+					self.makeAndPrintProperties(false);
+				}
 			},
 
-			getNodes: function(n = network){
+			getNodes: function (n = network){
 				return n.body.data.nodes;
 			},
 
-			getEdges: function(n = network){
+			getEdges: function (n = network){
 				return n.body.data.edges;
 			},
 
-			getNetworkData: function(n = network){
-				return {nodes: self.getNodes(n), edges: self.getEdges(n)};
-			},
-
-			togglePhysics: function(){
-				network.setOptions({nodes: {physics: !network.nodesHandler.options.physics}});
+			togglePhysics: function (){
+				let t = !settings.getOption("nodePhysics");
+				settings.changeOption("nodePhysics", t);
+				network.setOptions({nodes: {physics: t}});
 			},
 
 			makeAndPrintGraphColoring: function (){
@@ -93,6 +110,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 					return;
 				}
 				let a = gAlgo.colorNetwork();
+
+				main.graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
+				main.graphState.setUpToDate(true, ["chromaticNumber"]);
+				main.makeAndPrintProperties(false);
+
 				let colors = help.flatten(a.colors);
 				let p = "Number of Vertices: " + colors.length;
 				p += "\nChromatic Number: " + a.chromaticNumber;
@@ -122,7 +144,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 				self.setData({nodes: nodes, edges: self.getEdges()});
 			},
 
-			normalizeGraph: function (nodes, edges, fullNodeInfo){
+			singleyConnectGraph: function (nodes, edges, fullNodeInfo){
 				let m = gHelp.makeSingleAdjacencyMatrix(nodes, edges);
 				let adjacency = m.matrix;
 				let nodeMap = help.rotate(m.map);
@@ -140,28 +162,60 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 				return {nodes: nodes, edges: edges};
 			},
 
-			setData: function(data, n = network){
+			setData: function (data, n = network, recalcProps = false){
 				n.setData(data);
-				self.makeAndPrintProperties();
+				self.graphState.setUpToDate();
+				self.makeAndPrintProperties(recalcProps);
 			},
 
-			makeAndPrintProperties: function(){
-				let props = {};
-				props["Vertices"] = help.datasetToArray(self.getNodes()).length;
-				props["Edges"] = help.datasetToArray(self.getEdges()).length;
+			graphState: {
+				upToDate: {
+					chromaticNumber: false
+				},
+				nodes: [], edges: [],
+				adjacencyRepeated: [], adjacency: [], degreesRepeated: [], degrees: [],
+				graphProperties: {vertices: 0, edges: 0},
+				setUpToDate: function (value = false, listOptions){
+					if(listOptions === null){
+						listOptions = Object.keys(self.graphState.upToDate);
+					}
+					if(typeof listOptions === "undefined" || listOptions === null){
+						return;
+					}
+					listOptions.forEach((v) =>{
+						self.graphState.upToDate[v] = value;
+					});
+				}
+			},
+
+			makeAndPrintProperties: function (recalcLong){
+				let gs = self.graphState;
+
+				gs.nodes = self.getNodes();
+				gs.edges = self.getEdges();
+				gs.graphProperties.vertices = help.datasetToArray(self.getNodes()).length;
+				gs.graphProperties.edges = help.datasetToArray(self.getEdges()).length;
+				let adj = gHelp.makeAdjacencyMatrix(self.getNodes(), self.getEdges());
+				gs.adjacencyRepeated = adj.adjacencyRepeated;
+				gs.adjacency = adj.adjacency;
+				gs.degreesRepeated = gHelp.findVertexDegrees(adj.adjacencyRepeated);
+				gs.degrees = gHelp.findVertexDegrees(adj.adjacency);
+
+				gs.graphProperties.eulerian = gAlgo.hasEulerianCircuit(gs.degreesRepeated);
+
 				// TODO: Eulerian Circuit, Hamiltonicity, Chromatic Number, diameter, girth,...
 				// TODO: https://en.wikipedia.org/wiki/Graph_property#Integer_invariants
-				self.printGraphProperties(props);
+				self.printGraphProperties(gs.graphProperties);
 			},
 
-			printGraphProperties: function(properties){
+			printGraphProperties: function (properties){
 				let p = "";
 				for(let k in properties){
 					p += help.toTitleCase(k) + ": " + properties[k] + "\n";
 				}
 				p = p.trim();
 				p = help.htmlEncode(p);
-				$("#graphProps").html("<p class='nav-link'>"+p+"</p>");
+				$("#graphProps").html("<p class='nav-link'>" + p + "</p>");
 			},
 		};
 		return self;

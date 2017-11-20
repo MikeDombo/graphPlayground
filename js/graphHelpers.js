@@ -11,8 +11,10 @@ define({
 
 		makeAdjacencyMatrix: function (nodes, edges){
 			let adjacency = [];
+			let adjacencyRepeated = [];
 			nodes.forEach((v) =>{
 				adjacency[v.id] = [];
+				adjacencyRepeated[v.id] = [];
 			}, {order: "id"});
 
 			edges.forEach((v) =>{
@@ -29,9 +31,11 @@ define({
 				if(adjacency[n2].indexOf(n1) === -1){
 					adjacency[n2].push(n1);
 				}
-			});
 
-			return adjacency;
+				adjacencyRepeated[n1].push(n2);
+				adjacencyRepeated[n2].push(n1);
+			});
+			return {adjacency: adjacency, adjacencyRepeated: adjacencyRepeated};
 		},
 
 		makeSingleAdjacencyMatrix: function (nodes, edges){
