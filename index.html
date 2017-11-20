@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Graph Algorithm Playground</title>
+	<meta name="description" content="Interactive Graph Creator and Graph Algorithms">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+	      integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+	        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+			<li class="nav-item active">
+				<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+			</li>
+			<li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+				   aria-haspopup="true" aria-expanded="false">
+					Options
+				</a>
+				<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+					<a class="dropdown-item" href="#" onclick="main.togglePhysics();">Enable/Disable Physics</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-lg-2">
+			<nav class="nav flex-column-lg flex-row">
+				<a class="nav-link" href="#" onclick="main.makeAndPrintGraphColoring();">
+					Graph Coloring
+				</a>
+				<a class="nav-link" href="#" onclick="network.setData(predefined.Petersen);">
+					Load Petersen Graph
+				</a>
+				<a class="nav-link" href="#" onclick="network.setData(predefined.Konigsberg);">
+					Load Konigsberg Bridges Graph
+				</a>
+			</nav>
+		</div>
+		<div class="col-lg-10">
+			<div class="row">
+				<div class="col">
+					<div class="card" style="margin-bottom:1rem; margin-top:1rem;">
+						<div class="card-body" style="padding:0">
+							<div id="network" style="height: 80vh;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">Results</h4>
+						</div>
+						<div class="card-body">
+							<div id="printout"
+							     style="overflow-y: scroll; height: 60vh; white-space:pre-wrap;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="js/require.js"></script>
+<script>
+	requirejs.config({
+		baseUrl: 'js',
+		paths: {
+			jquery: "https://code.jquery.com/jquery-3.2.1.min",
+			vis: "https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min",
+			modernizr: "vendor/modernizr-3.5.0.min",
+			popper: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min",
+			bootstrap: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min",
+		},
+		shim: {
+			"bootstrap": ["jquery"]
+		},
+		priority: ['jquery']
+	});
+
+	require(["popper"], function (popper){
+		window.Popper = popper;
+		require(["bootstrap"], function (bootstrap){
+			window.bootstrap = bootstrap;
+		});
+	});
+
+	require(["vis"], function (v){
+		window.vis = v;
+		require(["main", "predefinedGraphs"], (m, predefined) =>{
+			window.main = m;
+			window.predefined = predefined;
+			window.network = new vis.Network(m.container, {}, m.visOptions);
+
+			network.on("doubleClick", (p) =>{
+				if("nodes" in p && p.nodes.length === 1){
+					network.editNode();
+				}
+			});
+		});
+	});
+</script>
+
+<!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
+<script>
+	window.ga = function (){
+		ga.q.push(arguments);
+	};
+	ga.q = [];
+	ga.l = +new Date;
+	ga('create', 'UA-XXXXX-Y', 'auto');
+	ga('send', 'pageview');
+</script>
+<script src="https://www.google-analytics.com/analytics.js" async defer></script>
+
+<div id="network-popUp" class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<span id="operation">node</span>
+			</div>
+			<div class="modal-body">
+				<div class="form-group row">
+					<label for="node-label" class="col-sm-2 col-form-label">Label</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="node-label" value="new value"/>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-success" type="button" value="save" id="saveButton">Save</button>
+				<button class="btn btn-danger" type="button" value="cancel" id="cancelButton">Cancel</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
