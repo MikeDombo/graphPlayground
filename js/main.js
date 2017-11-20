@@ -98,6 +98,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 				p += "\nChromatic Number: " + a.chromaticNumber;
 				p += "\n\n";
 
+				// TODO: print vertex label - if any
 				colors.forEach((v, i) =>{
 					p += "Vertex " + i + " gets color " + v + "\n";
 				});
@@ -118,7 +119,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 					v.color = colors[a.colors[v.id]];
 					nodes.update(v);
 				});
-				network.setData({nodes: nodes, edges: self.getEdges()});
+				self.setData({nodes: nodes, edges: self.getEdges()});
 			},
 
 			normalizeGraph: function (nodes, edges, fullNodeInfo){
@@ -137,6 +138,30 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "lib/rand
 				});
 
 				return {nodes: nodes, edges: edges};
+			},
+
+			setData: function(data, n = network){
+				n.setData(data);
+				self.makeAndPrintProperties();
+			},
+
+			makeAndPrintProperties: function(){
+				let props = {};
+				props["Vertices"] = help.datasetToArray(self.getNodes()).length;
+				props["Edges"] = help.datasetToArray(self.getEdges()).length;
+				// TODO: Eulerian Circuit, Hamiltonicity, Chromatic Number, diameter, girth,...
+				// TODO: https://en.wikipedia.org/wiki/Graph_property#Integer_invariants
+				self.printGraphProperties(props);
+			},
+
+			printGraphProperties: function(properties){
+				let p = "";
+				for(let k in properties){
+					p += help.toTitleCase(k) + ": " + properties[k] + "\n";
+				}
+				p = p.trim();
+				p = help.htmlEncode(p);
+				$("#graphProps").html("<p class='nav-link'>"+p+"</p>");
 			},
 		};
 		return self;

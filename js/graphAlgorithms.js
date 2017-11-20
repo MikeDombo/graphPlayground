@@ -1,7 +1,7 @@
-define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
+define(["graphHelpers", "genericHelpers", "main"], (graphH, genericH) =>{
 	return {
 		colorNetwork: function (){
-			network.setData(main.normalizeGraph(main.getNodes(), main.getEdges(), network.body.nodes));
+			main.setData(main.normalizeGraph(main.getNodes(), main.getEdges(), network.body.nodes));
 			let nodes = main.getNodes();
 			let edges = main.getEdges();
 			let adjacency = graphH.makeAdjacencyMatrix(nodes, edges);

@@ -39,17 +39,38 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-lg-2">
-			<nav class="nav flex-column-lg flex-row">
-				<a class="nav-link" href="#" onclick="main.makeAndPrintGraphColoring();">
-					Graph Coloring
-				</a>
-				<a class="nav-link" href="#" onclick="network.setData(predefined.Petersen);">
-					Load Petersen Graph
-				</a>
-				<a class="nav-link" href="#" onclick="network.setData(predefined.Konigsberg);">
-					Load Konigsberg Bridges Graph
-				</a>
-			</nav>
+			<div class="row col">
+				<div class="card-body">
+					<h4>Example Graphs</h4>
+					<nav class="nav flex-lg-column flex-row">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen);">
+							Load Petersen Graph
+						</a>
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg);">
+							Load Königsberg Bridges Graph
+						</a>
+					</nav>
+				</div>
+			</div>
+			<hr class="d-none d-lg-block"/>
+			<div class="row col">
+				<div class="card-body">
+					<h4>Algorithms</h4>
+					<nav class="nav flex-lg-column flex-row">
+						<a class="nav-link" href="#" onclick="main.makeAndPrintGraphColoring();">
+							Graph Coloring
+						</a>
+					</nav>
+				</div>
+			</div>
+			<hr class="d-none d-lg-block"/>
+			<div class="row col">
+				<div class="card-body">
+					<h4>Graph Properties</h4>
+					<nav class="nav flex-column" id="graphProps">
+					</nav>
+				</div>
+			</div>
 		</div>
 		<div class="col-lg-10">
 			<div class="row">
@@ -69,7 +90,8 @@
 						</div>
 						<div class="card-body">
 							<div id="printout"
-							     style="overflow-y: scroll; height: 60vh; white-space:pre-wrap;"></div>
+							     style="/*overflow-y: scroll; height: 60vh;*/
+							     white-space:pre-wrap;"></div>
 						</div>
 					</div>
 				</div>
@@ -114,18 +136,18 @@
 					network.editNode();
 				}
 			});
+			main.setData(predefined.Petersen);
 		});
 	});
 </script>
 
-<!-- Google Analytics: change UA-XXXXX-Y to be your site's ID. -->
 <script>
 	window.ga = function (){
 		ga.q.push(arguments);
 	};
 	ga.q = [];
 	ga.l = +new Date;
-	ga('create', 'UA-XXXXX-Y', 'auto');
+	ga('create', 'UA-4436865-12', 'auto');
 	ga('send', 'pageview');
 </script>
 <script src="https://www.google-analytics.com/analytics.js" async defer></script>
