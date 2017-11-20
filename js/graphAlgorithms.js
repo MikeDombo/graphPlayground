@@ -1,10 +1,10 @@
-define(["graphHelpers", "genericHelpers", "main"], (graphH, genericH) =>{
+define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 	return {
-		colorNetwork: function (){
-			main.setData(main.singleyConnectGraph(main.getNodes(), main.getEdges(), network.body.nodes));
+		colorNetwork: function (graphState = main.graphState){
+			main.setData(main.singleyConnectGraph(main.getNodes(), main.getEdges(), network.body.nodes), false, false);
 			let nodes = main.getNodes();
-			let adjacency = main.graphState.adjacency;
-			let degrees = main.graphState.degrees;
+			let adjacency = graphState.state.adjacency;
+			let degrees = graphState.state.degrees;
 
 			let nodeArr = genericH.datasetToArray(nodes, "id");
 			// Put vertices in array in decreasing order of degree
@@ -51,6 +51,27 @@ define(["graphHelpers", "genericHelpers", "main"], (graphH, genericH) =>{
 
 		hasEulerianCircuit: function(degrees){
 			return degrees.filter((v) => {return v%2 !== 0; }).length === 0;
+		},
+
+		graphEqual: function (aEdges, bEdges){
+			if(aEdges.length !== bEdges.length){
+				return false;
+			}
+
+			let aNodes = graphH.interpolateNodesFromEdges(aEdges);
+			let bNodes = graphH.interpolateNodesFromEdges(bEdges);
+			if(aNodes.length !== bNodes.length){
+				return false;
+			}
+
+			let nodesEqual = true;
+			aNodes.forEach((v) => {
+				if(bNodes.get(v.id) === null || !genericH.equalsObject(v, bNodes.get(v.id))){
+					nodesEqual = false;
+				}
+			});
+
+			return nodesEqual;
 		},
 
 	};
