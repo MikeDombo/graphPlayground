@@ -11,6 +11,9 @@ define([], () => {
 		},
 		loadSettings: function (){
 			self.current = JSON.parse(localStorage.getItem("app.settings"));
+			if(self.current === null){
+				self.current = {};
+			}
 			self.setAll();
 		},
 		setAll: function(){
