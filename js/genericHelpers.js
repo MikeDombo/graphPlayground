@@ -8,6 +8,29 @@ define(["jquery"], ($) =>{
 			return r;
 		},
 
+		datasetToArrayMap: function(ds){
+			let r = [];
+			ds.forEach((v) => { r.push(v); });
+			return r;
+		},
+
+		keepOnlyKeys: function(arr, keys){
+			arr = arr.slice();
+			arr.forEach((v) =>{
+				let k = Object.keys(v);
+				k.forEach((key) =>{
+					if(keys.indexOf(key) < 0){
+						delete v[key];
+					}
+				});
+			});
+			return arr;
+		},
+
+		getFileExtension: function(filename){
+			return filename.split(".").splice(-1)[0];
+		},
+
 		htmlEncode: function (string){
 			string = $("<div>").text(string).html();
 			string = string.replace(/(?:\r\n|\r|\n)/g, '<br/>');
@@ -52,6 +75,24 @@ define(["jquery"], ($) =>{
 			return str.replace(/(?:^|\s)\w/g, function (match){
 				return match.toUpperCase();
 			});
+		},
+
+		showErrorModal: function(title, body){
+			let $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
+			$modal
+				.append($("<div>", {class: "modal-dialog"})
+					.append($("<div>", {class: "modal-content"})
+						.append($("<div>", {class: "modal-header"})
+							.append($("<h5>", {class: "modal-title"}).text(title))
+							.append($("<button>", {class: "close", "data-dismiss": "modal", "aria-label": "close"})
+								.append($("<span>", {"aria-hidden": "true"}).html("&times;"))
+							)
+						)
+						.append($("<div>", {class: "modal-body"}).html(body))
+					)
+				);
+			$modal.on("hidden.bs.modal", () => {$modal.remove();});
+			$modal.modal("show");
 		},
 
 		equalsObject: function (obj1, obj2){

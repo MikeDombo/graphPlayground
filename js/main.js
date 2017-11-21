@@ -1,7 +1,9 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState"],
-	($, gAlgo, gHelp, help, settings, randomColor, graphState) =>{
+define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
+	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) =>{
 		let self = {
+			dataImpExp: dataImpExp,
 			graphState: graphState,
+			graphHelper: gHelp,
 			container: document.getElementById('network'),
 			visOptions: {
 				interaction: {hover: true},
