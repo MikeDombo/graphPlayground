@@ -58,10 +58,10 @@
 				<div class="card-body">
 					<h4>Example Graphs</h4>
 					<nav class="nav flex-lg-column flex-row">
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen());">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen(), false, true, true);">
 							Load Petersen Graph
 						</a>
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg());">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg(), false, true, true);">
 							Load Königsberg Bridges Graph
 						</a>
 					</nav>
@@ -72,7 +72,7 @@
 				<div class="card-body">
 					<h4>Algorithms</h4>
 					<nav class="nav flex-lg-column flex-row">
-						<a class="nav-link" href="#" onclick="main.makeAndPrintGraphColoring();">
+						<a class="nav-link" href="#" onclick="main.applyColors();">
 							Graph Coloring
 						</a>
 					</nav>
@@ -125,6 +125,7 @@
 			modernizr: "vendor/modernizr-3.5.0.min",
 			popper: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min",
 			bootstrap: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min",
+			jsgraphs: "vendor/js-graph-algorithms/jsgraphs",
 		},
 		shim: {
 			"bootstrap": ["jquery"]
@@ -132,14 +133,15 @@
 		priority: ['jquery']
 	});
 
-	require(["popper"], function (popper){
+	require(["popper", "jquery"], function (popper, $){
+		window.$ = $;
 		window.Popper = popper;
 		require(["bootstrap"], function (bootstrap){
 			window.bootstrap = bootstrap;
 		});
 	});
 
-	require(["vis"], function (v){
+	require(["jsgraphs", "vis"], function (j, v){
 		window.vis = v;
 		require(["main", "predefinedGraphs", "settings"], (m, predefined, settings) =>{
 			window.main = m;
@@ -152,9 +154,16 @@
 					network.editNode();
 				}
 			});
+			network.on("dragEnd", function (params) {
+				params.nodes.forEach((v) => {
+					let node = main.graphState.state.nodes[v];
+					node.x = network.body.nodes[v].x;
+					node.y = network.body.nodes[v].y;
+				});
+			});
 
 			settings.loadSettings();
-			main.setData(predefined.Petersen());
+			main.setData(predefined.Petersen(), false, true, true);
 		});
 	});
 </script>

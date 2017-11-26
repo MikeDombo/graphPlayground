@@ -1,8 +1,8 @@
 define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 	return {
 		colorNetwork: function (graphState = main.graphState){
-			main.setData(main.singleyConnectGraph(main.getNodes(), main.getEdges(), network.body.nodes), false, false);
-			let nodes = main.getNodes();
+			let d = main.singleyConnectGraph(graphState.state.nodes, graphState.state.edges, network.body.nodes);
+			let nodes = d.nodes;
 			let adjacency = graphState.state.adjacency;
 			let degrees = graphState.state.degrees;
 
@@ -49,29 +49,10 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {colors: colorIndex, chromaticNumber: chromaticNumber};
 		},
 
-		hasEulerianCircuit: function(degrees){
-			return degrees.filter((v) => {return v%2 !== 0; }).length === 0;
-		},
-
-		graphEqual: function (aEdges, bEdges){
-			if(aEdges.length !== bEdges.length){
-				return false;
-			}
-
-			let aNodes = graphH.interpolateNodesFromEdges(aEdges);
-			let bNodes = graphH.interpolateNodesFromEdges(bEdges);
-			if(aNodes.length !== bNodes.length){
-				return false;
-			}
-
-			let nodesEqual = true;
-			aNodes.forEach((v) => {
-				if(bNodes.get(v.id) === null || !genericH.equalsObject(v, bNodes.get(v.id))){
-					nodesEqual = false;
-				}
-			});
-
-			return nodesEqual;
+		hasEulerianCircuit: function (degrees){
+			return degrees.filter((v) =>{
+				return v % 2 !== 0;
+			}).length === 0;
 		},
 
 	};

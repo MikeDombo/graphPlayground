@@ -5,7 +5,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				try{
 					let n = JSON.parse(string);
 					if("nodes" in n && "edges" in n){
-						main.setData({nodes: new vis.DataSet(n.nodes), edges: new vis.DataSet(n.edges)}, false, false);
+						main.setData(n, false, true, true);
 					}
 					else{
 						help.showErrorModal("Data Import Error", "<p>The provided input does not conform the the" +
@@ -18,16 +18,44 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				}
 			}
 			else if(format.toLowerCase() === "dimacs"){
-				// TODO: implement dimacs import
+				let lines = string.split(/\r?\n/);
+				let graph = null;
+				let error = false;
+				lines.forEach((l) =>{
+					vals = l.split(/\s+/);
+					if(vals[0].toLowerCase() === "p"){
+						if(vals[1].toLowerCase() !== "edge"){
+							help.showErrorModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +
+								" &quot;edge&quot; formatted DIMACS files.</p>");
+							error = true;
+							return;
+						}
+						graph = new jsgraphs.Graph(parseInt(vals[2]));
+					}
+					else if(vals[0].toLowerCase() === "e" && graph !== null){
+						graph.addEdge(parseInt(vals[1]) - 1, parseInt(vals[2]) - 1);
+					}
+				});
+
+				if(graph === null && !error){
+					help.showErrorModal("DIMACS Parse Error", "<p>No program line found!</p>");
+					error = true;
+				}
+
+				if(!error){
+					let d = main.graphState.getGraphData(graph);
+					d.nodes.forEach((v) =>{
+						v.label = v.id.toString();
+					});
+					main.setData(d, false, true, true);
+				}
 			}
 			else{
 				help.showErrorModal("Unrecognized Input Format", "<p>The format of your input is incorrect.</p>");
 			}
-
-			let lines = string.split(/\r?\n/);
 		},
 
-		makeImportTextModal: function(){
+		makeImportTextModal: function (){
 			let $textModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$textModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -39,8 +67,10 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 							)
 						)
 						.append($("<div>", {class: "modal-body"})
-							.append($("<textarea>", {class: "form-control",
-								style: "height: 20vh; min-height:400px;"}))
+							.append($("<textarea>", {
+								class: "form-control",
+								style: "height: 20vh; min-height:400px;"
+							}))
 							.append($("<select>", {class: "form-control mt-1"})
 								.append($("<option>", {value: "json"}).text("JSON"))
 								.append($("<option>", {value: "dimacs"}).text("DIMACS"))
@@ -62,7 +92,9 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				$textModal.modal("hide");
 				self.importByString(text, format);
 			});
-			$textModal.on("hidden.bs.modal", () => {$textModal.remove();});
+			$textModal.on("hidden.bs.modal", () =>{
+				$textModal.remove();
+			});
 			$textModal.modal('show');
 		},
 
@@ -108,7 +140,9 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					reader.readAsText(file);
 				}
 			});
-			$fileModal.on("hidden.bs.modal", () => {$fileModal.remove();});
+			$fileModal.on("hidden.bs.modal", () =>{
+				$fileModal.remove();
+			});
 			$fileModal.modal('show');
 		},
 
@@ -124,13 +158,17 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 							)
 						)
 						.append($("<div>", {class: "modal-body"})
-							.append($("<button>", {class:"btn btn-sm btn-primary btn-export m-1",
-								onclick: "main.dataImpExp.exportToFile(\"json\")"})
-								.text("Export to JSON")
+							.append($("<button>", {
+									class: "btn btn-sm btn-primary btn-export m-1",
+									onclick: "main.dataImpExp.exportToFile(\"json\")"
+								})
+									.text("Export to JSON")
 							)
-							.append($("<button>", {class:"btn btn-sm btn-primary btn-export m-1",
-								onclick: "main.dataImpExp.exportToFile(\"dimacs\")"})
-								.text("Export to DIMACS")
+							.append($("<button>", {
+									class: "btn btn-sm btn-primary btn-export m-1",
+									onclick: "main.dataImpExp.exportToFile(\"dimacs\")"
+								})
+									.text("Export to DIMACS")
 							)
 						)
 					)
@@ -139,11 +177,13 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			$fileModal.on("click", ".btn-cancel", () =>{
 				$fileModal.modal("hide");
 			});
-			$fileModal.on("hidden.bs.modal", () => {$fileModal.remove();});
+			$fileModal.on("hidden.bs.modal", () =>{
+				$fileModal.remove();
+			});
 			$fileModal.modal('show');
 		},
 
-		makeExportTextModal: function(){
+		makeExportTextModal: function (){
 			let $textModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$textModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -155,16 +195,22 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 							)
 						)
 						.append($("<div>", {class: "modal-body"})
-							.append($("<button>", {class:"btn btn-primary btn-export m-1",
-								onclick: "main.dataImpExp.exportToText(\"json\")"})
-								.text("Export to JSON")
+							.append($("<button>", {
+									class: "btn btn-primary btn-export m-1",
+									onclick: "main.dataImpExp.exportToText(\"json\")"
+								})
+									.text("Export to JSON")
 							)
-							.append($("<button>", {class:"btn btn-primary btn-export m-1",
-								onclick: "main.dataImpExp.exportToText(\"dimacs\")"})
-								.text("Export to DIMACS")
+							.append($("<button>", {
+									class: "btn btn-primary btn-export m-1",
+									onclick: "main.dataImpExp.exportToText(\"dimacs\")"
+								})
+									.text("Export to DIMACS")
 							)
-							.append($("<textarea>", {id: "exportedText", class: "form-control mt-2",
-								style:"height: 20vh; min-height:400px; white-space:nowrap;"}))
+							.append($("<textarea>", {
+								id: "exportedText", class: "form-control mt-2",
+								style: "height: 20vh; min-height:400px; white-space:nowrap;"
+							}))
 						)
 					)
 				);
@@ -176,11 +222,13 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				$("#exportedText").select();
 				document.execCommand("copy");
 			});
-			$textModal.on("hidden.bs.modal", () => {$textModal.remove();});
+			$textModal.on("hidden.bs.modal", () =>{
+				$textModal.remove();
+			});
 			$textModal.modal('show');
 		},
 
-		exportToFile: function(format){
+		exportToFile: function (format){
 			if(format.toLowerCase() === "json"){
 				self.downloadFile("graph.json", self.getDataAsJSON());
 			}
@@ -189,7 +237,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			}
 		},
 
-		exportToText: function(format){
+		exportToText: function (format){
 			if(format.toLowerCase() === "json"){
 				$("#exportedText").text(JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2));
 			}
@@ -199,8 +247,8 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 		},
 
 		getDataAsJSON: function (){
-			let g = {nodes: help.datasetToArrayMap(main.getNodes()), edges: help.datasetToArrayMap(main.getEdges())};
-			let nodeKeys = ["id", "label"];
+			let g = main.graphState.getGraphData();
+			let nodeKeys = ["id", "label", "color", "x", "y"];
 			let edgeKeys = ["from", "to", "weight"];
 			g.nodes = help.keepOnlyKeys(g.nodes, nodeKeys);
 			g.edges = help.keepOnlyKeys(g.edges, edgeKeys);
@@ -210,11 +258,11 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 
 		getDataAsDIMACS: function (){
 			// If I add direction, DIMACS cannot be used, it only works for undirected graphs
-			let g = {nodes: help.datasetToArrayMap(main.getNodes()), edges: help.datasetToArrayMap(main.getEdges())};
+			let g = main.graphState.getGraphData();
 			let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground --" +
 				" https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
-			let adj = main.graphHelper.makeSingleAdjacencyMatrix(g.nodes, g.edges).matrix;
+			let adj = main.graphState.state.adjacency;
 			adj = adj.filter((v) =>{
 				return v.length !== 0;
 			});
@@ -233,11 +281,9 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 
 			let edgeCount = 0;
 			let edgeText = "";
-			adj.forEach((v, i) =>{
-				v.forEach((n) =>{
-					edgeText += "e " + (i + 1) + " " + (n + 1) + "\n";
-					edgeCount++;
-				});
+			g.edges.forEach((v) =>{
+				edgeText += "e " + (v.from + 1) + " " + (v.to + 1) + "\n";
+				edgeCount++;
 			});
 			edgeText = edgeText.trim();
 

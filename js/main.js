@@ -11,11 +11,12 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					addNode: function (data, callback){
 						let $popup = $('#network-popUp');
 						$popup.find('#operation').html("Add Node");
-						$popup.find('#node-label').val("").on("keyup", (e) =>{
-							if(e.key === "Enter"){
-								$("#saveButton").click();
-							}
-						});
+						$popup.find('#node-label').val(graphState.graphProperties.vertices).off("keyup")
+						      .on("keyup", (e) =>{
+							      if(e.key === "Enter"){
+								      $("#saveButton").click();
+							      }
+						      });
 						$popup.find('#saveButton').get(0).onclick = self.saveData.bind(this, data, callback, "add");
 						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this);
 						$popup.modal('show').on('shown.bs.modal', () =>{
@@ -25,22 +26,22 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					editNode: function (data, callback){
 						let $popup = $('#network-popUp');
 						$popup.find('#operation').html("Edit Node");
-						$popup.find('#node-label').val(data.label).on("keyup", (e) =>{
+						$popup.find('#node-label').val(data.label).off("keyup").on("keyup", (e) =>{
 							if(e.key === "Enter"){
 								$("#saveButton").click();
 							}
 						});
-						$popup.find('#saveButton').get(0).onclick = self.saveData.bind(this, data, callback);
+						$popup.find('#saveButton')
+						      .get(0).onclick = self.saveData.bind(this, data, callback, "editNode");
 						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this, callback);
 						$popup.modal('show').on('shown.bs.modal', () =>{
 							$("#node-label").focus();
 						});
 					},
 					addEdge: function (data, callback){
-						let apply = function(){
-							callback(data);
-							graphState.setUpToDate();
-							graphState.makeAndPrintProperties(false);
+						let apply = function (){
+							callback(null);
+							graphState.addEdge(data.from, data.to);
 						};
 						if(data.from === data.to){
 							if(confirm("Do you want to connect the node to itself?")){
@@ -49,30 +50,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							return;
 						}
 
-						let repeatedEdge = false;
-						self.getEdges().forEach((v) =>{
-							if((v.from === data.from && v.to === data.to) || (v.to === data.from && v.from === data.to)){
-								repeatedEdge = true;
-							}
-						});
-
-						if(repeatedEdge){
-							if(confirm("Do you want to doubly connect this node?")){
-								apply();
-							}
-							return;
-						}
 						apply();
 					},
 					deleteEdge: function (data, callback){
-						callback(data);
-						graphState.setUpToDate();
-						graphState.makeAndPrintProperties(false);
+						callback(null);
+						data.edges.forEach((v) =>{
+							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId);
+						});
 					},
-					deleteNode: function(data, callback){
-						callback(data);
-						graphState.setUpToDate();
-						graphState.makeAndPrintProperties(false);
+					deleteNode: function (data, callback){
+						callback(null);
+						data.nodes.forEach((v) =>{
+							graphState.deleteNode(v);
+						});
 					},
 				},
 			},
@@ -87,19 +77,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			saveData: function (data, callback, operation){
 				$('#network-popUp').modal('hide');
 				data.label = document.getElementById('node-label').value;
-				callback(data);
+				callback(null);
+
 				if(operation === "add"){
-					graphState.setUpToDate();
-					graphState.makeAndPrintProperties(false);
+					graphState.addNode(data);
 				}
-			},
-
-			getNodes: function (n = network){
-				return n.body.data.nodes;
-			},
-
-			getEdges: function (n = network){
-				return n.body.data.edges;
+				else if(operation === "editNode"){
+					graphState.editNode(data.id, data.label);
+				}
 			},
 
 			togglePhysics: function (){
@@ -109,9 +94,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			makeAndPrintGraphColoring: function (){
-				if(!confirm("Coloring the graph will normalize it to be undirected and not be a multigraph!")){
-					return;
-				}
 				let a = gAlgo.colorNetwork();
 
 				graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
@@ -143,14 +125,15 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let chromaticNumber = graphState.getProperty("Chromatic Number");
 				if(graphColors === null || chromaticNumber === null){
 					self.makeAndPrintGraphColoring();
+					graphColors = graphState.getProperty("graphColoring");
+					chromaticNumber = graphState.getProperty("Chromatic Number");
 				}
-				let nodes = self.getNodes();
+				let d = graphState.getGraphData();
 				let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-				nodes.forEach((v) =>{
+				d.nodes.forEach((v) =>{
 					v.color = colors[graphColors[v.id]];
-					nodes.update(v);
 				});
-				self.setData({nodes: nodes, edges: self.getEdges()});
+				self.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
 			singleyConnectGraph: function (nodes, edges, fullNodeInfo){
@@ -171,9 +154,17 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				return {nodes: nodes, edges: edges};
 			},
 
-			setData: function (data, recalcProps = false, checkEquality = true){
-				if(!checkEquality || !gAlgo.graphEqual(self.getEdges(), data.edges)){
-					network.setData(data);
+			setData: function (data, recalcProps = false, graphChanged = true, rearrangeGraph = false){
+				let g = null;
+				if(rearrangeGraph){
+					g = graphState.dataSetToGraph(data.nodes, data.edges);
+				}
+				else{
+					g = graphState.dataSetToGraph(data.nodes, data.edges, network.body.nodes);
+				}
+				graphState.state.graph = g;
+				network.setData(graphState.getGraphAsDataSet(g));
+				if(graphChanged){
 					help.printout("");
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);
