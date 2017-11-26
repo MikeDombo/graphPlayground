@@ -5,7 +5,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				try{
 					let n = JSON.parse(string);
 					if("nodes" in n && "edges" in n){
-						main.setData({nodes: new vis.DataSet(n.nodes), edges: new vis.DataSet(n.edges)});
+						main.setData({nodes: new vis.DataSet(n.nodes), edges: new vis.DataSet(n.edges)}, false, false);
 					}
 					else{
 						help.showErrorModal("Data Import Error", "<p>The provided input does not conform the the" +
@@ -16,6 +16,9 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					help.showErrorModal("JSON Parse Error", "<p>There was an error parsing your input as JSON.</p>"
 						+ "<pre>" + err + "</pre>");
 				}
+			}
+			else if(format.toLowerCase() === "dimacs"){
+				// TODO: implement dimacs import
 			}
 			else{
 				help.showErrorModal("Unrecognized Input Format", "<p>The format of your input is incorrect.</p>");
@@ -63,15 +66,6 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			$textModal.modal('show');
 		},
 
-		readUploadFile: function (file){
-			let reader = new FileReader();
-			reader.onload = function (event){
-				self.importByString(event.target.result, help.getFileExtension(file.name));
-			};
-
-			reader.readAsText(file);
-		},
-
 		makeImportFileModal: function (){
 			let $fileModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$fileModal
@@ -102,9 +96,16 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					alert("You must choose a file first");
 					return;
 				}
+
 				$fileModal.modal("hide");
 				if(files.length === 1){
-					self.readUploadFile(files[0]);
+					let file = files[0];
+					let reader = new FileReader();
+					reader.onload = function (event){
+						self.importByString(event.target.result, help.getFileExtension(file.name));
+					};
+
+					reader.readAsText(file);
 				}
 			});
 			$fileModal.on("hidden.bs.modal", () => {$fileModal.remove();});

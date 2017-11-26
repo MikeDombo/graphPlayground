@@ -1,0 +1,17 @@
+connected components
+max clique
+arboricity
+hamiltonicity
+breadth-first search
+Dijkstra shortest path
+Bellman-Ford shortest path
+digraph
+weights
+Kruskal minimum spanning tree
+MaxFlow-MinCut
+
+bipartite??
+
+
+configurable hypercube graph preset
+configurable complete graph preset
