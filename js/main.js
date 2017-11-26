@@ -107,9 +107,12 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\nChromatic Number: " + a.chromaticNumber;
 				p += "\n\n";
 
-				// TODO: print vertex label - if any
 				colors.forEach((v, i) =>{
-					p += "Vertex " + i + " gets color " + v + "\n";
+					let label = i.toString();
+					if(self.graphState.state.graph.node(i).label.trim().length > 0){
+						label = self.graphState.state.graph.node(i).label.trim();
+					}
+					p += "Vertex " + label + " gets color " + v + "\n";
 				});
 
 				p += "\n" + JSON.stringify(help.rotate(a.colors), null, 4) + "\n\n";
