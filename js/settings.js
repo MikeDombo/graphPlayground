@@ -18,10 +18,12 @@ define([], () => {
 		},
 		setAll: function(){
 			network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
+			network.setOptions({edges: {arrows: {to: self.getOption("direction")}}});
 		},
 		changeOption: function (option, value){
 			self.current[option] = value;
 			self.saveSettings();
+			self.setAll();
 		},
 		getOption: function(option){
 			if(option in self.current){

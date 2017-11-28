@@ -34,13 +34,15 @@ define(["graphHelpers", "vis"], (gHelp, vis) =>{
 		Petersen: function (){
 			return {
 				edges: new vis.DataSet(petersenEdges),
-				nodes: gHelp.interpolateNodesFromEdges(petersenEdges)
+				nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
+				directional: false,
 			};
 		},
 		Konigsberg: function(){
 			return {
 				edges: new vis.DataSet(konigsbergEdges),
-				nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges)
+				nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
+				directional: false,
 			};
 		},
 	};

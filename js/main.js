@@ -90,10 +90,21 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			togglePhysics: function (){
 				let t = !settings.getOption("nodePhysics");
 				settings.changeOption("nodePhysics", t);
-				network.setOptions({nodes: {physics: t}});
+			},
+
+			toggleDirectional: function(){
+				let t = !settings.getOption("direction");
+				settings.changeOption("direction", t);
+				let d = self.graphState.getGraphData();
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, network.body.nodes, t);
+				d = self.graphState.getGraphData(newGraph);
+				self.setData(d);
 			},
 
 			makeAndPrintGraphColoring: function (){
+				if(settings.getOption("direction")){
+					return;
+				}
 				let a = gAlgo.colorNetwork();
 
 				graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
@@ -124,6 +135,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			makeAndPrintConnectedComponents: function (){
+				if(settings.getOption("direction")){
+					return;
+				}
 				let a = gAlgo.connectedComponents();
 
 				graphState.graphProperties["Connected Components"] = a.count;
@@ -151,14 +165,75 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			applyColors: function (){
-				let graphColors = graphState.getProperty("graphColoring");
-				let chromaticNumber = graphState.getProperty("Chromatic Number");
-				if(graphColors === null || chromaticNumber === null){
-					self.makeAndPrintGraphColoring();
-					graphColors = graphState.getProperty("graphColoring");
-					chromaticNumber = graphState.getProperty("Chromatic Number");
+			makeAndPrintDirectionalEulerian: function(){
+				if(!settings.getOption("direction")){
+					return;
 				}
+				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.state.adjacency));
+				self.graphState.setUpToDate(true, ["eulerian"]);
+				self.graphState.graphProperties.eulerian = t;
+				self.graphState.makeAndPrintProperties();
+			},
+
+			makeAndPrintEulerian: function (){
+				if(settings.getOption("direction")){
+					self.makeAndPrintDirectionalEulerian();
+					return;
+				}
+
+				self.graphState.setUpToDate(true, ["eulerian"]);
+				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(self.graphState.state.degrees);
+			},
+
+			makeAndPrintStronglyConnectedComponents: function(){
+				if(!settings.getOption("direction")){
+					return;
+				}
+				let a = gAlgo.stronglyConnectedComponents();
+
+				graphState.graphProperties["Strongly Connected Components"] = a.count;
+				graphState.setUpToDate(true, ["Strongly Connected Components"]);
+				graphState.makeAndPrintProperties(false);
+				graphState.setUpToDate(true, ["stronglyConnectedComponents"]);
+				graphState.state.stronglyConnectedComponents = a.components;
+
+				let components = help.flatten(a.components);
+				let p = "Number of Strongly Connected Components: " + a.count;
+				p += "\n\n";
+
+				components.forEach((v, i) =>{
+					let label = i.toString();
+					if(self.graphState.state.graph.node(i).label.trim().length > 0){
+						label = self.graphState.state.graph.node(i).label.trim();
+					}
+					p += "Vertex " + label + " is in connected component #" + v + "\n";
+				});
+
+				p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
+
+				p = "<h3>Strongly Connected Components</h3><hr>" + help.htmlEncode(p);
+
+				help.printout(p);
+			},
+
+			printGraphAlgorithms: function(){
+				let $div = $("#algorithms-pane");
+				$div.empty();
+				let directional = settings.getOption("direction");
+				let a = gAlgo.algorithms;
+				a.forEach((alg) => {
+					if(alg.display && alg.directional === directional){
+						$div.append($("<a>", {class: "nav-link", href:"#", onclick: alg.applyFunc}).text(alg.name));
+					}
+				});
+			},
+
+			applyColors: function (){
+				if(settings.getOption("direction")){
+					return;
+				}
+				let graphColors = graphState.getProperty("graphColoring", true);
+				let chromaticNumber = graphState.getProperty("Chromatic Number", true);
 				let d = graphState.getGraphData();
 				let colors = randomColor({count: chromaticNumber, luminosity: "light"});
 				d.nodes.forEach((v) =>{
@@ -167,25 +242,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
-			singleyConnectGraph: function (nodes, edges, fullNodeInfo){
-				let m = gHelp.makeSingleAdjacencyMatrix(nodes, edges);
-				let adjacency = m.matrix;
-				let nodeMap = help.rotate(m.map);
-				nodes = new vis.DataSet();
-				edges = new vis.DataSet();
-
-				adjacency.forEach((v, i) =>{
-					let n = fullNodeInfo[nodeMap[i]];
-					nodes.add({id: i, label: n.options.label, x: n.x, y: n.y});
-					v.forEach((n2) =>{
-						edges.add({from: i, to: n2});
-					});
-				});
-
-				return {nodes: nodes, edges: edges};
-			},
-
 			setData: function (data, recalcProps = false, graphChanged = true, rearrangeGraph = false){
+				if("directional" in data && !data.directional && settings.getOption("direction")){
+					settings.changeOption("direction", false);
+				}
+
 				let g = null;
 				if(rearrangeGraph){
 					g = graphState.dataSetToGraph(data.nodes, data.edges);
@@ -200,8 +261,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 				network.setData(graphState.getGraphAsDataSet(g));
 				network.disableEditMode();
+				network.enableEditMode();
 
 				if(graphChanged){
+					self.printGraphAlgorithms();
 					help.printout("");
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);

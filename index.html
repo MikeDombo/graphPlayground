@@ -43,6 +43,7 @@
 				</a>
 				<div class="dropdown-menu" aria-labelledby="optionsDropdown">
 					<a class="dropdown-item" href="#" onclick="main.togglePhysics();">Enable/Disable Physics</a>
+					<a class="dropdown-item" href="#" onclick="main.toggleDirectional();">Enable/Disable DiGraph</a>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="#" onclick="settings.resetToDefault();">Reset Preferences</a>
 				</div>
@@ -71,13 +72,7 @@
 			<div class="row col">
 				<div class="card-body">
 					<h4>Algorithms</h4>
-					<nav class="nav flex-lg-column flex-row">
-						<a class="nav-link" href="#" onclick="main.applyColors();">
-							Graph Coloring
-						</a>
-						<a class="nav-link" href="#" onclick="main.makeAndPrintConnectedComponents();">
-							Connected Components
-						</a>
+					<nav class="nav flex-lg-column flex-row" id="algorithms-pane">
 					</nav>
 				</div>
 			</div>
@@ -155,6 +150,7 @@
 
 			settings.loadSettings();
 			main.setData(predefined.Petersen(), false, true, true);
+			main.printGraphAlgorithms();
 		});
 	});
 </script>

@@ -2,13 +2,50 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 	($, gAlgo, gHelp, help) =>{
 		let self = {
 			upToDate: [
-				{name: "Chromatic Number", upToDate: false, type: "property"},
-				{name: "graphColoring", upToDate: false, type: "state"},
+				{
+					name: "Chromatic Number", upToDate: false, type: "property",
+					applyFunc: () =>{
+						main.makeAndPrintGraphColoring();
+					}
+				},
+				{
+					name: "graphColoring", upToDate: false, type: "state",
+					applyFunc: () =>{
+						main.makeAndPrintGraphColoring();
+					}
+				},
 				{name: "vertices", upToDate: true, always: true, type: "property"},
 				{name: "edges", upToDate: true, always: true, type: "property"},
-				{name: "eulerian", upToDate: true, always: true, type: "property"},
-				{name: "Connected Components", upToDate: false, type: "property"},
-				{name: "connectedComponents", upToDate: false, type: "state"},
+				{
+					name: "eulerian", upToDate: false, type: "property",
+					applyFunc: () =>{
+						main.makeAndPrintEulerian();
+					}
+				},
+				{
+					name: "Connected Components", upToDate: false, type: "property",
+					applyFunc: () =>{
+						main.makeAndPrintConnectedComponents();
+					}
+				},
+				{
+					name: "connectedComponents", upToDate: false, type: "state",
+					applyFunc: () =>{
+						main.makeAndPrintConnectedComponents();
+					}
+				},
+				{
+					name: "Strongly Connected Components", upToDate: false, type: "property",
+					applyFunc: () =>{
+						main.makeAndPrintStronglyConnectedComponents();
+					}
+				},
+				{
+					name: "stronglyConnectedComponents", upToDate: false, type: "state",
+					applyFunc: () =>{
+						main.makeAndPrintStronglyConnectedComponents();
+					}
+				},
 			],
 			state: {
 				graph: new jsgraphs.Graph(), nodes: [], edges: [], adjacency: [], degrees: [],
@@ -19,7 +56,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				eulerian: false,
 				"Chromatic Number": null,
 				"Connected Components": null,
+				"Strongly Connected Components": null,
 			},
+
 			setUpToDate: function (value = false, listOptions){
 				let all = listOptions === null || typeof listOptions === "undefined";
 				self.upToDate.forEach((v) =>{
@@ -28,13 +67,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					}
 				});
 			},
-			getProperty: function (property){
+
+			getProperty: function (property, updateIfNotUpdated = false){
 				let a = self.upToDate.find((v) =>{
 					return ("name" in v && v.name === property);
 				});
 
 				if(!a.upToDate){
-					return null;
+					if("applyFunc" in a && updateIfNotUpdated){
+						a.applyFunc();
+					}
+					else{
+						return null;
+					}
 				}
 				if(a.type === "state"){
 					return self.state[property];
@@ -43,6 +88,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			},
 
 			makeAndPrintProperties: function (recalcLong = false){
+				let directional = settings.getOption("direction");
+				let weighted = settings.getOption("weights");
+
 				let gs = self.state;
 
 				let d = self.getGraphData();
@@ -53,19 +101,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 				gs.adjacency = gs.graph.adjList;
 				gs.degrees = gHelp.findVertexDegrees(gs.adjacency);
-				self.graphProperties.eulerian = gAlgo.hasEulerianCircuit(gs.degrees);
+				if(!directional){
+					self.getProperty("eulerian", true);
+				}
 
 				let p = Object.keys(self.graphProperties);
 				if(recalcLong){
 					p.forEach((v) =>{
-						if(self.getProperty(v) === null){
-							if(v === "Chromatic Number"){
-								main.makeAndPrintGraphColoring();
-							}
-							else if(v === "Connected Components"){
-								main.makeAndPrintConnectedComponents();
-							}
-						}
+						self.getProperty(v, true);
 					});
 				}
 
@@ -111,7 +154,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				let d = self.getGraphData();
 				let newEdges = [];
 				d.edges.forEach((v) =>{
-					if(v.from !== from && v.to !== to){
+					if(!(v.from === from && v.to === to)){
 						newEdges.push(v);
 					}
 				});
@@ -177,28 +220,37 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			dataSetToGraph: function (nodes, edges, oldNodes){
+			dataSetToGraph: function (nodes, edges, oldNodes, doubleEdges = false){
+				let directional = settings.getOption("direction");
+				let weighted = settings.getOption("weights");
+
 				let d = self.alignData(0, nodes, edges);
 				nodes = d.nodes;
 				edges = d.edges;
 
 				let g = new jsgraphs.Graph(nodes.length);
-				if(settings.getOption("direction") && settings.getOption("weights")){
+				if(directional && weighted){
 					g = new jsgraphs.WeightedDiGraph(nodes.length);
 				}
-				else if(settings.getOption("direction") && !settings.getOption("weights")){
+				else if(directional && !weighted){
 					g = new jsgraphs.DiGraph(nodes.length);
 				}
-				else if(!settings.getOption("direction") && settings.getOption("weights")){
+				else if(!directional && weighted){
 					g = new jsgraphs.WeightedGraph(nodes.length);
 				}
 
 				edges.forEach((v) =>{
-					if(settings.getOption("weights")){
+					if(weighted){
 						g.addEdge(new jsgraphs.Edge(v.from, v.to, v.weight));
+						if(directional && doubleEdges){
+							g.addEdge(new jsgraphs.Edge(v.to, v.from, v.weight));
+						}
 					}
 					else{
 						g.addEdge(v.from, v.to);
+						if(directional && doubleEdges){
+							g.addEdge(v.to, v.from);
+						}
 					}
 				});
 
