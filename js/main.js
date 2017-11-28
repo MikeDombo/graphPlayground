@@ -118,7 +118,35 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n" + JSON.stringify(help.rotate(a.colors), null, 4) + "\n\n";
 
 				p = "<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>" + help.htmlEncode(p);
-				p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply Colors To Graph</button>";
+				p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
+
+				help.printout(p);
+			},
+
+			makeAndPrintConnectedComponents: function (){
+				let a = gAlgo.connectedComponents();
+
+				graphState.graphProperties["Connected Components"] = a.count;
+				graphState.setUpToDate(true, ["Connected Components"]);
+				graphState.makeAndPrintProperties(false);
+				graphState.setUpToDate(true, ["connectedComponents"]);
+				graphState.state.connectedComponents = a.components;
+
+				let components = help.flatten(a.components);
+				let p = "Number of Connected Components: " + a.count;
+				p += "\n\n";
+
+				components.forEach((v, i) =>{
+					let label = i.toString();
+					if(self.graphState.state.graph.node(i).label.trim().length > 0){
+						label = self.graphState.state.graph.node(i).label.trim();
+					}
+					p += "Vertex " + label + " is in connected component #" + v + "\n";
+				});
+
+				p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
+
+				p = "<h3>Connected Components</h3><hr>" + help.htmlEncode(p);
 
 				help.printout(p);
 			},
@@ -166,12 +194,39 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					g = graphState.dataSetToGraph(data.nodes, data.edges, network.body.nodes);
 				}
 				graphState.state.graph = g;
+
+				// Set a new random seed so that the layout will be different
+				self.newRandomNetworkLayout(network);
+
 				network.setData(graphState.getGraphAsDataSet(g));
+				network.disableEditMode();
+
 				if(graphChanged){
 					help.printout("");
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);
 				}
+			},
+
+			newRandomNetworkLayout: function(network){
+				let r = Math.round(Math.random() * 1000000);
+				network.layoutEngine.randomSeed = r;
+				network.layoutEngine.initialRandomSeed = r;
+			},
+
+			addNetworkListeners: function(network){
+				network.on("doubleClick", (p) =>{
+					if("nodes" in p && p.nodes.length === 1){
+						network.editNode();
+					}
+				});
+				network.on("dragEnd", function (params) {
+					params.nodes.forEach((v) => {
+						let node = self.graphState.state.nodes[v];
+						node.x = network.body.nodes[v].x;
+						node.y = network.body.nodes[v].y;
+					});
+				});
 			},
 
 		};

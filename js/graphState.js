@@ -6,7 +6,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				{name: "graphColoring", upToDate: false, type: "state"},
 				{name: "vertices", upToDate: true, always: true, type: "property"},
 				{name: "edges", upToDate: true, always: true, type: "property"},
-				{name: "eulerian", upToDate: true, always: true, type: "property"}
+				{name: "eulerian", upToDate: true, always: true, type: "property"},
+				{name: "Connected Components", upToDate: false, type: "property"},
+				{name: "connectedComponents", upToDate: false, type: "state"},
 			],
 			state: {
 				graph: new jsgraphs.Graph(), nodes: [], edges: [], adjacency: [], degrees: [],
@@ -15,7 +17,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				vertices: 0,
 				edges: 0,
 				eulerian: false,
-				"Chromatic Number": null
+				"Chromatic Number": null,
+				"Connected Components": null,
 			},
 			setUpToDate: function (value = false, listOptions){
 				let all = listOptions === null || typeof listOptions === "undefined";
@@ -59,10 +62,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 							if(v === "Chromatic Number"){
 								main.makeAndPrintGraphColoring();
 							}
+							else if(v === "Connected Components"){
+								main.makeAndPrintConnectedComponents();
+							}
 						}
 					});
-					// TODO: Hamiltonicity, diameter, girth,...
-					// TODO: https://en.wikipedia.org/wiki/Graph_property#Integer_invariants
 				}
 
 				let printableProperties = {};
@@ -150,7 +154,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 				let i = 0;
 				graph.nodeInfo.forEach((v) =>{
-					let n = {id: i++, label: v.label, x: v.x, y: v.y, color: v.color};
+					let n = {id: i++, label: v.label, color: v.color};
+					if(v.x === null || typeof v.x !== "undefined"){
+						n.x = v.x;
+					}
+					if(v.y === null || typeof v.y !== "undefined"){
+						n.y = v.y;
+					}
+
 					nodes.push(n);
 				});
 

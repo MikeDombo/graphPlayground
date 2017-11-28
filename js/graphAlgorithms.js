@@ -49,6 +49,17 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {colors: colorIndex, chromaticNumber: chromaticNumber};
 		},
 
+		connectedComponents: function(graphState = main.graphState){
+			let G = graphState.state.graph;
+			let cc = new jsgraphs.ConnectedComponents(G);
+			console.log(cc);
+			let componentIndex = {};
+			for (let v = 0; v < G.V; v++) {
+				componentIndex[v] = cc.componentId(v);
+			}
+			return {components: componentIndex, count: cc.componentCount()};
+		},
+
 		hasEulerianCircuit: function (degrees){
 			return degrees.filter((v) =>{
 				return v % 2 !== 0;

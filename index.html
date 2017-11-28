@@ -75,6 +75,9 @@
 						<a class="nav-link" href="#" onclick="main.applyColors();">
 							Graph Coloring
 						</a>
+						<a class="nav-link" href="#" onclick="main.makeAndPrintConnectedComponents();">
+							Connected Components
+						</a>
 					</nav>
 				</div>
 			</div>
@@ -148,19 +151,7 @@
 			window.predefined = predefined;
 			window.settings = settings;
 			window.network = new vis.Network(m.container, {}, m.visOptions);
-
-			network.on("doubleClick", (p) =>{
-				if("nodes" in p && p.nodes.length === 1){
-					network.editNode();
-				}
-			});
-			network.on("dragEnd", function (params) {
-				params.nodes.forEach((v) => {
-					let node = main.graphState.state.nodes[v];
-					node.x = network.body.nodes[v].x;
-					node.y = network.body.nodes[v].y;
-				});
-			});
+			main.addNetworkListeners(network);
 
 			settings.loadSettings();
 			main.setData(predefined.Petersen(), false, true, true);
