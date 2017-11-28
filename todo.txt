@@ -1,3 +1,5 @@
+use getPosition from visjs instead of reading from the Network object
+
 implement multigraph by adding a number of copies field to the edge object
 
 max clique
@@ -6,7 +8,6 @@ hamiltonicity
 breadth-first search
 Dijkstra shortest path
 Bellman-Ford shortest path
-digraph
 weights
 Kruskal minimum spanning tree
 MaxFlow-MinCut
@@ -16,3 +17,5 @@ bipartite??
 
 configurable hypercube graph preset
 configurable complete graph preset
+
+Make it a PWA with service worker caching and auto-updating
