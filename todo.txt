@@ -1,5 +1,3 @@
-use getPosition from visjs instead of reading from the Network object
-
 implement multigraph by adding a number of copies field to the edge object
 
 max clique

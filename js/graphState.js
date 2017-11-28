@@ -178,7 +178,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 						newEdges.push(v);
 					}
 				});
-				main.setData({nodes: newNodes, edges: newEdges});
+				main.setData({nodes: newNodes, edges: newEdges}, false, true, true);
 			},
 
 			clearColorFromNodes: function (nodes){
@@ -220,7 +220,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			dataSetToGraph: function (nodes, edges, oldNodes, doubleEdges = false){
+			dataSetToGraph: function (nodes, edges, keepNodePositions = false, doubleEdges = false){
 				let directional = settings.getOption("direction");
 				let weighted = settings.getOption("weights");
 
@@ -257,9 +257,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				nodes.forEach((v) =>{
 					let n = g.node(v.id);
 					n.label = v.label;
-					if(oldNodes !== null && typeof oldNodes !== "undefined" && v.id in oldNodes){
-						n.x = oldNodes[v.id].x;
-						n.y = oldNodes[v.id].y;
+					let pos = network.getPositions(v.id);
+					if(keepNodePositions && v.id in pos){
+						n.x = pos[v.id].x;
+						n.y = pos[v.id].y;
 					}
 					else{
 						n.x = v.x;

@@ -96,7 +96,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let t = !settings.getOption("direction");
 				settings.changeOption("direction", t);
 				let d = self.graphState.getGraphData();
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, network.body.nodes, t);
+				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, t);
 				d = self.graphState.getGraphData(newGraph);
 				self.setData(d);
 			},
@@ -252,7 +253,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					g = graphState.dataSetToGraph(data.nodes, data.edges);
 				}
 				else{
-					g = graphState.dataSetToGraph(data.nodes, data.edges, network.body.nodes);
+					g = graphState.dataSetToGraph(data.nodes, data.edges, true);
 				}
 				graphState.state.graph = g;
 
@@ -282,13 +283,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					if("nodes" in p && p.nodes.length === 1){
 						network.editNode();
 					}
-				});
-				network.on("dragEnd", function (params) {
-					params.nodes.forEach((v) => {
-						let node = self.graphState.state.nodes[v];
-						node.x = network.body.nodes[v].x;
-						node.y = network.body.nodes[v].y;
-					});
 				});
 			},
 
