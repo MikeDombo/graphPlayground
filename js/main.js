@@ -21,6 +21,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this);
 						$popup.modal('show').on('shown.bs.modal', () =>{
 							$("#node-label").focus();
+						}).on("hidden.bs.modal", () =>{
+							self.cancelEdit(callback);
 						});
 					},
 					editNode: function (data, callback){
@@ -36,6 +38,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this, callback);
 						$popup.modal('show').on('shown.bs.modal', () =>{
 							$("#node-label").focus();
+						}).on("hidden.bs.modal", () =>{
+							self.cancelEdit(callback);
 						});
 					},
 					addEdge: function (data, callback){
@@ -68,7 +72,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			cancelEdit: function (callback){
-				$('#network-popUp').modal('hide');
+				$('#network-popUp').off().modal('hide');
 				if(typeof callback === "function"){
 					callback(null);
 				}
@@ -92,7 +96,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("nodePhysics", t);
 			},
 
-			toggleDirectional: function(){
+			toggleDirectional: function (){
 				let t = !settings.getOption("direction");
 				settings.changeOption("direction", t);
 				let d = self.graphState.getGraphData();
@@ -166,7 +170,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			makeAndPrintDirectionalEulerian: function(){
+			makeAndPrintDirectionalEulerian: function (){
 				if(!settings.getOption("direction")){
 					return;
 				}
@@ -186,7 +190,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(self.graphState.state.degrees);
 			},
 
-			makeAndPrintStronglyConnectedComponents: function(){
+			makeAndPrintStronglyConnectedComponents: function (){
 				if(!settings.getOption("direction")){
 					return;
 				}
@@ -217,14 +221,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			printGraphAlgorithms: function(){
+			printGraphAlgorithms: function (){
 				let $div = $("#algorithms-pane");
 				$div.empty();
 				let directional = settings.getOption("direction");
 				let a = gAlgo.algorithms;
-				a.forEach((alg) => {
+				a.forEach((alg) =>{
 					if(alg.display && alg.directional === directional){
-						$div.append($("<a>", {class: "nav-link", href:"#", onclick: alg.applyFunc}).text(alg.name));
+						$div.append($("<a>", {class: "nav-link", href: "#", onclick: alg.applyFunc}).text(alg.name));
 					}
 				});
 			},
@@ -272,13 +276,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			newRandomNetworkLayout: function(network){
+			newRandomNetworkLayout: function (network){
 				let r = Math.round(Math.random() * 1000000);
 				network.layoutEngine.randomSeed = r;
 				network.layoutEngine.initialRandomSeed = r;
 			},
 
-			addNetworkListeners: function(network){
+			addNetworkListeners: function (network){
 				network.on("doubleClick", (p) =>{
 					if("nodes" in p && p.nodes.length === 1){
 						network.editNode();
