@@ -3,7 +3,7 @@ A single-page webapp to build graphs and run algorithms on them
 
 ## Supported Graph Types
 - Undirected Unweighted - Just a regular graph
-- Directed Unweighted - A digraph (directed graph) with unweighted edges **Not Yet Implemented**
+- Directed Unweighted - A digraph (directed graph) with unweighted edges
 - Undirected Weighted - A graph with edge weights **Not Yet Implemented**
 - Directed Weighted - A digraph with weighted edges **Not Yet Implemented**
 
