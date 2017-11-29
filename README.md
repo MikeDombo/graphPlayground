@@ -19,7 +19,7 @@ A single-page webapp to build graphs and run algorithms on them
 - Strongly Connected Components
 - Dijkstra Shortest Distance **Not Yet Implemented**
 
-### Undirected Weighted **Not Yet Implemented**
+### Undirected Weighted *Not Yet Implemented*
 - Graph Coloring
 - Eulericity
 - Connected Components
@@ -28,7 +28,7 @@ A single-page webapp to build graphs and run algorithms on them
 - Bellman-Ford Shortest Distance **Not Yet Implemented**
 - Kruskal MST **Not Yet Implemented**
 
-### Directed Weighted **Not Yet Implemented**
+### Directed Weighted *Not Yet Implemented*
 - Eulericity
 - Strongly Connected Components
 - Dijkstra Shortest Distance **Not Yet Implemented**
