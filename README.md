@@ -12,25 +12,25 @@ A single-page webapp to build graphs and run algorithms on them
 - Graph Coloring
 - Eulericity
 - Connected Components
-- Breadth-First Shortest Distance **Not Yet Implemented**
+- Breadth-First Shortest Path **Not Yet Implemented**
 
 ### Directed Unweighted
 - Eulericity
 - Strongly Connected Components
-- Dijkstra Shortest Distance **Not Yet Implemented**
+- Dijkstra Shortest Path **Not Yet Implemented**
 
 ### Undirected Weighted *Not Yet Implemented*
 - Graph Coloring
 - Eulericity
 - Connected Components
-- Breadth-First Shortest Distance **Not Yet Implemented**
-- Dijkstra Shortest Distance **Not Yet Implemented**
-- Bellman-Ford Shortest Distance **Not Yet Implemented**
+- Breadth-First Shortest Path **Not Yet Implemented**
+- Dijkstra Shortest Path **Not Yet Implemented**
+- Bellman-Ford Shortest Path **Not Yet Implemented**
 - Kruskal MST **Not Yet Implemented**
 
 ### Directed Weighted *Not Yet Implemented*
 - Eulericity
 - Strongly Connected Components
-- Dijkstra Shortest Distance **Not Yet Implemented**
-- Bellman-Ford Shortest Distance **Not Yet Implemented**
+- Dijkstra Shortest Path **Not Yet Implemented**
+- Bellman-Ford Shortest Path **Not Yet Implemented**
 - Ford-Fulkerson MinCut-MaxFlow **Not Yet Implemented**
