@@ -44,7 +44,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					},
 					addEdge: function (data, callback){
 						let apply = function (){
-							callback(null);
+							if(typeof callback === "function"){
+								callback(null);
+							}
 							graphState.addEdge(data.from, data.to);
 						};
 						if(data.from === data.to){
@@ -56,8 +58,20 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 						apply();
 					},
+					editEdge: function (data, callback) {
+						if(settings.getOption("weights")){
+
+						}
+						else {
+							callback(null);
+							self.visOptions.manipulation.deleteEdge({edges:[data.id]});
+							self.visOptions.manipulation.addEdge(data);
+						}
+					},
 					deleteEdge: function (data, callback){
-						callback(null);
+						if(typeof callback === "function"){
+							callback(null);
+						}
 						data.edges.forEach((v) =>{
 							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId);
 						});
