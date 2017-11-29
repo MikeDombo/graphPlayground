@@ -110,7 +110,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 							)
 						)
 						.append($("<div>", {class: "modal-body"})
-							.append($("<input>", {type: "file"}))
+							.append($("<input>", {type: "file", class:"form-control-file"}))
 						)
 						.append($("<div>", {class: "modal-footer"})
 							.append($("<button>", {class: "btn btn-success btn-import", type: "button"}).text("Import"))

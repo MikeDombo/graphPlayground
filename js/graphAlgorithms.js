@@ -2,8 +2,33 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 	return {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
-			{name: "Connected Components", directional: false, applyFunc: "main.makeAndPrintConnectedComponents();", display: true},
-			{name: "Strongly Connected Components", directional: true, display: true, applyFunc: "main.makeAndPrintStronglyConnectedComponents();"},
+			{
+				name: "Connected Components",
+				directional: false,
+				applyFunc: "main.makeAndPrintConnectedComponents();",
+				display: true
+			},
+			{
+				name: "Strongly Connected Components",
+				directional: true,
+				display: true,
+				applyFunc: "main.makeAndPrintStronglyConnectedComponents();"
+			},
+			{
+				name: "Breadth-First Shortest Path",
+				directional: false,
+				applyFunc: "main.makeAndPrintBFS();",
+				display: true
+			},
+			// TODO
+			{
+				name: "Dijkstra Shortest Path",
+				directional: true,
+				applyFunc: "main.makeAndPrintDijkstra();",
+				display: false
+			},
+			// TODO
+			{name: "Bellman-Ford Shortest Path", weighted: true, applyFunc: "main.makeAndPrintBFSP();", display: false},
 			{name: "Eulerian", directional: false, display: false, applyFunc: null},
 			{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
 		],
@@ -75,12 +100,23 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {components: componentIndex, count: cc.componentCount()};
 		},
 
-		directionalEulerian: function(directionalDegrees, graphState = main.graphState){
+		breadthFirstSearch: function (startNodeID, targetNodeID, graphState = main.graphState){
+			let G = graphState.state.graph;
+			let bfs = new jsgraphs.BreadthFirstSearch(G, startNodeID);
+
+			if(bfs.hasPathTo(targetNodeID)){
+				return {pathExists: true, path: bfs.pathTo(targetNodeID), distance: bfs.pathTo(targetNodeID).length};
+			}
+
+			return {pathExists: false, path: [], distance: -1};
+		},
+
+		directionalEulerian: function (directionalDegrees, graphState = main.graphState){
 			let scc = graphState.getProperty("stronglyConnectedComponents", true);
 
 			eulerian = true;
 			component = -1;
-			directionalDegrees.forEach((deg, id) => {
+			directionalDegrees.forEach((deg, id) =>{
 				if(deg.in !== deg.out){
 					eulerian = false;
 				}

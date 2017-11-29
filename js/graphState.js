@@ -48,7 +48,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				},
 			],
 			state: {
-				graph: new jsgraphs.Graph(), nodes: [], edges: [], adjacency: [], degrees: [],
+				graph: new jsgraphs.Graph(),
+				nodes: [],
+				edges: [],
+				adjacency: [],
+				degrees: [],
+				directed: false,
+				weighted: false
 			},
 			graphProperties: {
 				vertices: 0,
@@ -189,9 +195,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			},
 
 			getGraphData: function (graph){
+				let directed = false;
+				let weighted = false;
+
 				if(graph === null || typeof graph === "undefined"){
 					graph = self.state.graph;
+					directed = self.state.directed;
+					weighted = self.state.weighted;
 				}
+				else{
+					directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
+					weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
+				}
+
 				let nodes = [];
 				let edges = [];
 
@@ -208,11 +224,33 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					nodes.push(n);
 				});
 
-				Object.keys(graph.edges).forEach((k) =>{
-					let v = graph.edges[k];
-					edges.push({from: v.from(), to: v.to(), weight: v.weight});
-				});
-				return {nodes: nodes, edges: edges};
+				if("edges" in graph){
+					Object.keys(graph.edges).forEach((k) =>{
+						let v = graph.edges[k];
+						edges.push({from: v.from(), to: v.to()});
+					});
+				}
+				else{
+					graph.adjList.forEach((node) =>{
+						node.forEach((edge) =>{
+							let existingEdge = edges.find((e) =>{
+								return e.from === edge.v && e.to === edge.w && e.weight === edge.weight;
+							});
+							let repeatedEdge = edges.find((e) =>{
+								return e.from === edge.w && e.to === edge.v && e.weight === edge.weight;
+							});
+
+							if((typeof existingEdge === "undefined" || existingEdge.length === 0) && (directed || typeof repeatedEdge === "undefined")){
+								if(typeof edge.weight === "undefined"){
+									edge.weight = 0;
+								}
+								edges.push({from: edge.v, to: edge.w, weight: edge.weight});
+							}
+						});
+					});
+				}
+
+				return {nodes: nodes, edges: edges, directed: directed, weighted: weighted};
 			},
 
 			getGraphAsDataSet: function (graph){
@@ -220,10 +258,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			dataSetToGraph: function (nodes, edges, keepNodePositions = false, doubleEdges = false){
-				let directional = settings.getOption("direction");
-				let weighted = settings.getOption("weights");
-
+			dataSetToGraph: function (nodes, edges, keepNodePositions = false, doubleEdges = false, directional = false, weighted = false){
 				let d = self.alignData(0, nodes, edges);
 				nodes = d.nodes;
 				edges = d.edges;

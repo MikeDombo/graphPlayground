@@ -101,7 +101,17 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("direction", t);
 				let d = self.graphState.getGraphData();
 				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, t);
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, t, t, self.graphState.state.weighted);
+				d = self.graphState.getGraphData(newGraph);
+				self.setData(d);
+			},
+
+			toggledWeighted: function (){
+				let t = !settings.getOption("weights");
+				settings.changeOption("weights", t);
+				let d = self.graphState.getGraphData();
+				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, false, self.graphState.state.directed, t);
 				d = self.graphState.getGraphData(newGraph);
 				self.setData(d);
 			},
@@ -221,6 +231,36 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
+			makeAndPrintBFS: function (){
+				if(settings.getOption("direction")){
+					return;
+				}
+				help.showFormModal(($modal, values) =>{
+						$modal.modal("hide");
+						let a = gAlgo.breadthFirstSearch(parseInt(values[0]), parseInt(values[1]));
+
+						let p = "<h3>Breadth-First Shortest Path</h3><hr>No path exists from "
+							+ help.htmlEncode(values[0]) + " to " + help.htmlEncode(values[1]);
+
+						if(a.pathExists){
+							p = "Breadth-First Shortest Path From " + values[0] + " to " + values[1] + ": " + a.distance;
+							p += "\n\nUsing Path: ";
+							p = help.htmlEncode(p);
+							a.path.forEach((v) =>{
+								p += help.htmlEncode(v) + " &rarr; ";
+							});
+							p = p.slice(0, -8);
+							p = "<h3>Breadth-First Shortest Path</h3><hr>" + p;
+						}
+
+						help.printout(p);
+					},
+					"Breadth-First Shortest Distance", "Go", [
+						{label: "Start Node", type: "text"},
+						{label: "End Node", type: "text"}
+					]);
+			},
+
 			printGraphAlgorithms: function (){
 				let $div = $("#algorithms-pane");
 				$div.empty();
@@ -248,18 +288,25 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			setData: function (data, recalcProps = false, graphChanged = true, rearrangeGraph = false){
-				if("directional" in data && !data.directional && settings.getOption("direction")){
-					settings.changeOption("direction", false);
+				if("directed" in data){
+					settings.changeOption("direction", data.directed);
 				}
+				if("weighted" in data){
+					settings.changeOption("weights", data.weighted);
+				}
+				let directional = settings.getOption("direction");
+				let weighted = settings.getOption("weights");
 
 				let g = null;
 				if(rearrangeGraph){
-					g = graphState.dataSetToGraph(data.nodes, data.edges);
+					g = graphState.dataSetToGraph(data.nodes, data.edges, false, false, directional, weighted);
 				}
 				else{
-					g = graphState.dataSetToGraph(data.nodes, data.edges, true);
+					g = graphState.dataSetToGraph(data.nodes, data.edges, true, false, directional, weighted);
 				}
 				graphState.state.graph = g;
+				graphState.state.directed = directional;
+				graphState.state.weighted = weighted;
 
 				// Set a new random seed so that the layout will be different
 				self.newRandomNetworkLayout(network);
