@@ -230,12 +230,24 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 				let i = 0;
 				graph.nodeInfo.forEach((v) => {
-					let n = {id: i++, label: v.label, color: v.color};
-					if(v.x === null || typeof v.x !== "undefined"){
+					let n = {id: i++, label: v.label};
+
+					if("color" in v && v.color !== null && typeof v.color !== "undefined"){
+						n.color = v.color;
+					}
+
+					let pos = network.getPositions(n.id);
+					if(typeof v.x !== "undefined" && v.x !== null){
 						n.x = v.x;
 					}
-					if(v.y === null || typeof v.y !== "undefined"){
+					else if(n.id in pos){
+						n.x = pos[n.id].x;
+					}
+					if(typeof v.y !== "undefined" && v.y !== null){
 						n.y = v.y;
+					}
+					else if(n.id in pos){
+						n.y = pos[n.id].y;
 					}
 
 					nodes.push(n);
