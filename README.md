@@ -1,7 +1,7 @@
 # Graph Algorithm Playground
 A single-page webapp to build graphs and run algorithms on them with no server-side components.
 
-Use it on my [GitHub Pages](https://md100play.github.io/graphPlayground/)
+Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 
 ## Supported Graph Types
 - Undirected Unweighted - Just a regular graph
