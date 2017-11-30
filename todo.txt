@@ -3,17 +3,10 @@ implement multigraph by adding a number of copies field to the edge object
 max clique
 arboricity
 hamiltonicity
-breadth-first search
-Dijkstra shortest path
-Bellman-Ford shortest path
-weights
 Kruskal minimum spanning tree
-MaxFlow-MinCut
-
-bipartite??
-
 
 configurable hypercube graph preset
 configurable complete graph preset
 
 Make it a PWA with service worker caching and auto-updating
+Undo/Redo by saving graphState when setData is called. Implement in UI and also using browser history.
