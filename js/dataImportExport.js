@@ -22,7 +22,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				let graph = null;
 				let error = false;
 				lines.forEach((l) =>{
-					vals = l.split(/\s+/);
+					let vals = l.split(/\s+/);
 					if(vals[0].toLowerCase() === "p"){
 						if(vals[1].toLowerCase() !== "edge"){
 							help.showErrorModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +

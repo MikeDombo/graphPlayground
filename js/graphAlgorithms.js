@@ -92,7 +92,6 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 					vertexOrder.splice(i, 1);
 				}
 
-				myGroup = [];
 				currentColor++;
 			}
 
@@ -226,8 +225,8 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 		directionalEulerian: function (directionalDegrees, graphState = main.graphState){
 			let scc = graphState.getProperty("stronglyConnectedComponents", true);
 
-			eulerian = true;
-			component = -1;
+			let eulerian = true;
+			let component = -1;
 			directionalDegrees.forEach((deg, id) =>{
 				if(deg.in !== deg.out){
 					eulerian = false;

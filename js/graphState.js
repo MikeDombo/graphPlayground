@@ -95,7 +95,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 			makeAndPrintProperties: function (recalcLong = false){
 				let directional = settings.getOption("direction");
-				let weighted = settings.getOption("weights");
 
 				let gs = self.state;
 
@@ -205,8 +204,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			},
 
 			getGraphType: function(graph){
-				directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
-				weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
+				let directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
+				let weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
 
 				return {directed: directed, weighted: weighted};
 			},
