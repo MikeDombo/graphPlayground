@@ -5,42 +5,62 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			graphState: graphState,
 			graphHelper: gHelp,
 			container: document.getElementById('network'),
+			visWeightEdgeEdit: function (data, callback){
+				help.showFormModal(($modal, vals) =>{
+					callback(null);
+					$modal.modal("hide");
+					vals = parseFloat(vals[0]);
+					graphState.editEdge(data.from.id, data.to.id, vals);
+				}, "Edit Edge", "Save", [
+					{
+						type: "numeric",
+						label: "Weight/Capacity",
+						initialValue: parseFloat(data.label)
+					}
+				]);
+			},
 			visOptions: {
 				interaction: {hover: true},
 				manipulation: {
 					addNode: function (data, callback){
-						let $popup = $('#network-popUp');
-						$popup.find('#operation').html("Add Node");
-						$popup.find('#node-label').val(graphState.graphProperties.vertices).off("keyup")
-						      .on("keyup", (e) =>{
-							      if(e.key === "Enter"){
-								      $("#saveButton").click();
-							      }
-						      });
-						$popup.find('#saveButton').get(0).onclick = self.saveData.bind(this, data, callback, "add");
-						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this);
-						$popup.modal('show').on('shown.bs.modal', () =>{
-							$("#node-label").focus();
-						}).on("hidden.bs.modal", () =>{
+						let $popup = help.makeFormModal("Add Node", "Save", [
+							{
+								type: "html",
+								initialValue: "<p>Node ID: " + self.graphState.getProperty("vertices") + "</p>"
+							},
+							{type: "text", label: "Label", initialValue: self.graphState.getProperty("vertices")}
+						]);
+
+						$popup.on("click", ".btn-success", () =>{
+							$popup.modal("hide");
+							self.saveData(data, callback, "add", $popup.find("input").first().val());
+						}).on("click", ".btn-cancel", () =>{
+							$popup.modal("hide");
 							self.cancelEdit(callback);
-						});
+						}).on("hidden.bs.modal", () =>{
+							$popup.remove();
+							self.cancelEdit(callback);
+						}).modal("show");
 					},
 					editNode: function (data, callback){
-						let $popup = $('#network-popUp');
-						$popup.find('#operation').html("Edit Node");
-						$popup.find('#node-label').val(data.label).off("keyup").on("keyup", (e) =>{
-							if(e.key === "Enter"){
-								$("#saveButton").click();
-							}
-						});
-						$popup.find('#saveButton')
-						      .get(0).onclick = self.saveData.bind(this, data, callback, "editNode");
-						$popup.find('#cancelButton').get(0).onclick = self.cancelEdit.bind(this, callback);
-						$popup.modal('show').on('shown.bs.modal', () =>{
-							$("#node-label").focus();
-						}).on("hidden.bs.modal", () =>{
+						let $popup = help.makeFormModal("Edit Node", "Save", [
+							{
+								type: "html",
+								initialValue: "<p>Node ID: " + data.id + "</p>"
+							},
+							{type: "text", label: "Label", initialValue: data.label}
+						]);
+
+						$popup.on("click", ".btn-success", () =>{
+							$popup.modal("hide");
+							self.saveData(data, callback, "editNode", $popup.find("input").first().val());
+						}).on("click", ".btn-cancel", () =>{
+							$popup.modal("hide");
 							self.cancelEdit(callback);
-						});
+						}).on("hidden.bs.modal", () =>{
+							$popup.remove();
+							self.cancelEdit(callback);
+						}).modal("show");
 					},
 					addEdge: function (data, callback){
 						let apply = function (){
@@ -58,15 +78,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 						apply();
 					},
-					editEdge: function (data, callback) {
-						if(settings.getOption("weights")){
-
-						}
-						else {
-							callback(null);
-							self.visOptions.manipulation.deleteEdge({edges:[data.id]});
-							self.visOptions.manipulation.addEdge(data);
-						}
+					editEdge: function (data, callback){
+						callback(null);
+						self.visOptions.manipulation.deleteEdge({edges: [data.id]});
+						self.visOptions.manipulation.addEdge(data);
 					},
 					deleteEdge: function (data, callback){
 						if(typeof callback === "function"){
@@ -86,15 +101,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			cancelEdit: function (callback){
-				$('#network-popUp').off().modal('hide');
 				if(typeof callback === "function"){
 					callback(null);
 				}
 			},
 
-			saveData: function (data, callback, operation){
-				$('#network-popUp').modal('hide');
-				data.label = document.getElementById('node-label').value;
+			saveData: function (data, callback, operation, label){
+				data.label = label;
 				callback(null);
 
 				if(operation === "add"){
@@ -148,11 +161,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n\n";
 
 				colors.forEach((v, i) =>{
-					let label = i.toString();
-					if(self.graphState.state.graph.node(i).label.trim().length > 0){
-						label = self.graphState.state.graph.node(i).label.trim();
-					}
-					p += "Vertex " + label + " gets color " + v + "\n";
+					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " gets color " + v + "\n";
 				});
 
 				p += "\n" + JSON.stringify(help.rotate(a.colors), null, 4) + "\n\n";
@@ -180,11 +189,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n\n";
 
 				components.forEach((v, i) =>{
-					let label = i.toString();
-					if(self.graphState.state.graph.node(i).label.trim().length > 0){
-						label = self.graphState.state.graph.node(i).label.trim();
-					}
-					p += "Vertex " + label + " is in connected component #" + v + "\n";
+					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
 				});
 
 				p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
@@ -231,11 +236,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n\n";
 
 				components.forEach((v, i) =>{
-					let label = i.toString();
-					if(self.graphState.state.graph.node(i).label.trim().length > 0){
-						label = self.graphState.state.graph.node(i).label.trim();
-					}
-					p += "Vertex " + label + " is in connected component #" + v + "\n";
+					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
 				});
 
 				p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
@@ -251,17 +252,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				help.showFormModal(($modal, values) =>{
 						$modal.modal("hide");
-						let a = gAlgo.breadthFirstSearch(parseInt(values[0]), parseInt(values[1]));
+						let source = parseInt(values[0]);
+						let sink = parseInt(values[1]);
+						let a = gAlgo.breadthFirstSearch(source, sink);
 
 						let p = "<h3>Breadth-First Shortest Path</h3><hr>No path exists from "
-							+ help.htmlEncode(values[0]) + " to " + help.htmlEncode(values[1]);
+							+ help.htmlEncode(source) + " to " + help.htmlEncode(sink);
 
 						if(a.pathExists){
-							p = "Breadth-First Shortest Path From " + values[0] + " to " + values[1] + ": " + a.distance;
+							p = "Breadth-First Shortest Path From " + self.graphState.nodeIDToLabel(source) + " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
 							p += "\n\nUsing Path: ";
 							p = help.htmlEncode(p);
 							a.path.forEach((v) =>{
-								p += help.htmlEncode(v) + " &rarr; ";
+								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
 							});
 							p = p.slice(0, -8);
 							p = "<h3>Breadth-First Shortest Path</h3><hr>" + p;
@@ -269,9 +272,112 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 						help.printout(p);
 					},
-					"Breadth-First Shortest Distance", "Go", [
+					"Breadth-First Shortest Path", "Go", [
 						{label: "Start Node", type: "text"},
 						{label: "End Node", type: "text"}
+					]);
+			},
+
+			makeAndPrintDijkstra: function (){
+				help.showFormModal(($modal, values) =>{
+						$modal.modal("hide");
+						let source = parseInt(values[0]);
+						let sink = parseInt(values[1]);
+						let a = gAlgo.dijkstraSearch(source, sink);
+						if(a === false){
+							return;
+						}
+
+						let p = "<h3>Dijkstra Shortest Path</h3><hr>No path exists from "
+							+ help.htmlEncode(self.graphState.nodeIDToLabel(source))
+							+ " to " + help.htmlEncode(self.graphState.nodeIDToLabel(sink));
+
+						if(a.pathExists){
+							p = "Dijkstra Shortest Path Total Distance From "
+								+ self.graphState.nodeIDToLabel(source) + " to "
+								+ self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
+							p += "\nWith weighted cost: " + a.cost;
+							p += "\n\nUsing Path: ";
+							p = help.htmlEncode(p);
+							a.path.forEach((v) =>{
+								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
+							});
+							p = p.slice(0, -8);
+							p = "<h3>Dijkstra Shortest Path</h3><hr>" + p;
+						}
+
+						help.printout(p);
+					},
+					"Dijkstra Shortest Path", "Go", [
+						{label: "Start Node", type: "text"},
+						{label: "End Node", type: "text"}
+					]);
+			},
+
+			makeAndPrintBFSP: function (){
+				help.showFormModal(($modal, values) =>{
+						$modal.modal("hide");
+						let source = parseInt(values[0]);
+						let sink = parseInt(values[1]);
+						let a = gAlgo.bellmanFord(source, sink);
+						if(a === false){
+							return;
+						}
+
+						let p = "<h3>Bellman-Ford Shortest Path</h3><hr>No path exists from "
+							+ help.htmlEncode(self.graphState.nodeIDToLabel(source))
+							+ " to " + help.htmlEncode(self.graphState.nodeIDToLabel(sink));
+
+						if(a.pathExists){
+							p = "Bellman-Ford Shortest Path Total Distance From " + self.graphState.nodeIDToLabel(source)
+								+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
+							p += "\nWith weighted cost: " + a.cost;
+							p += "\n\nUsing Path: ";
+							p = help.htmlEncode(p);
+							a.path.forEach((v) =>{
+								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
+							});
+							p = p.slice(0, -8);
+							p = "<h3>Bellman-Ford Shortest Path</h3><hr>" + p;
+						}
+
+						help.printout(p);
+					},
+					"Bellman-Ford Shortest Path", "Go", [
+						{label: "Start Node", type: "text"},
+						{label: "End Node", type: "text"}
+					]);
+			},
+
+			makeAndPrintFFMCMF: function (){
+				if(!settings.getOption("direction") || !settings.getOption("weights")){
+					return;
+				}
+				help.showFormModal(($modal, values) =>{
+						$modal.modal("hide");
+						let source = parseInt(values[0]);
+						let sink = parseInt(values[1]);
+						let a = gAlgo.fordFulkerson(source, sink);
+						if(a === false){
+							return;
+						}
+
+						let p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + self.graphState.nodeIDToLabel(source)
+							+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
+						p += "\n\nUsing Capacities:\n\n";
+						p = help.htmlEncode(p);
+						a.minCut.forEach((v) =>{
+							p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w)
+								+ " using " + v.flow + " of " + v.capacity + " \n";
+						});
+						p = p.trim();
+						p = "<h3>Ford-Fulkerson MaxFlow-MinCut</h3><hr>" + p;
+
+						help.printout(p);
+					},
+					"Ford-Fulkerson MaxFlow-MinCut", "Go", [
+						{label: "Source Node", type: "text"},
+						{label: "Sink Node", type: "text"}
 					]);
 			},
 
@@ -279,11 +385,25 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let $div = $("#algorithms-pane");
 				$div.empty();
 				let directional = settings.getOption("direction");
+				let weighted = settings.getOption("weights");
 				let a = gAlgo.algorithms;
 				a.forEach((alg) =>{
-					if(alg.display && alg.directional === directional){
-						$div.append($("<a>", {class: "nav-link", href: "#", onclick: alg.applyFunc}).text(alg.name));
+					if(!alg.display){
+						return;
 					}
+					if(("directional" in alg && alg.directional === directional) || !("directional" in alg)){
+						if(("weighted" in alg && alg.weighted === weighted) || !("weighted" in alg)){
+							$div.append($("<a>", {class: "nav-link", href: "#", onclick: alg.applyFunc})
+								.text(alg.name));
+						}
+					}
+					else if(("weighted" in alg && alg.weighted === weighted) || !("weighted" in alg)){
+						if(("directional" in alg && alg.directional === directional) || !("directional" in alg)){
+							$div.append($("<a>", {class: "nav-link", href: "#", onclick: alg.applyFunc})
+								.text(alg.name));
+						}
+					}
+
 				});
 			},
 
@@ -337,6 +457,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
+			shuffleNetworkLayout: function (){
+				self.setData(self.graphState.getGraphData(), false, false, true);
+			},
+
 			newRandomNetworkLayout: function (network){
 				let r = Math.round(Math.random() * 1000000);
 				network.layoutEngine.randomSeed = r;
@@ -345,6 +469,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 			addNetworkListeners: function (network){
 				network.on("doubleClick", (p) =>{
+					if(settings.getOption("weights") && "edges" in p && p.edges.length === 1){
+						network.editEdgeMode();
+					}
 					if("nodes" in p && p.nodes.length === 1){
 						network.editNode();
 					}

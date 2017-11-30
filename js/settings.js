@@ -19,6 +19,18 @@ define([], () => {
 		setAll: function(){
 			network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
 			network.setOptions({edges: {arrows: {to: self.getOption("direction")}}});
+			if(self.getOption("weights")){
+				network.setOptions({
+					manipulation: {
+						editEdge: {
+							editWithoutDrag: main.visWeightEdgeEdit
+						}
+					}
+				});
+			}
+			else {
+				network.setOptions({manipulation: {editEdge: main.visOptions.manipulation.editEdge}});
+			}
 		},
 		changeOption: function (option, value){
 			self.current[option] = value;

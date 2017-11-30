@@ -36,6 +36,9 @@
 				<a class="nav-link" href="#" onclick="main.graphState.makeAndPrintProperties(true);">
 					Calculate All Properties</a>
 			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.shuffleNetworkLayout();">New Graph Layout</a>
+			</li>
 			<li class="nav-item dropdown active">
 				<a class="nav-link dropdown-toggle" href="#" id="optionsDropdown" role="button" data-toggle="dropdown"
 				   aria-haspopup="true" aria-expanded="false">
@@ -166,27 +169,5 @@
 	ga('send', 'pageview');
 </script>
 <script src="https://www.google-analytics.com/analytics.js" async defer></script>
-
-<div id="network-popUp" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<div class="modal-header">
-				<span id="operation">node</span>
-			</div>
-			<div class="modal-body">
-				<div class="form-group row">
-					<label for="node-label" class="col-sm-2 col-form-label">Label</label>
-					<div class="col-sm-10">
-						<input type="text" class="form-control" id="node-label" value="new value"/>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button class="btn btn-success" type="button" value="save" id="saveButton">Save</button>
-				<button class="btn btn-danger" type="button" value="cancel" id="cancelButton">Cancel</button>
-			</div>
-		</div>
-	</div>
-</div>
 </body>
 </html>

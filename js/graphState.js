@@ -137,9 +137,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				$("#graphProps").html("<p class='nav-link'>" + p + "</p>");
 			},
 
-			addEdge: function (from, to){
+			addEdge: function (from, to, weight = 0){
 				let d = self.getGraphData();
-				d.edges.push({from: from, to: to, weight: 0});
+				d.edges.push({from: from, to: to, weight: weight});
 				d.nodes = self.clearColorFromNodes(d.nodes);
 				main.setData({nodes: d.nodes, edges: d.edges});
 			},
@@ -153,6 +153,16 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			editNode: function (id, label){
 				self.state.graph.node(id).label = label;
 				let d = self.getGraphData();
+				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
+			},
+
+			editEdge: function (from, to, newWeight){
+				let d = self.getGraphData();
+				d.edges.forEach((v) =>{
+					if(v.from === from && v.to === to){
+						v.weight = newWeight;
+					}
+				});
 				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
@@ -194,6 +204,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return nodes;
 			},
 
+			getGraphType: function(graph){
+				directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
+				weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
+
+				return {directed: directed, weighted: weighted};
+			},
+
 			getGraphData: function (graph){
 				let directed = false;
 				let weighted = false;
@@ -204,8 +221,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					weighted = self.state.weighted;
 				}
 				else{
-					directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
-					weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
+					let t = self.getGraphType(graph);
+					directed = t.directed;
+					weighted = t.weighted;
 				}
 
 				let nodes = [];
@@ -253,8 +271,24 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: nodes, edges: edges, directed: directed, weighted: weighted};
 			},
 
+			nodeIDToLabel: function(id, graph = self.state.graph){
+				let n = self.getGraphData(graph).nodes;
+				n = n.find((node) => {return node.id === id});
+				if(typeof n !== "undefined" && n.label.trim().length > 0){
+					return n.label.trim();
+				}
+
+				return id.toString();
+			},
+
 			getGraphAsDataSet: function (graph){
 				let d = self.getGraphData(graph);
+				if(d.weighted){
+					d.edges.forEach((e) => {
+						e.label = e.weight.toString();
+					});
+				}
+
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
@@ -276,6 +310,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 				edges.forEach((v) =>{
 					if(weighted){
+						// Add weights if none exist
+						if(!("weight" in v) || typeof v.weight === "undefined" || v.weight === null){
+							v.weight = 1;
+						}
 						g.addEdge(new jsgraphs.Edge(v.from, v.to, v.weight));
 						if(directional && doubleEdges){
 							g.addEdge(new jsgraphs.Edge(v.to, v.from, v.weight));
@@ -297,7 +335,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 						n.x = pos[v.id].x;
 						n.y = pos[v.id].y;
 					}
-					else{
+					else if(keepNodePositions){
 						n.x = v.x;
 						n.y = v.y;
 					}

@@ -20,22 +20,42 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 				applyFunc: "main.makeAndPrintBFS();",
 				display: true
 			},
-			// TODO
 			{
 				name: "Dijkstra Shortest Path",
-				directional: true,
 				applyFunc: "main.makeAndPrintDijkstra();",
-				display: false
+				display: true
 			},
-			// TODO
-			{name: "Bellman-Ford Shortest Path", weighted: true, applyFunc: "main.makeAndPrintBFSP();", display: false},
+			{
+				name: "Bellman-Ford Shortest Path",
+				weighted: true,
+				directional: true,
+				applyFunc: "main.makeAndPrintBFSP();",
+				display: true
+			},
+			{
+				name: "Ford-Fulkerson",
+				weighted: true,
+				directional: true,
+				applyFunc: "main.makeAndPrintFFMCMF();",
+				display: true
+			},
 			{name: "Eulerian", directional: false, display: false, applyFunc: null},
 			{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
 		],
 		colorNetwork: function (graphState = main.graphState){
-			let nodes = graphState.state.nodes;
-			let adjacency = graphState.state.adjacency;
-			let degrees = graphState.state.degrees;
+			let G = graphState.state.graph;
+			let d = graphState.getGraphData(G);
+
+			// Get an unweighted graph if ours is weighted. For some reason it doesn't work w/ weights, even though
+			// it should
+			if(d.weighted){
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false, false);
+				d = graphState.getGraphData(G);
+			}
+
+			let nodes = d.nodes;
+			let adjacency = G.adjList;
+			let degrees = graphH.findVertexDegrees(adjacency);
 
 			let nodeArr = genericH.datasetToArray(nodes, "id");
 			// Put vertices in array in decreasing order of degree
@@ -109,6 +129,98 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			}
 
 			return {pathExists: false, path: [], distance: -1};
+		},
+
+		dijkstraSearch: function (startNodeID, targetNodeID, graphState = main.graphState){
+			let G = graphState.state.graph;
+			let d = graphState.getGraphData(G);
+
+			if(!d.directed){
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, true, true);
+			}
+			else if(!d.weighted){
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, true, true);
+			}
+
+			let nonNegative = graphState.getGraphData(G).edges.find((edge) =>{
+				return edge.weight < 0;
+			});
+			if(typeof nonNegative !== "undefined"){
+				genericH.showErrorModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
+					" with totally non-negative edge weights. Please fix the graph so that there are no" +
+					" negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
+					" exactly this problem.</p>");
+				return false;
+			}
+
+			let dijk = new jsgraphs.Dijkstra(G, startNodeID);
+
+			if(dijk.hasPathTo(targetNodeID)){
+				let path = [];
+				dijk.pathTo(targetNodeID).forEach((edge) =>{
+					if(!path.includes(edge.v)){
+						path.push(edge.v);
+					}
+					path.push(edge.w);
+				});
+				return {
+					pathExists: true,
+					path: path,
+					distance: dijk.pathTo(targetNodeID).length,
+					cost: dijk.distanceTo(targetNodeID)
+				};
+			}
+
+			return {pathExists: false, path: [], distance: -1, cost: 0};
+		},
+
+		bellmanFord: function (startNodeID, targetNodeID, graphState = main.graphState){
+			let G = graphState.state.graph;
+
+			let bellmanF = new jsgraphs.BellmanFord(G, startNodeID);
+
+			if(bellmanF.hasPathTo(targetNodeID)){
+				let path = [];
+				bellmanF.pathTo(targetNodeID).forEach((edge) =>{
+					if(!path.includes(edge.v)){
+						path.push(edge.v);
+					}
+					path.push(edge.w);
+				});
+				return {
+					pathExists: true,
+					path: path,
+					distance: bellmanF.pathTo(targetNodeID).length,
+					cost: bellmanF.distanceTo(targetNodeID)
+				};
+			}
+
+			return {pathExists: false, path: [], distance: -1, cost: 0};
+		},
+
+		fordFulkerson: function (startNodeID, targetNodeID, graphState = main.graphState){
+			let G = graphState.state.graph;
+
+			let d = graphState.getGraphData(G);
+			G = new jsgraphs.FlowNetwork(d.nodes.length);
+			let error = false;
+			d.edges.forEach((edge) =>{
+				if(edge.weight < 0){
+					error = true;
+				}
+				G.addEdge(new jsgraphs.FlowEdge(edge.from, edge.to, edge.weight));
+			});
+
+			if(error){
+				genericH.showErrorModal("Ford-Fulkerson Error", "<p>The Ford-Fulkerson algorithm only works on graphs" +
+					" with totally non-negative capacities. Please fix the graph so that there are no" +
+					" negative capacities.</p>");
+				return false;
+			}
+
+			let fordFulk = new jsgraphs.FordFulkerson(G, startNodeID, targetNodeID);
+
+			return {maxFlow: fordFulk.value, minCut: fordFulk.minCut(G)};
 		},
 
 		directionalEulerian: function (directionalDegrees, graphState = main.graphState){

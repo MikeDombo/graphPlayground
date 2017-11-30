@@ -1,5 +1,5 @@
 define(["jquery"], ($) =>{
-	return {
+	let self = {
 		datasetToArray: function (ds, key){
 			let r = [];
 			ds.forEach((v) =>{
@@ -99,10 +99,13 @@ define(["jquery"], ($) =>{
 			$modal.modal("show");
 		},
 
-		showFormModal: function (successCb, title, successText, form){
+		makeFormModal: function (title, successText, form){
 			let f = $("<div>", {class: "modal-body form-group"});
 			form.forEach((formRow, i) =>{
-				let basicMap = {class: "form-control", id: "form-modal-" + i};
+				if(!("initialValue" in formRow)){
+					formRow.initialValue = "";
+				}
+				let basicMap = {class: "form-control", id: "form-modal-" + i, value: formRow.initialValue};
 
 				if("extraAttrs" in formRow){
 					for(let attrname in formRow.extraAttrs){
@@ -110,7 +113,10 @@ define(["jquery"], ($) =>{
 					}
 				}
 
-				if(formRow.type === "numeric"){
+				if(formRow.type === "html"){
+					f.append($(formRow.initialValue));
+				}
+				else if(formRow.type === "numeric"){
 					f.append($("<label>", {for: "form-modal-" + 1, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "number";
 					f.append($("<input>", basicMap));
@@ -143,9 +149,25 @@ define(["jquery"], ($) =>{
 						)
 					)
 				);
+			$modal.find("input, textarea").off("keyup").on("keyup", (e) =>{
+				if(e.key === "Enter"){
+					$(".btn-success").last().click();
+				}
+			});
+			$modal.on("shown.bs.modal", () =>{
+				$modal.find("input, textarea, select").first().focus();
+			});
+
+			return $modal;
+		},
+
+		showFormModal: function (successCb, title, successText, form, cancelCb = ($modal) =>{
+			$modal.modal("hide");
+		}){
+			let $modal = self.makeFormModal(title, successText, form);
 
 			$modal.on("click", ".btn-cancel", () =>{
-				$modal.modal("hide");
+				cancelCb($modal);
 			}).on("click", ".btn-success", () =>{
 				let vals = [];
 				$modal.find("input", "textarea", "select").each((i, v) =>{
@@ -201,4 +223,6 @@ define(["jquery"], ($) =>{
 			return true;
 		},
 	};
+
+	return self;
 });
