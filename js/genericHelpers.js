@@ -1,26 +1,26 @@
-define(["jquery"], ($) =>{
+define(["jquery"], ($) => {
 	let self = {
-		datasetToArray: function (ds, key){
+		datasetToArray: (ds, key) => {
 			let r = [];
-			ds.forEach((v) =>{
+			ds.forEach((v) => {
 				r.push(v[key]);
 			});
 			return r;
 		},
 
-		datasetToArrayMap: function (ds){
+		datasetToArrayMap: (ds) => {
 			let r = [];
-			ds.forEach((v) =>{
+			ds.forEach((v) => {
 				r.push(v);
 			});
 			return r;
 		},
 
-		keepOnlyKeys: function (arr, keys){
+		keepOnlyKeys: (arr, keys) => {
 			arr = arr.slice();
-			arr.forEach((v) =>{
+			arr.forEach((v) => {
 				let k = Object.keys(v);
-				k.forEach((key) =>{
+				k.forEach((key) => {
 					if(keys.indexOf(key) < 0){
 						delete v[key];
 					}
@@ -29,24 +29,24 @@ define(["jquery"], ($) =>{
 			return arr;
 		},
 
-		getFileExtension: function (filename){
+		getFileExtension: (filename) => {
 			return filename.split(".").splice(-1)[0];
 		},
 
-		htmlEncode: function (string){
+		htmlEncode: (string) => {
 			string = $("<div>").text(string).html();
 			string = string.replace(/(?:\r\n|\r|\n)/g, '<br/>');
 			return string;
 		},
 
-		printout: function (text, escape){
+		printout: (text, escape) => {
 			if(escape){
 				text = this.htmlEncode(escape);
 			}
 			$("#printout").html(text);
 		},
 
-		flatten: function (map){
+		flatten: (map) => {
 			let r = [];
 			for(let i in map){
 				r.push(map[i]);
@@ -54,7 +54,7 @@ define(["jquery"], ($) =>{
 			return r;
 		},
 
-		rotate: function (map){
+		rotate: (map) => {
 			let r = {};
 			for(let i in map){
 				if(map[i] in r){
@@ -67,19 +67,19 @@ define(["jquery"], ($) =>{
 			return r;
 		},
 
-		max: function (iterable){
-			return iterable.reduce((a, b) =>{
+		max: (iterable) => {
+			return iterable.reduce((a, b) => {
 				return Math.max(a, b);
 			});
 		},
 
-		toTitleCase: function (str){
-			return str.replace(/(?:^|\s)\w/g, function (match){
+		toTitleCase: (str) => {
+			return str.replace(/(?:^|\s)\w/g, (match) => {
 				return match.toUpperCase();
 			});
 		},
 
-		showErrorModal: function (title, body){
+		showErrorModal: (title, body) => {
 			let $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$modal
 				.append($("<div>", {class: "modal-dialog"})
@@ -93,15 +93,15 @@ define(["jquery"], ($) =>{
 						.append($("<div>", {class: "modal-body"}).html(body))
 					)
 				);
-			$modal.on("hidden.bs.modal", () =>{
+			$modal.on("hidden.bs.modal", () => {
 				$modal.remove();
 			});
 			$modal.modal("show");
 		},
 
-		makeFormModal: function (title, successText, form){
+		makeFormModal: (title, successText, form) => {
 			let f = $("<div>", {class: "modal-body form-group"});
-			form.forEach((formRow, i) =>{
+			form.forEach((formRow, i) => {
 				if(!("initialValue" in formRow)){
 					formRow.initialValue = "";
 				}
@@ -149,28 +149,28 @@ define(["jquery"], ($) =>{
 						)
 					)
 				);
-			$modal.find("input, textarea").off("keyup").on("keyup", (e) =>{
+			$modal.find("input, textarea").off("keyup").on("keyup", (e) => {
 				if(e.key === "Enter"){
 					$(".btn-success").last().click();
 				}
 			});
-			$modal.on("shown.bs.modal", () =>{
+			$modal.on("shown.bs.modal", () => {
 				$modal.find("input, textarea, select").first().focus();
 			});
 
 			return $modal;
 		},
 
-		showFormModal: function (successCb, title, successText, form, cancelCb = ($modal) =>{
+		showFormModal: (successCb, title, successText, form, cancelCb = ($modal) => {
 			$modal.modal("hide");
-		}){
+		}) => {
 			let $modal = self.makeFormModal(title, successText, form);
 
-			$modal.on("click", ".btn-cancel", () =>{
+			$modal.on("click", ".btn-cancel", () => {
 				cancelCb($modal);
-			}).on("click", ".btn-success", () =>{
+			}).on("click", ".btn-success", () => {
 				let vals = [];
-				$modal.find("input", "textarea", "select").each((i, v) =>{
+				$modal.find("input", "textarea", "select").each((i, v) => {
 					v = $(v);
 					if(v.tagName === "SELECT"){
 						vals.push(v.find(":selected").val());
@@ -180,12 +180,12 @@ define(["jquery"], ($) =>{
 					}
 				});
 				successCb($modal, vals);
-			}).on("hidden.bs.modal", () =>{
+			}).on("hidden.bs.modal", () => {
 				$modal.remove();
 			}).modal("show");
 		},
 
-		equalsObject: function (obj1, obj2){
+		equalsObject: (obj1, obj2) => {
 			//Loop through properties in object 1
 			for(let p in obj1){
 				//Check property exists on both objects

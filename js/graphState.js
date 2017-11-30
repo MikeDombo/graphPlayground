@@ -1,16 +1,16 @@
 define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
-	($, gAlgo, gHelp, help) =>{
+	($, gAlgo, gHelp, help) => {
 		let self = {
 			upToDate: [
 				{
 					name: "Chromatic Number", upToDate: false, type: "property",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintGraphColoring();
 					}
 				},
 				{
 					name: "graphColoring", upToDate: false, type: "state",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintGraphColoring();
 					}
 				},
@@ -18,31 +18,31 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				{name: "edges", upToDate: true, always: true, type: "property"},
 				{
 					name: "eulerian", upToDate: false, type: "property",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintEulerian();
 					}
 				},
 				{
 					name: "Connected Components", upToDate: false, type: "property",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintConnectedComponents();
 					}
 				},
 				{
 					name: "connectedComponents", upToDate: false, type: "state",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintConnectedComponents();
 					}
 				},
 				{
 					name: "Strongly Connected Components", upToDate: false, type: "property",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintStronglyConnectedComponents();
 					}
 				},
 				{
 					name: "stronglyConnectedComponents", upToDate: false, type: "state",
-					applyFunc: () =>{
+					applyFunc: () => {
 						main.makeAndPrintStronglyConnectedComponents();
 					}
 				},
@@ -65,17 +65,17 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				"Strongly Connected Components": null,
 			},
 
-			setUpToDate: function (value = false, listOptions){
+			setUpToDate: (value = false, listOptions) => {
 				let all = listOptions === null || typeof listOptions === "undefined";
-				self.upToDate.forEach((v) =>{
+				self.upToDate.forEach((v) => {
 					if((!("always" in v) || !v.always) && (all || listOptions.indexOf(v.name) > -1)){
 						v.upToDate = value;
 					}
 				});
 			},
 
-			getProperty: function (property, updateIfNotUpdated = false){
-				let a = self.upToDate.find((v) =>{
+			getProperty: (property, updateIfNotUpdated = false) => {
+				let a = self.upToDate.find((v) => {
 					return ("name" in v && v.name === property);
 				});
 
@@ -93,7 +93,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return self.graphProperties[property];
 			},
 
-			makeAndPrintProperties: function (recalcLong = false){
+			makeAndPrintProperties: (recalcLong = false) => {
 				let directional = settings.getOption("direction");
 
 				let gs = self.state;
@@ -112,19 +112,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 				let p = Object.keys(self.graphProperties);
 				if(recalcLong){
-					p.forEach((v) =>{
+					p.forEach((v) => {
 						self.getProperty(v, true);
 					});
 				}
 
 				let printableProperties = {};
-				p.forEach((v) =>{
+				p.forEach((v) => {
 					printableProperties[v] = self.getProperty(v);
 				});
 				self.printGraphProperties(printableProperties);
 			},
 
-			printGraphProperties: function (properties){
+			printGraphProperties: (properties) => {
 				let p = "";
 				for(let k in properties){
 					if(properties[k] !== null){
@@ -136,28 +136,28 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				$("#graphProps").html("<p class='nav-link'>" + p + "</p>");
 			},
 
-			addEdge: function (from, to, weight = 0){
+			addEdge: (from, to, weight = 0) => {
 				let d = self.getGraphData();
 				d.edges.push({from: from, to: to, weight: weight});
 				d.nodes = self.clearColorFromNodes(d.nodes);
 				main.setData({nodes: d.nodes, edges: d.edges});
 			},
 
-			addNode: function (data){
+			addNode: (data) => {
 				let d = self.getGraphData();
 				d.nodes.push({id: d.nodes.length, label: data.label, x: data.x, y: data.y});
 				main.setData({nodes: d.nodes, edges: d.edges});
 			},
 
-			editNode: function (id, label){
+			editNode: (id, label) => {
 				self.state.graph.node(id).label = label;
 				let d = self.getGraphData();
 				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
-			editEdge: function (from, to, newWeight){
+			editEdge: (from, to, newWeight) => {
 				let d = self.getGraphData();
-				d.edges.forEach((v) =>{
+				d.edges.forEach((v) => {
 					if(v.from === from && v.to === to){
 						v.weight = newWeight;
 					}
@@ -165,10 +165,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
-			deleteEdge: function (from, to){
+			deleteEdge: (from, to) => {
 				let d = self.getGraphData();
 				let newEdges = [];
-				d.edges.forEach((v) =>{
+				d.edges.forEach((v) => {
 					if(!(v.from === from && v.to === to)){
 						newEdges.push(v);
 					}
@@ -176,19 +176,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				main.setData({nodes: d.nodes, edges: newEdges});
 			},
 
-			deleteNode: function (id){
+			deleteNode: (id) => {
 				let d = self.getGraphData();
 
 				let newNodes = [];
 				let nodes = d.nodes;
-				nodes.forEach((v) =>{
+				nodes.forEach((v) => {
 					if(v.id !== id){
 						newNodes.push(v);
 					}
 				});
 				let newEdges = [];
 				let edges = d.edges;
-				edges.forEach((v) =>{
+				edges.forEach((v) => {
 					if(v.from !== id && v.to !== id){
 						newEdges.push(v);
 					}
@@ -196,21 +196,21 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				main.setData({nodes: newNodes, edges: newEdges}, false, true, true);
 			},
 
-			clearColorFromNodes: function (nodes){
-				nodes.forEach((v) =>{
+			clearColorFromNodes: (nodes) => {
+				nodes.forEach((v) => {
 					v.color = null;
 				});
 				return nodes;
 			},
 
-			getGraphType: function(graph){
+			getGraphType: (graph) => {
 				let directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
 				let weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
 
 				return {directed: directed, weighted: weighted};
 			},
 
-			getGraphData: function (graph){
+			getGraphData: (graph) => {
 				let directed = false;
 				let weighted = false;
 
@@ -229,7 +229,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				let edges = [];
 
 				let i = 0;
-				graph.nodeInfo.forEach((v) =>{
+				graph.nodeInfo.forEach((v) => {
 					let n = {id: i++, label: v.label, color: v.color};
 					if(v.x === null || typeof v.x !== "undefined"){
 						n.x = v.x;
@@ -242,18 +242,18 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				});
 
 				if("edges" in graph){
-					Object.keys(graph.edges).forEach((k) =>{
+					Object.keys(graph.edges).forEach((k) => {
 						let v = graph.edges[k];
 						edges.push({from: v.from(), to: v.to()});
 					});
 				}
 				else{
-					graph.adjList.forEach((node) =>{
-						node.forEach((edge) =>{
-							let existingEdge = edges.find((e) =>{
+					graph.adjList.forEach((node) => {
+						node.forEach((edge) => {
+							let existingEdge = edges.find((e) => {
 								return e.from === edge.v && e.to === edge.w && e.weight === edge.weight;
 							});
-							let repeatedEdge = edges.find((e) =>{
+							let repeatedEdge = edges.find((e) => {
 								return e.from === edge.w && e.to === edge.v && e.weight === edge.weight;
 							});
 
@@ -270,9 +270,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: nodes, edges: edges, directed: directed, weighted: weighted};
 			},
 
-			nodeIDToLabel: function(id, graph = self.state.graph){
+			nodeIDToLabel: (id, graph = self.state.graph) => {
 				let n = self.getGraphData(graph).nodes;
-				n = n.find((node) => {return node.id === id});
+				n = n.find((node) => {
+					return node.id === id;
+				});
 				if(typeof n !== "undefined" && n.label.trim().length > 0){
 					return n.label.trim();
 				}
@@ -280,7 +282,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return id.toString();
 			},
 
-			getGraphAsDataSet: function (graph){
+			getGraphAsDataSet: (graph) => {
 				let d = self.getGraphData(graph);
 				if(d.weighted){
 					d.edges.forEach((e) => {
@@ -291,7 +293,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			dataSetToGraph: function (nodes, edges, keepNodePositions = false, doubleEdges = false, directional = false, weighted = false){
+			dataSetToGraph: (nodes, edges, keepNodePositions = false, doubleEdges = false, directional = false, weighted = false) => {
 				let d = self.alignData(0, nodes, edges);
 				nodes = d.nodes;
 				edges = d.edges;
@@ -307,7 +309,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					g = new jsgraphs.WeightedGraph(nodes.length);
 				}
 
-				edges.forEach((v) =>{
+				edges.forEach((v) => {
 					if(weighted){
 						// Add weights if none exist
 						if(!("weight" in v) || typeof v.weight === "undefined" || v.weight === null){
@@ -326,7 +328,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					}
 				});
 
-				nodes.forEach((v) =>{
+				nodes.forEach((v) => {
 					let n = g.node(v.id);
 					n.label = v.label;
 					let pos = network.getPositions(v.id);
@@ -344,11 +346,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return g;
 			},
 
-			alignData: function (start, nodes, edges){
+			alignData: (start, nodes, edges) => {
 				let nodeMap = {};
 				let nodeCount = start;
 				let newNodes = [];
-				nodes.forEach((v) =>{
+				nodes.forEach((v) => {
 					if(v.label === v.id.toString()){
 						v.label = nodeCount.toString();
 					}
@@ -358,7 +360,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				});
 
 				let newEdges = [];
-				edges.forEach((v) =>{
+				edges.forEach((v) => {
 					let thisEdge = {from: nodeMap[v.from], to: nodeMap[v.to], label: v.label, weight: v.weight};
 					newEdges.push(thisEdge);
 				});

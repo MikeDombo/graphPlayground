@@ -6,15 +6,16 @@
 	<title>Graph Algorithm Playground</title>
 	<meta name="description" content="Interactive Graph Creator and Graph Algorithms">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="manifest" href="manifest.json">
 
-	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="apple-touch-icon-144x144.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="apple-touch-icon-152x152.png" />
-	<link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196" />
-	<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
-	<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="apple-touch-icon-144x144.png"/>
+	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="apple-touch-icon-152x152.png"/>
+	<link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196"/>
+	<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16"/>
 	<meta name="application-name" content="Graph Algorithm Playground"/>
-	<meta name="msapplication-TileColor" content="#E6986A" />
-	<meta name="msapplication-TileImage" content="mstile-144x144.png" />
+	<meta name="msapplication-TileColor" content="#E6986A"/>
+	<meta name="msapplication-TileImage" content="mstile-144x144.png"/>
 
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
 	      integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
@@ -76,7 +77,8 @@
 						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen(), false, true, true);">
 							Load Petersen Graph
 						</a>
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Konigsberg(), false, true, true);">
+						<a class="nav-link" href="#"
+						   onclick="main.setData(predefined.Konigsberg(), false, true, true);">
 							Load Königsberg Bridges Graph
 						</a>
 					</nav>
@@ -137,7 +139,7 @@
 			modernizr: "vendor/modernizr-3.5.0.min",
 			popper: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min",
 			bootstrap: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min",
-			jsgraphs: "vendor/js-graph-algorithms/jsgraphs",
+			jsgraphs: "vendor/js-graph-algorithms/jsgraphs.min",
 		},
 		shim: {
 			"bootstrap": ["jquery"]
@@ -167,6 +169,18 @@
 			main.printGraphAlgorithms();
 		});
 	});
+</script>
+
+<script>
+	if('serviceWorker' in navigator){
+		window.addEventListener('load', function (){
+			navigator.serviceWorker.register('pwaServiceWorker.js').then(function (registration){
+				console.log('ServiceWorker registration successful with scope: ', registration.scope);
+			}).catch(function (err){
+				console.log('ServiceWorker registration failed: ', err);
+			});
+		});
+	}
 </script>
 
 <script>

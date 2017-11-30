@@ -1,4 +1,4 @@
-define(["graphHelpers", "vis"], (gHelp, vis) =>{
+define(["graphHelpers", "vis"], (gHelp, vis) => {
 	let petersenEdges = [
 		{from: 1, to: 2},
 		{from: 2, to: 3},
@@ -31,21 +31,17 @@ define(["graphHelpers", "vis"], (gHelp, vis) =>{
 
 	return {
 		graphNames: ["Petersen", "Konigsberg"],
-		Petersen: function (){
-			return {
-				edges: new vis.DataSet(petersenEdges),
-				nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
-				directed: false,
-				weighted: false,
-			};
-		},
-		Konigsberg: function(){
-			return {
-				edges: new vis.DataSet(konigsbergEdges),
-				nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
-				directed: false,
-				weighted: false,
-			};
-		},
+		Petersen: () => ({
+			edges: new vis.DataSet(petersenEdges),
+			nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
+			directed: false,
+			weighted: false,
+		}),
+		Konigsberg: () => ({
+			edges: new vis.DataSet(konigsbergEdges),
+			nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
+			directed: false,
+			weighted: false,
+		}),
 	};
 });

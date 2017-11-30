@@ -1,6 +1,6 @@
-define(["genericHelpers", "jquery"], (help, $) =>{
+define(["genericHelpers", "jquery"], (help, $) => {
 	let self = {
-		importByString: function (string, format){
+		importByString: (string, format) => {
 			if(format.toLowerCase() === "json"){
 				try{
 					let n = JSON.parse(string);
@@ -21,7 +21,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				let lines = string.split(/\r?\n/);
 				let graph = null;
 				let error = false;
-				lines.forEach((l) =>{
+				lines.forEach((l) => {
 					let vals = l.split(/\s+/);
 					if(vals[0].toLowerCase() === "p"){
 						if(vals[1].toLowerCase() !== "edge"){
@@ -44,7 +44,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 
 				if(!error){
 					let d = main.graphState.getGraphData(graph);
-					d.nodes.forEach((v) =>{
+					d.nodes.forEach((v) => {
 						v.label = v.id.toString();
 					});
 					main.setData(d, false, true, true);
@@ -55,7 +55,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			}
 		},
 
-		makeImportTextModal: function (){
+		makeImportTextModal: () => {
 			let $textModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$textModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -83,22 +83,22 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					)
 				);
 
-			$textModal.on("click", ".btn-cancel", () =>{
+			$textModal.on("click", ".btn-cancel", () => {
 				$textModal.modal("hide");
 			});
-			$textModal.on("click", ".btn-import", () =>{
+			$textModal.on("click", ".btn-import", () => {
 				let text = $textModal.find("textarea").first().val();
 				let format = $textModal.find("select").find(":selected").val();
 				$textModal.modal("hide");
 				self.importByString(text, format);
 			});
-			$textModal.on("hidden.bs.modal", () =>{
+			$textModal.on("hidden.bs.modal", () => {
 				$textModal.remove();
 			});
 			$textModal.modal('show');
 		},
 
-		makeImportFileModal: function (){
+		makeImportFileModal: () => {
 			let $fileModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$fileModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -110,7 +110,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 							)
 						)
 						.append($("<div>", {class: "modal-body"})
-							.append($("<input>", {type: "file", class:"form-control-file"}))
+							.append($("<input>", {type: "file", class: "form-control-file"}))
 						)
 						.append($("<div>", {class: "modal-footer"})
 							.append($("<button>", {class: "btn btn-success btn-import", type: "button"}).text("Import"))
@@ -119,10 +119,10 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					)
 				);
 
-			$fileModal.on("click", ".btn-cancel", () =>{
+			$fileModal.on("click", ".btn-cancel", () => {
 				$fileModal.modal("hide");
 			});
-			$fileModal.on("click", ".btn-import", () =>{
+			$fileModal.on("click", ".btn-import", () => {
 				let files = $fileModal.find("input").get(0).files;
 				if(files.length < 1){
 					alert("You must choose a file first");
@@ -133,20 +133,20 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 				if(files.length === 1){
 					let file = files[0];
 					let reader = new FileReader();
-					reader.onload = function (event){
+					reader.onload = function (event) {
 						self.importByString(event.target.result, help.getFileExtension(file.name));
 					};
 
 					reader.readAsText(file);
 				}
 			});
-			$fileModal.on("hidden.bs.modal", () =>{
+			$fileModal.on("hidden.bs.modal", () => {
 				$fileModal.remove();
 			});
 			$fileModal.modal('show');
 		},
 
-		makeExportFileModal: function (){
+		makeExportFileModal: () => {
 			let $fileModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$fileModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -174,16 +174,16 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					)
 				);
 
-			$fileModal.on("click", ".btn-cancel", () =>{
+			$fileModal.on("click", ".btn-cancel", () => {
 				$fileModal.modal("hide");
 			});
-			$fileModal.on("hidden.bs.modal", () =>{
+			$fileModal.on("hidden.bs.modal", () => {
 				$fileModal.remove();
 			});
 			$fileModal.modal('show');
 		},
 
-		makeExportTextModal: function (){
+		makeExportTextModal: () => {
 			let $textModal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$textModal
 				.append($("<div>", {class: "modal-dialog"})
@@ -215,20 +215,20 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 					)
 				);
 
-			$textModal.on("click", ".btn-cancel", () =>{
+			$textModal.on("click", ".btn-cancel", () => {
 				$fileModal.modal("hide");
 			});
-			$textModal.on("click", "#exportedText", () =>{
+			$textModal.on("click", "#exportedText", () => {
 				$("#exportedText").select();
 				document.execCommand("copy");
 			});
-			$textModal.on("hidden.bs.modal", () =>{
+			$textModal.on("hidden.bs.modal", () => {
 				$textModal.remove();
 			});
 			$textModal.modal('show');
 		},
 
-		exportToFile: function (format){
+		exportToFile: (format) => {
 			if(format.toLowerCase() === "json"){
 				self.downloadFile("graph.json", self.getDataAsJSON());
 			}
@@ -237,7 +237,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			}
 		},
 
-		exportToText: function (format){
+		exportToText: (format) => {
 			if(format.toLowerCase() === "json"){
 				$("#exportedText").text(JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2));
 			}
@@ -246,7 +246,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			}
 		},
 
-		getDataAsJSON: function (){
+		getDataAsJSON: () => {
 			let g = main.graphState.getGraphData();
 			let nodeKeys = ["id", "label", "color", "x", "y"];
 			let edgeKeys = ["from", "to", "weight"];
@@ -256,23 +256,23 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			return JSON.stringify(g);
 		},
 
-		getDataAsDIMACS: function (){
+		getDataAsDIMACS: () => {
 			// If I add direction, DIMACS cannot be used, it only works for undirected graphs
 			let g = main.graphState.getGraphData();
 			let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground --" +
 				" https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
 			let adj = main.graphState.state.adjacency;
-			adj = adj.filter((v) =>{
+			adj = adj.filter((v) => {
 				return v.length !== 0;
 			});
 
 			let nodes = [];
-			adj.forEach((v, i) =>{
+			adj.forEach((v, i) => {
 				if(nodes.indexOf(i + 1) === -1){
 					nodes.push(i + 1);
 				}
-				v.forEach((n) =>{
+				v.forEach((n) => {
 					if(nodes.indexOf(n + 1) === -1){
 						nodes.push(n + 1);
 					}
@@ -281,7 +281,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 
 			let edgeCount = 0;
 			let edgeText = "";
-			g.edges.forEach((v) =>{
+			g.edges.forEach((v) => {
 				edgeText += "e " + (v.from + 1) + " " + (v.to + 1) + "\n";
 				edgeCount++;
 			});
@@ -291,7 +291,7 @@ define(["genericHelpers", "jquery"], (help, $) =>{
 			return text + edgeText;
 		},
 
-		downloadFile: function (filename, text){
+		downloadFile: (filename, text) => {
 			let blob = new Blob([text], {type: 'text/plain'});
 			if(window.navigator.msSaveOrOpenBlob){
 				window.navigator.msSaveBlob(blob, filename);

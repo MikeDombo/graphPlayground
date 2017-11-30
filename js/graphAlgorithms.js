@@ -1,4 +1,4 @@
-define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
+define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 	return {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
@@ -42,7 +42,8 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			{name: "Eulerian", directional: false, display: false, applyFunc: null},
 			{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
 		],
-		colorNetwork: function (graphState = main.graphState){
+
+		colorNetwork: (graphState = main.graphState) => {
 			let G = graphState.state.graph;
 			let d = graphState.getGraphData(G);
 
@@ -59,7 +60,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 
 			let nodeArr = genericH.datasetToArray(nodes, "id");
 			// Put vertices in array in decreasing order of degree
-			let vertexOrder = nodeArr.sort((a, b) =>{
+			let vertexOrder = nodeArr.sort((a, b) => {
 				return degrees[a] < degrees[b] ? 1 : degrees[a] === degrees[b] ? 0 : -1;
 			});
 
@@ -99,7 +100,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {colors: colorIndex, chromaticNumber: chromaticNumber};
 		},
 
-		connectedComponents: function (graphState = main.graphState){
+		connectedComponents: (graphState = main.graphState) => {
 			let G = graphState.state.graph;
 			let cc = new jsgraphs.ConnectedComponents(G);
 			let componentIndex = {};
@@ -109,7 +110,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {components: componentIndex, count: cc.componentCount()};
 		},
 
-		stronglyConnectedComponents: function (graphState = main.graphState){
+		stronglyConnectedComponents: (graphState = main.graphState) => {
 			let G = graphState.state.graph;
 			let cc = new jsgraphs.StronglyConnectedComponents(G);
 			let componentIndex = {};
@@ -119,7 +120,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {components: componentIndex, count: cc.componentCount()};
 		},
 
-		breadthFirstSearch: function (startNodeID, targetNodeID, graphState = main.graphState){
+		breadthFirstSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.state.graph;
 			let bfs = new jsgraphs.BreadthFirstSearch(G, startNodeID);
 
@@ -130,7 +131,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {pathExists: false, path: [], distance: -1};
 		},
 
-		dijkstraSearch: function (startNodeID, targetNodeID, graphState = main.graphState){
+		dijkstraSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.state.graph;
 			let d = graphState.getGraphData(G);
 
@@ -141,7 +142,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, true, true);
 			}
 
-			let nonNegative = graphState.getGraphData(G).edges.find((edge) =>{
+			let nonNegative = graphState.getGraphData(G).edges.find((edge) => {
 				return edge.weight < 0;
 			});
 			if(typeof nonNegative !== "undefined"){
@@ -156,7 +157,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 
 			if(dijk.hasPathTo(targetNodeID)){
 				let path = [];
-				dijk.pathTo(targetNodeID).forEach((edge) =>{
+				dijk.pathTo(targetNodeID).forEach((edge) => {
 					if(!path.includes(edge.v)){
 						path.push(edge.v);
 					}
@@ -173,14 +174,14 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {pathExists: false, path: [], distance: -1, cost: 0};
 		},
 
-		bellmanFord: function (startNodeID, targetNodeID, graphState = main.graphState){
+		bellmanFord: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.state.graph;
 
 			let bellmanF = new jsgraphs.BellmanFord(G, startNodeID);
 
 			if(bellmanF.hasPathTo(targetNodeID)){
 				let path = [];
-				bellmanF.pathTo(targetNodeID).forEach((edge) =>{
+				bellmanF.pathTo(targetNodeID).forEach((edge) => {
 					if(!path.includes(edge.v)){
 						path.push(edge.v);
 					}
@@ -197,13 +198,13 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {pathExists: false, path: [], distance: -1, cost: 0};
 		},
 
-		fordFulkerson: function (startNodeID, targetNodeID, graphState = main.graphState){
+		fordFulkerson: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.state.graph;
 
 			let d = graphState.getGraphData(G);
 			G = new jsgraphs.FlowNetwork(d.nodes.length);
 			let error = false;
-			d.edges.forEach((edge) =>{
+			d.edges.forEach((edge) => {
 				if(edge.weight < 0){
 					error = true;
 				}
@@ -222,12 +223,12 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return {maxFlow: fordFulk.value, minCut: fordFulk.minCut(G)};
 		},
 
-		directionalEulerian: function (directionalDegrees, graphState = main.graphState){
+		directionalEulerian: (directionalDegrees, graphState = main.graphState) => {
 			let scc = graphState.getProperty("stronglyConnectedComponents", true);
 
 			let eulerian = true;
 			let component = -1;
-			directionalDegrees.forEach((deg, id) =>{
+			directionalDegrees.forEach((deg, id) => {
 				if(deg.in !== deg.out){
 					eulerian = false;
 				}
@@ -244,8 +245,8 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) =>{
 			return eulerian;
 		},
 
-		hasEulerianCircuit: function (degrees){
-			return degrees.filter((v) =>{
+		hasEulerianCircuit: (degrees) => {
+			return degrees.filter((v) => {
 				return v % 2 !== 0;
 			}).length === 0;
 		},

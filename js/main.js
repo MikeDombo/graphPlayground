@@ -1,12 +1,12 @@
 define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
-	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) =>{
+	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
 		let self = {
 			dataImpExp: dataImpExp,
 			graphState: graphState,
 			graphHelper: gHelp,
 			container: document.getElementById('network'),
-			visWeightEdgeEdit: function (data, callback){
-				help.showFormModal(($modal, vals) =>{
+			visWeightEdgeEdit: (data, callback) => {
+				help.showFormModal(($modal, vals) => {
 					callback(null);
 					$modal.modal("hide");
 					vals = parseFloat(vals[0]);
@@ -22,7 +22,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			visOptions: {
 				interaction: {hover: true},
 				manipulation: {
-					addNode: function (data, callback){
+					addNode: function (data, callback) {
 						let $popup = help.makeFormModal("Add Node", "Save", [
 							{
 								type: "html",
@@ -31,18 +31,18 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							{type: "text", label: "Label", initialValue: self.graphState.getProperty("vertices")}
 						]);
 
-						$popup.on("click", ".btn-success", () =>{
+						$popup.on("click", ".btn-success", () => {
 							$popup.modal("hide");
 							self.saveData(data, callback, "add", $popup.find("input").first().val());
-						}).on("click", ".btn-cancel", () =>{
+						}).on("click", ".btn-cancel", () => {
 							$popup.modal("hide");
 							self.cancelEdit(callback);
-						}).on("hidden.bs.modal", () =>{
+						}).on("hidden.bs.modal", () => {
 							$popup.remove();
 							self.cancelEdit(callback);
 						}).modal("show");
 					},
-					editNode: function (data, callback){
+					editNode: function (data, callback) {
 						let $popup = help.makeFormModal("Edit Node", "Save", [
 							{
 								type: "html",
@@ -51,19 +51,19 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							{type: "text", label: "Label", initialValue: data.label}
 						]);
 
-						$popup.on("click", ".btn-success", () =>{
+						$popup.on("click", ".btn-success", () => {
 							$popup.modal("hide");
 							self.saveData(data, callback, "editNode", $popup.find("input").first().val());
-						}).on("click", ".btn-cancel", () =>{
+						}).on("click", ".btn-cancel", () => {
 							$popup.modal("hide");
 							self.cancelEdit(callback);
-						}).on("hidden.bs.modal", () =>{
+						}).on("hidden.bs.modal", () => {
 							$popup.remove();
 							self.cancelEdit(callback);
 						}).modal("show");
 					},
-					addEdge: function (data, callback){
-						let apply = function (){
+					addEdge: function (data, callback) {
+						let apply = function () {
 							if(typeof callback === "function"){
 								callback(null);
 							}
@@ -78,35 +78,35 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 						apply();
 					},
-					editEdge: function (data, callback){
+					editEdge: function (data, callback) {
 						callback(null);
 						self.visOptions.manipulation.deleteEdge({edges: [data.id]});
 						self.visOptions.manipulation.addEdge(data);
 					},
-					deleteEdge: function (data, callback){
+					deleteEdge: function (data, callback) {
 						if(typeof callback === "function"){
 							callback(null);
 						}
-						data.edges.forEach((v) =>{
+						data.edges.forEach((v) => {
 							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId);
 						});
 					},
-					deleteNode: function (data, callback){
+					deleteNode: function (data, callback) {
 						callback(null);
-						data.nodes.forEach((v) =>{
+						data.nodes.forEach((v) => {
 							graphState.deleteNode(v);
 						});
 					},
 				},
 			},
 
-			cancelEdit: function (callback){
+			cancelEdit: (callback) => {
 				if(typeof callback === "function"){
 					callback(null);
 				}
 			},
 
-			saveData: function (data, callback, operation, label){
+			saveData: (data, callback, operation, label) => {
 				data.label = label;
 				callback(null);
 
@@ -118,12 +118,12 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			togglePhysics: function (){
+			togglePhysics: () => {
 				let t = !settings.getOption("nodePhysics");
 				settings.changeOption("nodePhysics", t);
 			},
 
-			toggleDirectional: function (){
+			toggleDirectional: () => {
 				let t = !settings.getOption("direction");
 				settings.changeOption("direction", t);
 				let d = self.graphState.getGraphData();
@@ -133,7 +133,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.setData(d);
 			},
 
-			toggledWeighted: function (){
+			toggledWeighted: () => {
 				let t = !settings.getOption("weights");
 				settings.changeOption("weights", t);
 				let d = self.graphState.getGraphData();
@@ -143,7 +143,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.setData(d);
 			},
 
-			makeAndPrintGraphColoring: function (){
+			makeAndPrintGraphColoring: () => {
 				if(settings.getOption("direction")){
 					return;
 				}
@@ -160,7 +160,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\nChromatic Number: " + a.chromaticNumber;
 				p += "\n\n";
 
-				colors.forEach((v, i) =>{
+				colors.forEach((v, i) => {
 					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " gets color " + v + "\n";
 				});
 
@@ -172,7 +172,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			makeAndPrintConnectedComponents: function (){
+			makeAndPrintConnectedComponents: () => {
 				if(settings.getOption("direction")){
 					return;
 				}
@@ -188,7 +188,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let p = "Number of Connected Components: " + a.count;
 				p += "\n\n";
 
-				components.forEach((v, i) =>{
+				components.forEach((v, i) => {
 					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
 				});
 
@@ -199,7 +199,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			makeAndPrintDirectionalEulerian: function (){
+			makeAndPrintDirectionalEulerian: () => {
 				if(!settings.getOption("direction")){
 					return;
 				}
@@ -209,7 +209,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.graphState.makeAndPrintProperties();
 			},
 
-			makeAndPrintEulerian: function (){
+			makeAndPrintEulerian: () => {
 				if(settings.getOption("direction")){
 					self.makeAndPrintDirectionalEulerian();
 					return;
@@ -219,7 +219,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(self.graphState.state.degrees);
 			},
 
-			makeAndPrintStronglyConnectedComponents: function (){
+			makeAndPrintStronglyConnectedComponents: () => {
 				if(!settings.getOption("direction")){
 					return;
 				}
@@ -235,7 +235,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let p = "Number of Strongly Connected Components: " + a.count;
 				p += "\n\n";
 
-				components.forEach((v, i) =>{
+				components.forEach((v, i) => {
 					p += "Vertex " + self.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
 				});
 
@@ -246,11 +246,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				help.printout(p);
 			},
 
-			makeAndPrintBFS: function (){
+			makeAndPrintBFS: () => {
 				if(settings.getOption("direction")){
 					return;
 				}
-				help.showFormModal(($modal, values) =>{
+				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 						let source = parseInt(values[0]);
 						let sink = parseInt(values[1]);
@@ -263,7 +263,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							p = "Breadth-First Shortest Path From " + self.graphState.nodeIDToLabel(source) + " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
 							p += "\n\nUsing Path: ";
 							p = help.htmlEncode(p);
-							a.path.forEach((v) =>{
+							a.path.forEach((v) => {
 								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
 							});
 							p = p.slice(0, -8);
@@ -278,8 +278,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					]);
 			},
 
-			makeAndPrintDijkstra: function (){
-				help.showFormModal(($modal, values) =>{
+			makeAndPrintDijkstra: () => {
+				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 						let source = parseInt(values[0]);
 						let sink = parseInt(values[1]);
@@ -299,7 +299,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							p += "\nWith weighted cost: " + a.cost;
 							p += "\n\nUsing Path: ";
 							p = help.htmlEncode(p);
-							a.path.forEach((v) =>{
+							a.path.forEach((v) => {
 								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
 							});
 							p = p.slice(0, -8);
@@ -314,8 +314,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					]);
 			},
 
-			makeAndPrintBFSP: function (){
-				help.showFormModal(($modal, values) =>{
+			makeAndPrintBFSP: () => {
+				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 						let source = parseInt(values[0]);
 						let sink = parseInt(values[1]);
@@ -334,7 +334,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							p += "\nWith weighted cost: " + a.cost;
 							p += "\n\nUsing Path: ";
 							p = help.htmlEncode(p);
-							a.path.forEach((v) =>{
+							a.path.forEach((v) => {
 								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
 							});
 							p = p.slice(0, -8);
@@ -349,11 +349,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					]);
 			},
 
-			makeAndPrintFFMCMF: function (){
+			makeAndPrintFFMCMF: () => {
 				if(!settings.getOption("direction") || !settings.getOption("weights")){
 					return;
 				}
-				help.showFormModal(($modal, values) =>{
+				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 						let source = parseInt(values[0]);
 						let sink = parseInt(values[1]);
@@ -366,7 +366,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
 						p += "\n\nUsing Capacities:\n\n";
 						p = help.htmlEncode(p);
-						a.minCut.forEach((v) =>{
+						a.minCut.forEach((v) => {
 							p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w)
 								+ " using " + v.flow + " of " + v.capacity + " \n";
 						});
@@ -381,13 +381,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					]);
 			},
 
-			printGraphAlgorithms: function (){
+			printGraphAlgorithms: () => {
 				let $div = $("#algorithms-pane");
 				$div.empty();
 				let directional = settings.getOption("direction");
 				let weighted = settings.getOption("weights");
 				let a = gAlgo.algorithms;
-				a.forEach((alg) =>{
+				a.forEach((alg) => {
 					if(!alg.display){
 						return;
 					}
@@ -407,7 +407,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				});
 			},
 
-			applyColors: function (){
+			applyColors: () => {
 				if(settings.getOption("direction")){
 					return;
 				}
@@ -415,13 +415,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let chromaticNumber = graphState.getProperty("Chromatic Number", true);
 				let d = graphState.getGraphData();
 				let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-				d.nodes.forEach((v) =>{
+				d.nodes.forEach((v) => {
 					v.color = colors[graphColors[v.id]];
 				});
 				self.setData({nodes: d.nodes, edges: d.edges}, false, false);
 			},
 
-			setData: function (data, recalcProps = false, graphChanged = true, rearrangeGraph = false){
+			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
 				if("directed" in data){
 					settings.changeOption("direction", data.directed);
 				}
@@ -457,18 +457,18 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			shuffleNetworkLayout: function (){
+			shuffleNetworkLayout: () => {
 				self.setData(self.graphState.getGraphData(), false, false, true);
 			},
 
-			newRandomNetworkLayout: function (network){
+			newRandomNetworkLayout: (network) => {
 				let r = Math.round(Math.random() * 1000000);
 				network.layoutEngine.randomSeed = r;
 				network.layoutEngine.initialRandomSeed = r;
 			},
 
-			addNetworkListeners: function (network){
-				network.on("doubleClick", (p) =>{
+			addNetworkListeners: (network) => {
+				network.on("doubleClick", (p) => {
 					if(settings.getOption("weights") && "edges" in p && p.edges.length === 1){
 						network.editEdgeMode();
 					}

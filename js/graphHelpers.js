@@ -1,25 +1,25 @@
 define({
-		isAdjacent: function (a, b, adjacencyMatrix){
+		isAdjacent: (a, b, adjacencyMatrix) => {
 			return adjacencyMatrix[a].indexOf(b) !== -1;
 		},
 
-		findVertexDegrees: function (adjacencyMatrix){
-			return adjacencyMatrix.map((v) =>{
+		findVertexDegrees: (adjacencyMatrix) => {
+			return adjacencyMatrix.map((v) => {
 				return v.length;
 			});
 		},
 
-		findVertexDegreesDirectional: function (adjacencyMatrix){
+		findVertexDegreesDirectional: (adjacencyMatrix) => {
 			// Adjacency stores IDs of edges TO
 			let degrees = [];
-			adjacencyMatrix.forEach((v, i) =>{
+			adjacencyMatrix.forEach((v, i) => {
 				if(i in degrees){
 					degrees[i].out += v.length;
 				}
 				else{
 					degrees[i] = {out: v.length, in: 0};
 				}
-				v.forEach((outV) =>{
+				v.forEach((outV) => {
 					if(outV in degrees){
 						degrees[outV].in += 1;
 					}
@@ -32,9 +32,9 @@ define({
 			return degrees;
 		},
 
-		interpolateNodesFromEdges: function (edges){
+		interpolateNodesFromEdges: (edges) => {
 			let nodes = new vis.DataSet();
-			edges.forEach((v) =>{
+			edges.forEach((v) => {
 				if(nodes.get(v.from) === null){
 					nodes.add({id: v.from, label: "" + v.from});
 				}
