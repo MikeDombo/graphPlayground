@@ -236,18 +236,11 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 						n.color = v.color;
 					}
 
-					let pos = network.getPositions(n.id);
 					if(typeof v.x !== "undefined" && v.x !== null){
 						n.x = v.x;
 					}
-					else if(n.id in pos){
-						n.x = pos[n.id].x;
-					}
 					if(typeof v.y !== "undefined" && v.y !== null){
 						n.y = v.y;
-					}
-					else if(n.id in pos){
-						n.y = pos[n.id].y;
 					}
 
 					nodes.push(n);
