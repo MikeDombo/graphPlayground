@@ -1,5 +1,7 @@
 # Graph Algorithm Playground
-A single-page webapp to build graphs and run algorithms on them
+A single-page webapp to build graphs and run algorithms on them with no server-side components.
+
+Use it on my [GitHub Pages](https://md100play.github.io/graphPlayground/)
 
 ## Supported Graph Types
 - Undirected Unweighted - Just a regular graph
@@ -19,6 +21,7 @@ A single-page webapp to build graphs and run algorithms on them
 - Strongly Connected Components
 - Dijkstra Shortest Path
 - Cyclic **Not Yet Implemented**
+- Graph Coloring **Not Yet Implemented**
 
 ### Undirected Weighted
 - Graph Coloring
@@ -35,3 +38,4 @@ A single-page webapp to build graphs and run algorithms on them
 - Bellman-Ford Shortest Path
 - Ford-Fulkerson MinCut-MaxFlow
 - Cyclic **Not Yet Implemented**
+- Graph Coloring **Not Yet Implemented**
