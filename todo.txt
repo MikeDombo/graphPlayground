@@ -3,6 +3,7 @@ implement multigraph by adding a number of copies field to the edge object
 max clique
 arboricity
 hamiltonicity
+Cyclic
 Kruskal minimum spanning tree
 
 configurable hypercube graph preset
