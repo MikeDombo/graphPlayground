@@ -4,6 +4,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			dataImpExp: dataImpExp,
 			graphState: graphState,
 			graphHelper: gHelp,
+			graphAlgorithms: gAlgo,
 			container: document.getElementById('network'),
 			visWeightEdgeEdit: (data, callback) => {
 				help.showFormModal(($modal, vals) => {
@@ -379,6 +380,34 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						{label: "Source Node", type: "text"},
 						{label: "Sink Node", type: "text"}
 					]);
+			},
+
+			makeAndPrintKruskal: () => {
+				if(settings.getOption("direction") || !settings.getOption("weights")){
+					return;
+				}
+
+				let a = gAlgo.kruskal();
+
+				let p = "Kruskal's Minimum Spanning Tree Total Weight: " + a.totalWeight;
+				p += "\n\nUsing Edges:\n\n";
+				p = help.htmlEncode(p);
+				a.mst.forEach((v) => {
+					p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w) + " \n";
+				});
+				p = p.trim();
+				p = "<h3>Kruskal Minimum Spanning Tree</h3><hr>" + p;
+
+				help.printout(p);
+			},
+
+			makeAndPrintIsCyclic: () => {
+				if(!settings.getOption("direction")){
+					return;
+				}
+				self.graphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
+				self.graphState.setUpToDate(true, ["cyclic"]);
+				self.graphState.makeAndPrintProperties();
 			},
 
 			printGraphAlgorithms: () => {

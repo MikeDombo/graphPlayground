@@ -15,13 +15,14 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Eulericity
 - Connected Components
 - Breadth-First Shortest Path
+- Cyclic **Not Yet Implemented**
 
 ### Directed Unweighted
 - Eulericity
 - Strongly Connected Components
 - Dijkstra Shortest Path
-- Cyclic **Not Yet Implemented**
-- Graph Coloring **Not Yet Implemented**
+- Cyclic
+- Topological Sort **Not Yet Implemented**
 
 ### Undirected Weighted
 - Graph Coloring
@@ -29,7 +30,8 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Connected Components
 - Breadth-First Shortest Path
 - Dijkstra Shortest Path
-- Kruskal MST **Not Yet Implemented**
+- Kruskal MST
+- Cyclic **Not Yet Implemented**
 
 ### Directed Weighted
 - Eulericity
@@ -37,5 +39,5 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Dijkstra Shortest Path
 - Bellman-Ford Shortest Path
 - Ford-Fulkerson MinCut-MaxFlow
-- Cyclic **Not Yet Implemented**
-- Graph Coloring **Not Yet Implemented**
+- Cyclic
+- Topological Sort **Not Yet Implemented**

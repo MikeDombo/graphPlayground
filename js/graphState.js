@@ -46,6 +46,12 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 						main.makeAndPrintStronglyConnectedComponents();
 					}
 				},
+				{
+					name: "cyclic", upToDate: false, type: "property",
+					applyFunc: () => {
+						main.makeAndPrintIsCyclic();
+					}
+				},
 			],
 			state: {
 				graph: new jsgraphs.Graph(),
@@ -63,6 +69,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				"Chromatic Number": null,
 				"Connected Components": null,
 				"Strongly Connected Components": null,
+				cyclic: false,
 			},
 
 			setUpToDate: (value = false, listOptions) => {
@@ -337,13 +344,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					let n = g.node(v.id);
 					n.label = v.label;
 					let pos = network.getPositions(v.id);
-					if(keepNodePositions && v.id in pos){
-						n.x = pos[v.id].x;
-						n.y = pos[v.id].y;
-					}
-					else if(keepNodePositions){
+					if(keepNodePositions && !(v.id in pos)){
 						n.x = v.x;
 						n.y = v.y;
+					}
+					else if(keepNodePositions && v.id in pos){
+						n.x = pos[v.id].x;
+						n.y = pos[v.id].y;
 					}
 					n.color = v.color;
 				});

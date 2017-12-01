@@ -1,5 +1,5 @@
 define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
-	return {
+	let self = {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
 			{
@@ -37,6 +37,19 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 				weighted: true,
 				directional: true,
 				applyFunc: "main.makeAndPrintFFMCMF();",
+				display: true
+			},
+			{
+				name: "Kruskal Minimum Spanning Tree",
+				weighted: true,
+				directional: false,
+				applyFunc: "main.makeAndPrintKruskal();",
+				display: true
+			},
+			{
+				name: "Cyclic",
+				applyFunc: "main.makeAndPrintIsCyclic();",
+				directional: true,
 				display: true
 			},
 			{name: "Eulerian", directional: false, display: false, applyFunc: null},
@@ -223,6 +236,62 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 			return {maxFlow: fordFulk.value, minCut: fordFulk.minCut(G)};
 		},
 
+		kruskal: (graphState = main.graphState) => {
+			let G = graphState.state.graph;
+
+			let kruskal = new jsgraphs.KruskalMST(G).mst;
+			let weight = kruskal.reduce((acc, e) => {
+				return acc + e.weight;
+			}, 0);
+
+			return {mst: kruskal, totalWeight: weight};
+		},
+
+		topologicalSort: (graphState = main.graphState) => {
+			let G = graphState.state.graph;
+			let d = graphState.getGraphData(G);
+
+			let adjacency = G.adjList;
+			let degrees = graphH.findVertexDegreesDirectional(adjacency);
+
+			let L = [];
+			let S = d.nodes.filter((n) => {
+				return degrees[n.id].in === 0;
+			});
+
+			while(S.length !== 0){
+				let nodeN = S.pop();
+				L.push(nodeN);
+
+				let nodeNConnectedTo = adjacency[nodeN.id];
+
+				// Remove n to m edges for all nodes m
+				d.edges = d.edges.filter((edge) => {
+					if(edge.from === nodeN.id && nodeNConnectedTo.includes(edge.to)){
+						degrees[edge.to].in--;
+						adjacency[nodeN.id] = adjacency[nodeN.id].filter((v) => {
+							return v !== edge.to;
+						});
+						return false;
+					}
+					return true;
+				});
+
+				// If m has no more incoming edges, add it to S
+				nodeNConnectedTo.forEach((mID) => {
+					if(degrees[mID].in === 0){
+						S.push(d.nodes[mID]);
+					}
+				});
+			}
+
+			return d.edges.length > 0 || L;
+		},
+
+		isGraphCyclic: (graphState = main.graphState) => {
+			return self.topologicalSort(graphState) === true ? true : false;
+		},
+
 		directionalEulerian: (directionalDegrees, graphState = main.graphState) => {
 			let scc = graphState.getProperty("stronglyConnectedComponents", true);
 
@@ -252,4 +321,6 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 		},
 
 	};
+
+	return self;
 });

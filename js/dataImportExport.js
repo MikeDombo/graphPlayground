@@ -5,7 +5,8 @@ define(["genericHelpers", "jquery"], (help, $) => {
 				try{
 					let n = JSON.parse(string);
 					if("nodes" in n && "edges" in n){
-						main.setData(n, false, true, true);
+						network.setData({}); // Clear out the existing network in order to import the proper locations
+						main.setData(n, false, true, false);
 					}
 					else{
 						help.showErrorModal("Data Import Error", "<p>The provided input does not conform the the" +
