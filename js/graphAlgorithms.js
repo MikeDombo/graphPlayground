@@ -69,7 +69,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 			// Get an unweighted graph if ours is weighted. For some reason it doesn't work w/ weights, even though
 			// it should
 			if(d.weighted){
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false, false);
+				G = graphState.dataSetToGraph(d.nodes, d.edges);
 				d = graphState.getGraphData(G);
 			}
 
@@ -155,10 +155,10 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 			let d = graphState.getGraphData(G);
 
 			if(!d.directed){
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, true, true);
+				G = graphState.dataSetToGraph(d.nodes, d.edges, true, true, true);
 			}
 			else if(!d.weighted){
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, true, true);
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, true);
 			}
 
 			let nonNegative = graphState.getGraphData(G).edges.find((edge) => {

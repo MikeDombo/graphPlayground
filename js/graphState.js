@@ -1,6 +1,9 @@
 define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 	($, gAlgo, gHelp, help) => {
 		let self = {
+			backHistory: [],
+			forwardHistory: [],
+			maxHistory: 10,
 			upToDate: [
 				{
 					name: "Chromatic Number", upToDate: false, type: "property",
@@ -207,7 +210,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 						newEdges.push(v);
 					}
 				});
-				main.setData({nodes: newNodes, edges: newEdges}, false, true, true);
+
+				main.setData({nodes: newNodes, edges: newEdges});
 			},
 
 			clearColorFromNodes: (nodes) => {
@@ -312,7 +316,14 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			dataSetToGraph: (nodes, edges, keepNodePositions = false, doubleEdges = false, directional = false, weighted = false) => {
+			setLocations: (locations) => {
+				self.state.graph.nodeInfo.forEach((v, i) => {
+					v.x = locations[i].x;
+					v.y = locations[i].y;
+				});
+			},
+
+			dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
 				let d = self.alignData(0, nodes, edges);
 				nodes = d.nodes;
 				edges = d.edges;
@@ -350,15 +361,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				nodes.forEach((v) => {
 					let n = g.node(v.id);
 					n.label = v.label;
-					let pos = network.getPositions(v.id);
-					if(keepNodePositions && !(v.id in pos)){
-						n.x = v.x;
-						n.y = v.y;
-					}
-					else if(keepNodePositions && v.id in pos){
-						n.x = pos[v.id].x;
-						n.y = pos[v.id].y;
-					}
+					n.x = v.x;
+					n.y = v.y;
 					n.color = v.color;
 				});
 

@@ -6,5 +6,3 @@ hamiltonicity
 
 configurable hypercube graph preset
 configurable complete graph preset
-
-Undo/Redo by saving graphState when setData is called. Implement in UI and also using browser history.

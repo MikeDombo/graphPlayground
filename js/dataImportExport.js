@@ -249,7 +249,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 
 		getDataAsJSON: () => {
 			let d = main.graphState.getGraphData();
-			d = main.graphState.getGraphData(main.graphState.dataSetToGraph(d.nodes, d.edges, true, false, d.directed, d.weighted));
+			d = main.graphState.getGraphData(main.graphState.dataSetToGraph(d.nodes, d.edges, false, d.directed, d.weighted));
 			let nodeKeys = ["id", "label", "color", "x", "y"];
 			let edgeKeys = ["from", "to", "weight"];
 			d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys);

@@ -20,6 +20,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
 	      integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
 </head>
 <body>
@@ -31,6 +32,13 @@
 
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav mr-auto">
+			<li class="nav-item">
+				<a class="nav-link" href="#" onclick="main.undo();"><i class="fa fa-undo" aria-hidden="true"></i></a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#" onclick="main.redo();"><i class="fa fa-repeat" aria-hidden="true"></i></a>
+			</li>
+
 			<li class="nav-item dropdown active">
 				<a class="nav-link dropdown-toggle" href="#" id="fileDropdown" role="button" data-toggle="dropdown"
 				   aria-haspopup="true" aria-expanded="false">
@@ -106,7 +114,7 @@
 				<div class="col">
 					<div class="card" style="margin-bottom:1rem; margin-top:1rem;">
 						<div class="card-body" style="padding:0">
-							<div id="network" style="height: 80vh;"></div>
+							<div id="network" style="height: 80vh;" tabindex="0"></div>
 						</div>
 					</div>
 				</div>
@@ -162,6 +170,7 @@
 			window.predefined = predefined;
 			window.settings = settings;
 			window.network = new vis.Network(m.container, {}, m.visOptions);
+
 			main.addNetworkListeners(network);
 
 			settings.loadSettings();

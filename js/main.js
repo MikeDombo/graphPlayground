@@ -129,7 +129,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("direction", t);
 				let d = self.graphState.getGraphData();
 				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, t, t, self.graphState.state.weighted);
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, t, t, self.graphState.state.weighted);
 				d = self.graphState.getGraphData(newGraph);
 				self.setData(d);
 			},
@@ -139,7 +139,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("weights", t);
 				let d = self.graphState.getGraphData();
 				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, true, false, self.graphState.state.directed, t);
+				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, false, self.graphState.state.directed, t);
 				d = self.graphState.getGraphData(newGraph);
 				self.setData(d);
 			},
@@ -472,6 +472,21 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
+				// Store existing positions in the data if we're supposed to keep the layout
+				if(!rearrangeGraph){
+					data.nodes.forEach((v) => {
+						let pos = network.getPositions(v.id);
+						if(v.id in pos){
+							v.x = pos[v.id].x;
+							v.y = pos[v.id].y;
+						}
+					});
+				}
+
+				if(graphChanged){
+					self.saveState();
+				}
+
 				if("directed" in data){
 					settings.changeOption("direction", data.directed);
 				}
@@ -481,13 +496,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let directional = settings.getOption("direction");
 				let weighted = settings.getOption("weights");
 
-				let g = null;
-				if(rearrangeGraph){
-					g = graphState.dataSetToGraph(data.nodes, data.edges, false, false, directional, weighted);
-				}
-				else{
-					g = graphState.dataSetToGraph(data.nodes, data.edges, true, false, directional, weighted);
-				}
+				let g = graphState.dataSetToGraph(data.nodes, data.edges, false, directional, weighted);
+
 				graphState.state.graph = g;
 				graphState.state.directed = directional;
 				graphState.state.weighted = weighted;
@@ -496,6 +506,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				self.newRandomNetworkLayout(network);
 
 				network.setData(graphState.getGraphAsDataSet(g));
+				self.graphState.setLocations(network.getPositions());
+
 				network.disableEditMode();
 				network.enableEditMode();
 
@@ -504,6 +516,98 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					help.printout("");
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);
+				}
+			},
+
+			saveState: () => {
+				if(graphState.backHistory.length >= graphState.maxHistory){
+					graphState.backHistory.shift();
+				}
+
+				let s = self.getStateForSaving();
+				graphState.backHistory.push(s);
+				graphState.forwardHistory = [];
+				$(".fa-undo").parent().parent().addClass("active");
+			},
+
+			getStateForSaving: () => {
+				let state = {};
+				Object.keys(graphState).forEach((k) => {
+					let v = graphState[k];
+					if(typeof v !== "function"){
+						if(typeof v !== "object"){
+							state[k] = v;
+						}
+						else{
+							if(!k.toLowerCase().includes("history")){
+								state[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
+							}
+						}
+					}
+				});
+
+				return state;
+			},
+
+			undo: () => {
+				if(graphState.backHistory.length > 0){
+					self.applyState(true);
+				}
+			},
+
+			redo: () => {
+				if(graphState.forwardHistory.length > 0){
+					self.applyState(false);
+				}
+			},
+
+			applyState: (undo = true) => {
+				let currentState = self.getStateForSaving();
+
+				let newState = null;
+				if(undo){
+					newState = graphState.backHistory.pop();
+				}
+				else{
+					newState = graphState.forwardHistory.pop();
+				}
+
+				settings.changeOption("direction", newState.state.directed);
+				settings.changeOption("weights", newState.state.weighted);
+
+				let g = graphState.getGraphAsDataSet(newState.state.graph);
+
+				network.setData(g);
+				network.disableEditMode();
+				network.enableEditMode();
+
+				self.printGraphAlgorithms();
+				help.printout("");
+
+				Object.keys(newState).forEach((k) => {
+					let v = newState[k];
+					if(typeof v !== "object"){
+						graphState[k] = v;
+					}
+					else if(!k.toLowerCase().includes("history")){
+						graphState[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
+					}
+				});
+
+				graphState.makeAndPrintProperties();
+				if(undo){
+					$(".fa-repeat").parent().parent().addClass("active");
+					if(graphState.backHistory.length === 0){
+						$(".fa-undo").parent().parent().removeClass("active");
+					}
+					graphState.forwardHistory.push(currentState);
+				}
+				else{
+					$(".fa-undo").parent().parent().addClass("active");
+					if(graphState.forwardHistory.length === 0){
+						$(".fa-repeat").parent().parent().removeClass("active");
+					}
+					graphState.backHistory.push(currentState);
 				}
 			},
 
@@ -524,6 +628,44 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					}
 					if("nodes" in p && p.nodes.length === 1){
 						network.editNode();
+					}
+				});
+
+				network.on("dragEnd", () => {
+					self.graphState.setLocations(network.getPositions());
+				});
+
+				// Delete nodes/edges when hit "Delete"
+				let lastNetworkClickEvent = null;
+				network.on('click', (event) => {
+					lastNetworkClickEvent = event;
+				});
+
+				$(document).on('keyup', (key) => {
+					if(key.key === "Delete" && lastNetworkClickEvent !== null){
+						if($(self.container).has($(lastNetworkClickEvent.event.target)).length > 0){
+							if(("edges" in lastNetworkClickEvent && lastNetworkClickEvent.edges.length === 1)
+								|| ("nodes" in lastNetworkClickEvent && lastNetworkClickEvent.nodes.length === 1)){
+								network.deleteSelected();
+							}
+						}
+					}
+				});
+
+				// Undo/Redo keyboard commands
+				$(document).keydown((e) => {
+					if((e.which === 89 && e.ctrlKey) || (e.which === 90 && e.ctrlKey && e.shiftKey)){
+						self.redo();
+					}
+					else if(e.which === 90 && e.ctrlKey){
+						self.undo();
+					}
+				});
+
+				// When clicking off of the network, remove the Delete functionality
+				$(document).on("click", (e) => {
+					if($(self.container).has(e.target).length === 0){
+						lastNetworkClickEvent = null;
 					}
 				});
 			},
