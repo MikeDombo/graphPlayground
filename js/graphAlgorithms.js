@@ -52,6 +52,12 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 				directional: true,
 				display: true
 			},
+			{
+				name: "Topological Sort",
+				applyFunc: "main.makeAndTopologicalSort();",
+				directional: true,
+				display: true
+			},
 			{name: "Eulerian", directional: false, display: false, applyFunc: null},
 			{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
 		],
@@ -251,7 +257,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 			let G = graphState.state.graph;
 			let d = graphState.getGraphData(G);
 
-			let adjacency = G.adjList;
+			let adjacency = G.adjList.slice(); // Make sure adjacency list is a copy, because we're modifying it
 			let degrees = graphH.findVertexDegreesDirectional(adjacency);
 
 			let L = [];

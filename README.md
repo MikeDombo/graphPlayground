@@ -22,7 +22,7 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Strongly Connected Components
 - Dijkstra Shortest Path
 - Cyclic
-- Topological Sort **Not Yet Implemented**
+- Topological Sort
 
 ### Undirected Weighted
 - Graph Coloring
@@ -40,4 +40,4 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Bellman-Ford Shortest Path
 - Ford-Fulkerson MinCut-MaxFlow
 - Cyclic
-- Topological Sort **Not Yet Implemented**
+- Topological Sort

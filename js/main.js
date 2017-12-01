@@ -151,9 +151,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let a = gAlgo.colorNetwork();
 
 				graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
-				graphState.setUpToDate(true, ["Chromatic Number"]);
-				graphState.makeAndPrintProperties(false);
-				graphState.setUpToDate(true, ["graphColoring"]);
+				graphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
 				graphState.state.graphColoring = a.colors;
 
 				let colors = help.flatten(a.colors);
@@ -180,9 +178,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let a = gAlgo.connectedComponents();
 
 				graphState.graphProperties["Connected Components"] = a.count;
-				graphState.setUpToDate(true, ["Connected Components"]);
-				graphState.makeAndPrintProperties(false);
-				graphState.setUpToDate(true, ["connectedComponents"]);
+				graphState.setUpToDate(true, ["Connected Components", "connectedComponents"]);
 				graphState.state.connectedComponents = a.components;
 
 				let components = help.flatten(a.components);
@@ -207,7 +203,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.state.adjacency));
 				self.graphState.setUpToDate(true, ["eulerian"]);
 				self.graphState.graphProperties.eulerian = t;
-				self.graphState.makeAndPrintProperties();
 			},
 
 			makeAndPrintEulerian: () => {
@@ -227,9 +222,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let a = gAlgo.stronglyConnectedComponents();
 
 				graphState.graphProperties["Strongly Connected Components"] = a.count;
-				graphState.setUpToDate(true, ["Strongly Connected Components"]);
-				graphState.makeAndPrintProperties(false);
-				graphState.setUpToDate(true, ["stronglyConnectedComponents"]);
+				graphState.setUpToDate(true, ["Strongly Connected Components", "stronglyConnectedComponents"]);
 				graphState.state.stronglyConnectedComponents = a.components;
 
 				let components = help.flatten(a.components);
@@ -407,7 +400,35 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				self.graphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
 				self.graphState.setUpToDate(true, ["cyclic"]);
-				self.graphState.makeAndPrintProperties();
+			},
+
+			makeAndTopologicalSort: () => {
+				if(!settings.getOption("direction")){
+					return;
+				}
+
+				let a = gAlgo.topologicalSort();
+
+				if(a === true){
+					self.graphState.graphProperties.cyclic = true;
+					self.graphState.setUpToDate(true, ["cyclic"]);
+
+					let p = "Topological sorting failed because the graph contains a cycle";
+					p = "<h3>Topological Sorting Failed</h3><hr>" + p;
+					help.printout(p);
+
+					return;
+				}
+
+				let p = "Topological Sorting:\n\n";
+				p = help.htmlEncode(p);
+				a.forEach((v) => {
+					p += self.graphState.nodeIDToLabel(v.id) + ", ";
+				});
+				p = p.slice(0, -2);
+				p = "<h3>Topological Sorting</h3><hr>" + p;
+
+				help.printout(p);
 			},
 
 			printGraphAlgorithms: () => {

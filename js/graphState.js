@@ -74,11 +74,18 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 
 			setUpToDate: (value = false, listOptions) => {
 				let all = listOptions === null || typeof listOptions === "undefined";
+				let property = false;
 				self.upToDate.forEach((v) => {
 					if((!("always" in v) || !v.always) && (all || listOptions.indexOf(v.name) > -1)){
 						v.upToDate = value;
+						if(v.type === "property"){
+							property = true;
+						}
 					}
 				});
+				if(property){
+					self.makeAndPrintProperties();
+				}
 			},
 
 			getProperty: (property, updateIfNotUpdated = false) => {
