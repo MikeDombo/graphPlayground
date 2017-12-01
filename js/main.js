@@ -473,7 +473,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
 				// Store existing positions in the data if we're supposed to keep the layout
-				if(!rearrangeGraph){
+				if(rearrangeGraph){
+					data.nodes.forEach((v) => {
+						delete v.x;
+						delete v.y;
+					});
+				}
+				else{
 					data.nodes.forEach((v) => {
 						let pos = network.getPositions(v.id);
 						if(v.id in pos){
