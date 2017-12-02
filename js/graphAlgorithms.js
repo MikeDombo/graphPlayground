@@ -121,6 +121,13 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 
 		connectedComponents: (graphState = main.graphState) => {
 			let G = graphState.state.graph;
+
+			// If weighted, unweight it
+			if(graphState.getGraphType(G).weighted){
+				let d = graphState.getGraphData(G);
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false);
+			}
+
 			let cc = new jsgraphs.ConnectedComponents(G);
 			let componentIndex = {};
 			for(let v = 0; v < G.V; v++){
@@ -131,6 +138,13 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 
 		stronglyConnectedComponents: (graphState = main.graphState) => {
 			let G = graphState.state.graph;
+
+			// If weighted, unweight it
+			if(graphState.getGraphType(G).weighted){
+				let d = graphState.getGraphData(G);
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, false);
+			}
+
 			let cc = new jsgraphs.StronglyConnectedComponents(G);
 			let componentIndex = {};
 			for(let v = 0; v < G.V; v++){
@@ -141,6 +155,13 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 
 		breadthFirstSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.state.graph;
+
+			// If weighted, unweight it
+			if(graphState.getGraphType(G).weighted){
+				let d = graphState.getGraphData(G);
+				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false);
+			}
+
 			let bfs = new jsgraphs.BreadthFirstSearch(G, startNodeID);
 
 			if(bfs.hasPathTo(targetNodeID)){

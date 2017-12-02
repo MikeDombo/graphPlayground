@@ -80,6 +80,15 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 		return {nodes: nodes, edges: edges, directed: false, weighted: false};
 	};
 
+	let newCustomGraph = (V, directed = false, weighted = false) => {
+		let nodes = [];
+		for(let i = 0; i < V; i++){
+			nodes.push({id: i, label: i.toString()});
+		}
+
+		return {nodes: nodes, edges: [], directed: directed, weighted: weighted};
+	};
+
 	return {
 		graphNames: ["Petersen", "Konigsberg", "Complete", "Hypercube"],
 		Petersen: () => ({
@@ -97,15 +106,25 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 		Complete: () => {
 			help.showFormModal(($modal, vals) => {
 				$modal.modal("hide");
-				main.setData(completeGraph(parseInt(vals[0])));
+				main.setData(completeGraph(vals[0]));
 			}, "Configurable Complete Graph", "Go", [{type: "numeric", initialValue: 5, label: "Number of Vertices"}]);
 		},
 		Hypercube: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
-					main.setData(hypercubeGraph(parseInt(vals[0])));
+					main.setData(hypercubeGraph(vals[0]));
 				}, "Configurable Hypercube Graph", "Go",
 				[{type: "numeric", initialValue: 3, label: "Number of Dimensions"}]);
+		},
+		Custom: () => {
+			help.showFormModal(($modal, vals) => {
+					$modal.modal("hide");
+					main.setData(newCustomGraph(vals[0], vals[1], vals[2]));
+				}, "Configurable Graph", "Go",
+				[{type: "numeric", initialValue: 0, label: "Number of Vertices"},
+					{type: "checkbox", initialValue: false, label: "Directed"},
+					{type: "checkbox", initialValue: false, label: "Weighted"},
+				]);
 		},
 	};
 });

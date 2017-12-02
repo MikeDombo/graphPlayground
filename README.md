@@ -15,6 +15,7 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Eulericity
 - Connected Components
 - Breadth-First Shortest Path
+- Dijkstra Shortest Path
 - Cyclic **Not Yet Implemented**
 
 ### Directed Unweighted
@@ -48,6 +49,7 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Konigsberg Bridges Graph
 - Configurable Complete Graph
 - Configurable Hypergraph
+- Custom Graphs
 
 ### Editing
 - Graphically Add/Edit/Delete Vertices and Edges

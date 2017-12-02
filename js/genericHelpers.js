@@ -117,18 +117,33 @@ define(["jquery"], ($) => {
 					f.append($(formRow.initialValue));
 				}
 				else if(formRow.type === "numeric"){
-					f.append($("<label>", {for: "form-modal-" + 1, class: "col-form-label"}).text(formRow.label));
+					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "number";
 					f.append($("<input>", basicMap));
 				}
 				else if(formRow.type === "text"){
-					f.append($("<label>", {for: "form-modal-" + 1, class: "col-form-label"}).text(formRow.label));
+					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "text";
 					f.append($("<input>", basicMap));
 				}
 				else if(formRow.type === "textarea"){
-					f.append($("<label>", {for: "form-modal-" + 1, class: "col-form-label"}).text(formRow.label));
+					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
 					f.append($("<textarea>", basicMap));
+				}
+				else if(formRow.type === "checkbox"){
+					basicMap.type = "checkbox";
+					basicMap.class = "form-check-input";
+					delete basicMap.value;
+					if(formRow.initialValue){
+						basicMap.checked = null;
+					}
+
+					f.append($("<div>", {class: "form-check"})
+						.append($("<label>", {for: "form-modal-" + i, class: "form-check-label"}).text(formRow.label)
+							.prepend($("<input>", basicMap)
+							)
+						)
+					);
 				}
 			});
 
@@ -171,12 +186,19 @@ define(["jquery"], ($) => {
 			}).on("click", ".btn-success", () => {
 				let vals = [];
 				$modal.find("input", "textarea", "select").each((i, v) => {
-					v = $(v);
-					if(v.tagName === "SELECT"){
-						vals.push(v.find(":selected").val());
+					let $v = $(v);
+
+					if($v.tagName === "SELECT"){
+						vals.push($v.find(":selected").val());
+					}
+					if($v.attr("type") === "checkbox"){
+						vals.push($v.prop("checked"));
+					}
+					else if($v.attr("type") === "number"){
+						vals.push(parseFloat($v.val()));
 					}
 					else{
-						vals.push(v.val());
+						vals.push($v.val());
 					}
 				});
 				successCb($modal, vals);
