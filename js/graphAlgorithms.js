@@ -341,10 +341,32 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 			return eulerian;
 		},
 
-		hasEulerianCircuit: (degrees) => {
-			return degrees.filter((v) => {
+		hasEulerianCircuit: (degrees, graphState = main.graphState) => {
+			let oddDegree = degrees.filter((v) => {
 				return v % 2 !== 0;
-			}).length === 0;
+			});
+
+			// If any nodes have odd degree, it cannot be Eulerian
+			if(oddDegree.length !== 0){
+				return false;
+			}
+
+			let cc = graphState.getProperty("connectedComponents", true);
+
+			let eulerian = true;
+			let component = -1;
+			degrees.forEach((v, i) => {
+				if(v !== 0){
+					if(component === -1){
+						component = cc[i];
+					}
+					if(component !== cc[i]){
+						eulerian = false;
+					}
+				}
+			});
+
+			return eulerian;
 		},
 
 	};
