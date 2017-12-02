@@ -55,6 +55,6 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Undo/Redo Change History
     - Also can use CTRL+Z and CTRL+Y or CTRL+SHIFT+Z for Undo/Redo
 
-### Many Algorithms - Enumerated Above
+### [Many Algorithms - Enumerated Above](#supported-algorithms-by-graph-type)
 
-### Multiple Graph Types - Enumerated Above
+### [Multiple Graph Types - Enumerated Above](#supported-graph-types)
