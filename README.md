@@ -41,3 +41,20 @@ Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 - Ford-Fulkerson MinCut-MaxFlow
 - Cyclic
 - Topological Sort
+
+## Features
+### Builtin Graphs
+- Petersen Graph
+- Konigsberg Bridges Graph
+- Configurable Complete Graph
+- Configurable Hypergraph
+
+### Editing
+- Graphically Add/Edit/Delete Vertices and Edges
+    - Also can use DELETE key to delete selected edges and vertices
+- Undo/Redo Change History
+    - Also can use CTRL+Z and CTRL+Y or CTRL+SHIFT+Z for Undo/Redo
+
+### Many Algorithms - Enumerated Above
+
+### Multiple Graph Types - Enumerated Above
