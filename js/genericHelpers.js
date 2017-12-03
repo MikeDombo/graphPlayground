@@ -113,22 +113,48 @@ define(["jquery"], ($) => {
 					}
 				}
 
+				let validFunc = () => true;
+				if("validationFunc" in formRow){
+					validFunc = formRow.validationFunc;
+				}
+
+				let generalValidator = (event, valueMutator = null) => {
+					let $v = $(event.target);
+					let val = $v.val();
+					if(valueMutator !== null && typeof valueMutator === "function"){
+						val = valueMutator(val);
+					}
+					let valid = validFunc(val, $v);
+
+					if(valid === true){
+						$v.removeClass("is-invalid").next("#feedback-" + i).remove();
+					}
+					else{
+						$v.addClass("is-invalid");
+						if($v.next("#feedback-" + i).length === 0){
+							$v.after($("<div>", {class: "invalid-feedback", id: "feedback-" + i}).text(valid));
+						}
+					}
+				};
+
 				if(formRow.type === "html"){
 					f.append($(formRow.initialValue));
 				}
 				else if(formRow.type === "numeric"){
 					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "number";
-					f.append($("<input>", basicMap));
+					f.append($("<input>", basicMap).on("blur validate", (e) => {
+						generalValidator(e, parseFloat);
+					}));
 				}
 				else if(formRow.type === "text"){
 					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "text";
-					f.append($("<input>", basicMap));
+					f.append($("<input>", basicMap).on("blur validate", generalValidator));
 				}
 				else if(formRow.type === "textarea"){
 					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
-					f.append($("<textarea>", basicMap));
+					f.append($("<textarea>", basicMap).on("blur validate", generalValidator));
 				}
 				else if(formRow.type === "checkbox"){
 					basicMap.type = "checkbox";
@@ -139,9 +165,9 @@ define(["jquery"], ($) => {
 					}
 
 					f.append($("<div>", {class: "form-check"})
-						.append($("<label>", {for: "form-modal-" + i, class: "form-check-label"}).text(formRow.label)
-							.prepend($("<input>", basicMap)
-							)
+						.append($("<label>",
+							{for: "form-modal-" + i, class: "form-check-label"})
+							.text(formRow.label).prepend($("<input>", basicMap))
 						)
 					);
 				}
@@ -185,6 +211,8 @@ define(["jquery"], ($) => {
 				cancelCb($modal);
 			}).on("click", ".btn-success", () => {
 				let vals = [];
+				let hasErrors = false;
+
 				$modal.find("input", "textarea", "select").each((i, v) => {
 					let $v = $(v);
 
@@ -200,8 +228,16 @@ define(["jquery"], ($) => {
 					else{
 						vals.push($v.val());
 					}
+
+					if($v.trigger("validate").hasClass("is-invalid")){
+						hasErrors = true;
+					}
+
 				});
-				successCb($modal, vals);
+
+				if(!hasErrors){
+					successCb($modal, vals);
+				}
 			}).on("hidden.bs.modal", () => {
 				$modal.remove();
 			}).modal("show");

@@ -1,4 +1,4 @@
-define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
+define(["graphHelpers", "genericHelpers"], (gHelp, help) => {
 	let petersenEdges = [
 		{from: 1, to: 2},
 		{from: 2, to: 3},
@@ -91,36 +91,53 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 	return {
 		graphNames: ["Petersen", "Konigsberg", "Complete", "Hypercube"],
 		Petersen: () => ({
-			edges: new vis.DataSet(petersenEdges),
+			edges: petersenEdges,
 			nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
 			directed: false,
 			weighted: false,
 		}),
 		Konigsberg: () => ({
-			edges: new vis.DataSet(konigsbergEdges),
+			edges: konigsbergEdges,
 			nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
 			directed: false,
 			weighted: false,
 		}),
 		Complete: () => {
 			help.showFormModal(($modal, vals) => {
-				$modal.modal("hide");
-				main.setData(completeGraph(vals[0]));
-			}, "Configurable Complete Graph", "Go", [{type: "numeric", initialValue: 5, label: "Number of Vertices"}]);
+					$modal.modal("hide");
+					main.setData(completeGraph(vals[0]));
+				},
+				"Configurable Complete Graph", "Go",
+				[{
+					type: "numeric", initialValue: 5, label: "Number of Vertices", validationFunc: (v) => {
+						return v >= 0 || "Number of vertices must be non-negative";
+					}
+				}]);
 		},
 		Hypercube: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
 					main.setData(hypercubeGraph(vals[0]));
-				}, "Configurable Hypercube Graph", "Go",
-				[{type: "numeric", initialValue: 3, label: "Number of Dimensions"}]);
+				},
+				"Configurable Hypercube Graph", "Go",
+				[{
+					type: "numeric", initialValue: 3, label: "Number of Dimensions", validationFunc: (v) => {
+						return v >= 0 || "Number of dimensions must be non-negative";
+					}
+				}]);
 		},
 		Custom: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
 					main.setData(newCustomGraph(vals[0], vals[1], vals[2]));
-				}, "Configurable Graph", "Go",
-				[{type: "numeric", initialValue: 0, label: "Number of Vertices"},
+				},
+				"Configurable Graph", "Go",
+				[
+					{
+						type: "numeric", initialValue: 0, label: "Number of Vertices", validationFunc: (v) => {
+							return v >= 0 || "Number of vertices must be non-negative";
+						}
+					},
 					{type: "checkbox", initialValue: false, label: "Directed"},
 					{type: "checkbox", initialValue: false, label: "Weighted"},
 				]);
