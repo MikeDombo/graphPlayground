@@ -68,7 +68,6 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 					inputBits = original;
 				}
 			}
-			console.log(input, allDiffer);
 
 			return allDiffer;
 		};
