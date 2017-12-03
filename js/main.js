@@ -245,9 +245,37 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					return;
 				}
 				help.showFormModal(($modal, values) => {
-						$modal.modal("hide");
 						let source = graphState.nodeLabelToID(values[0]);
 						let sink = graphState.nodeLabelToID(values[1]);
+						if(source === -1 || sink === -1){
+							if(source === -1){
+								let add = !$modal.find("#form-modal-0").hasClass("is-invalid");
+								$modal.find("#form-modal-0").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-0").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-0").removeClass("is-invalid").nextAll("div" +
+									" .invalid-feedback").remove();
+							}
+							if(sink === -1){
+								let add = !$modal.find("#form-modal-1").hasClass("is-invalid");
+								$modal.find("#form-modal-1").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-1").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-1").removeClass("is-invalid").next("div .invalid-feedback")
+								      .remove();
+							}
+							return;
+						}
+
+						$modal.modal("hide");
 						let a = gAlgo.breadthFirstSearch(source, sink);
 
 						let p = "<h3>Breadth-First Shortest Path</h3><hr>No path exists from "
@@ -274,9 +302,37 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 			makeAndPrintDijkstra: () => {
 				help.showFormModal(($modal, values) => {
-						$modal.modal("hide");
 						let source = graphState.nodeLabelToID(values[0]);
 						let sink = graphState.nodeLabelToID(values[1]);
+						if(source === -1 || sink === -1){
+							if(source === -1){
+								let add = !$modal.find("#form-modal-0").hasClass("is-invalid");
+								$modal.find("#form-modal-0").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-0").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-0").removeClass("is-invalid").nextAll("div" +
+									" .invalid-feedback").remove();
+							}
+							if(sink === -1){
+								let add = !$modal.find("#form-modal-1").hasClass("is-invalid");
+								$modal.find("#form-modal-1").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-1").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-1").removeClass("is-invalid").next("div .invalid-feedback")
+								      .remove();
+							}
+							return;
+						}
+
+						$modal.modal("hide");
 						let a = gAlgo.dijkstraSearch(source, sink);
 						if(a === false){
 							return;
@@ -310,9 +366,37 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 			makeAndPrintBFSP: () => {
 				help.showFormModal(($modal, values) => {
-						$modal.modal("hide");
 						let source = graphState.nodeLabelToID(values[0]);
 						let sink = graphState.nodeLabelToID(values[1]);
+						if(source === -1 || sink === -1){
+							if(source === -1){
+								let add = !$modal.find("#form-modal-0").hasClass("is-invalid");
+								$modal.find("#form-modal-0").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-0").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-0").removeClass("is-invalid").nextAll("div" +
+									" .invalid-feedback").remove();
+							}
+							if(sink === -1){
+								let add = !$modal.find("#form-modal-1").hasClass("is-invalid");
+								$modal.find("#form-modal-1").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-1").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-1").removeClass("is-invalid").next("div .invalid-feedback")
+								      .remove();
+							}
+							return;
+						}
+
+						$modal.modal("hide");
 						let a = gAlgo.bellmanFord(source, sink);
 						if(a === false){
 							return;
@@ -348,9 +432,37 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					return;
 				}
 				help.showFormModal(($modal, values) => {
-						$modal.modal("hide");
 						let source = graphState.nodeLabelToID(values[0]);
 						let sink = graphState.nodeLabelToID(values[1]);
+						if(source === -1 || sink === -1){
+							if(source === -1){
+								let add = !$modal.find("#form-modal-0").hasClass("is-invalid");
+								$modal.find("#form-modal-0").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-0").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-0").removeClass("is-invalid").nextAll("div" +
+									" .invalid-feedback").remove();
+							}
+							if(sink === -1){
+								let add = !$modal.find("#form-modal-1").hasClass("is-invalid");
+								$modal.find("#form-modal-1").addClass("is-invalid");
+								if(add){
+									$modal.find("#form-modal-1").after($("<div>", {class: "invalid-feedback"})
+										.text("ID or label not found"));
+								}
+							}
+							else{
+								$modal.find("#form-modal-1").removeClass("is-invalid").next("div .invalid-feedback")
+								      .remove();
+							}
+							return;
+						}
+
+						$modal.modal("hide");
 						let a = gAlgo.fordFulkerson(source, sink);
 						if(a === false){
 							return;
