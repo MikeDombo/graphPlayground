@@ -55,17 +55,20 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 
 		let generateDifferByOne = (input, numBits) => {
 			let inputBits = pad((input).toString(2), numBits).split("").reverse();
-			let original = inputBits.slice(); // Save original
 			let allDiffer = [];
 
 			// 1 bit difference from input, increasing order, none less than input
-			//                               Replace original input bits
-			for(let b = 0; b < numBits; b++, inputBits = original){
+			for(let b = 0; b < numBits; b++){
 				if(inputBits[b] === "0"){
+					// Save the original since we're replacing parts of it
+					let original = inputBits.slice();
 					inputBits[b] = "1";
 					allDiffer.push(parseInt(inputBits.reverse().join(""), 2));
+					// put the original back
+					inputBits = original;
 				}
 			}
+			console.log(input, allDiffer);
 
 			return allDiffer;
 		};
