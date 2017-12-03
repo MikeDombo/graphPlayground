@@ -305,6 +305,55 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return id.toString();
 			},
 
+			// Preferentially search by ID, label, and case-insensitive label
+			nodeLabelToID: (label, graph = self.state.graph) => {
+				let n = self.getGraphData(graph).nodes;
+				n = n.filter((node) => {
+					return node.label.toLowerCase() === label.toLowerCase() || node.id.toString() === label;
+				});
+
+				if(n.length === 0){
+					return -1;
+				}
+				else if(n.length === 1){
+					return n[0].id;
+				}
+
+				let rID = -1;
+				let found = false;
+
+				n.forEach((node) => {
+					if(!found && node.id.toString() === label){
+						rID = node.id;
+						found = true;
+					}
+				});
+
+				if(found){
+					return rID;
+				}
+
+				n.forEach((node) => {
+					if(!found && node.label === label){
+						rID = node.id;
+						found = true;
+					}
+				});
+
+				if(found){
+					return rID;
+				}
+
+				n.forEach((node) => {
+					if(!found && node.label.toLowerCase() === label.toLowerCase()){
+						rID = node.id;
+						found = true;
+					}
+				});
+
+				return rID;
+			},
+
 			getGraphAsDataSet: (graph) => {
 				let d = self.getGraphData(graph);
 				if(d.weighted){

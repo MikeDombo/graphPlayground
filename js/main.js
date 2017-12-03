@@ -246,8 +246,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
-						let source = parseInt(values[0]);
-						let sink = parseInt(values[1]);
+						let source = graphState.nodeLabelToID(values[0]);
+						let sink = graphState.nodeLabelToID(values[1]);
 						let a = gAlgo.breadthFirstSearch(source, sink);
 
 						let p = "<h3>Breadth-First Shortest Path</h3><hr>No path exists from "
@@ -275,8 +275,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			makeAndPrintDijkstra: () => {
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
-						let source = parseInt(values[0]);
-						let sink = parseInt(values[1]);
+						let source = graphState.nodeLabelToID(values[0]);
+						let sink = graphState.nodeLabelToID(values[1]);
 						let a = gAlgo.dijkstraSearch(source, sink);
 						if(a === false){
 							return;
@@ -311,8 +311,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			makeAndPrintBFSP: () => {
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
-						let source = parseInt(values[0]);
-						let sink = parseInt(values[1]);
+						let source = graphState.nodeLabelToID(values[0]);
+						let sink = graphState.nodeLabelToID(values[1]);
 						let a = gAlgo.bellmanFord(source, sink);
 						if(a === false){
 							return;
@@ -349,8 +349,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
-						let source = parseInt(values[0]);
-						let sink = parseInt(values[1]);
+						let source = graphState.nodeLabelToID(values[0]);
+						let sink = graphState.nodeLabelToID(values[1]);
 						let a = gAlgo.fordFulkerson(source, sink);
 						if(a === false){
 							return;
@@ -652,7 +652,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						if($(self.container).has($(lastNetworkClickEvent.event.target)).length > 0){
 							if(("edges" in lastNetworkClickEvent && lastNetworkClickEvent.edges.length === 1)
 								|| ("nodes" in lastNetworkClickEvent && lastNetworkClickEvent.nodes.length === 1)){
-								network.deleteSelected();
+								if($(':focus').parents(".modal").length === 0){
+									network.deleteSelected();
+								}
 							}
 						}
 					}
