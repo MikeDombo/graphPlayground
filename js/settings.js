@@ -7,12 +7,28 @@ define([], () => {
 		},
 		current: {},
 
+		checkForLocalStorage: () => {
+			try {
+				let x = '__storage_test__';
+				localStorage.setItem(x, x);
+				localStorage.removeItem(x);
+				return true;
+			}
+			catch(e) {
+				return false;
+			}
+		},
+
 		saveSettings: () => {
-			localStorage.setItem("app.settings", JSON.stringify(self.current));
+			if(self.checkForLocalStorage()){
+				localStorage.setItem("app.settings", JSON.stringify(self.current));
+			}
 		},
 
 		loadSettings: () => {
-			self.current = JSON.parse(localStorage.getItem("app.settings"));
+			if(self.checkForLocalStorage()){
+				self.current = JSON.parse(localStorage.getItem("app.settings"));
+			}
 			if(self.current === null){
 				self.current = {};
 			}
