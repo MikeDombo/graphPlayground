@@ -3,6 +3,8 @@ A single-page webapp to build graphs and run algorithms on them with no server-s
 
 Use it on my [GitHub Pages](https://MikeDombo.github.io/graphPlayground/)
 
+## [Usage](documentation/Usage.md)
+
 ## Supported Graph Types
 - Undirected Unweighted - Just a regular graph
 - Directed Unweighted - A digraph (directed graph) with unweighted edges
