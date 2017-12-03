@@ -60,12 +60,9 @@ define(["graphHelpers", "vis", "genericHelpers"], (gHelp, vis, help) => {
 			// 1 bit difference from input, increasing order, none less than input
 			for(let b = 0; b < numBits; b++){
 				if(inputBits[b] === "0"){
-					// Save the original since we're replacing parts of it
-					let original = inputBits.slice();
-					inputBits[b] = "1";
-					allDiffer.push(parseInt(inputBits.reverse().join(""), 2));
-					// put the original back
-					inputBits = original;
+					let newNum = inputBits.slice();
+					newNum[b] = "1";
+					allDiffer.push(parseInt(newNum.reverse().join(""), 2));
 				}
 			}
 
