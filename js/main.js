@@ -537,6 +537,10 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);
 				}
+
+				if(settings.checkForLocalStorage()){
+					localStorage.setItem("graphPlayground.lastState", JSON.stringify(self.getStateForSaving()));
+				}
 			},
 
 			saveState: () => {
@@ -544,7 +548,8 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.backHistory.shift();
 				}
 
-				graphState.backHistory.push(self.getStateForSaving());
+				let saveState = self.getStateForSaving();
+				graphState.backHistory.push(saveState);
 				graphState.forwardHistory = [];
 				$(".fa-undo").parent().parent().addClass("active");
 			},
@@ -583,15 +588,16 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			applyState: (undo = true) => {
+			applyState: (undo = true, newState = null) => {
 				let currentState = self.getStateForSaving();
 
-				let newState = null;
-				if(undo){
-					newState = graphState.backHistory.pop();
-				}
-				else{
-					newState = graphState.forwardHistory.pop();
+				if(newState === null){
+					if(undo){
+						newState = graphState.backHistory.pop();
+					}
+					else{
+						newState = graphState.forwardHistory.pop();
+					}
 				}
 
 				settings.changeOption("direction", newState.graph.isDirected());

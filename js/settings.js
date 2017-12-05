@@ -21,13 +21,13 @@ define([], () => {
 
 		saveSettings: () => {
 			if(self.checkForLocalStorage()){
-				localStorage.setItem("app.settings", JSON.stringify(self.current));
+				localStorage.setItem("graphPlayground.settings", JSON.stringify(self.current));
 			}
 		},
 
 		loadSettings: () => {
 			if(self.checkForLocalStorage()){
-				self.current = JSON.parse(localStorage.getItem("app.settings"));
+				self.current = JSON.parse(localStorage.getItem("graphPlayground.settings"));
 			}
 			if(self.current === null){
 				self.current = {};
@@ -72,8 +72,7 @@ define([], () => {
 
 			// Reset graph to just a plain graph. Not sure if this should actually happen or not.
 			let G = main.graphState.dataSetToGraph(main.graphState.graph.getAllNodes(), main.graphState.graph.getAllNodes(), false, self.defaults.direction, self.defaults.weights);
-			let d = {nodes: G.getAllNodes(), edges: G.getAllEdges()};
-			main.setData(d);
+			main.setData(main.graphState.getGraphData(G));
 
 		}
 	};

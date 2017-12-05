@@ -173,7 +173,7 @@
 
 	require(["vis"], function (v){
 		window.vis = v;
-		require(["main", "predefinedGraphs", "settings"], (m, predefined, settings) =>{
+		require(["main", "predefinedGraphs", "settings", "Graph"], (m, predefined, settings, Graph) =>{
 			window.main = m;
 			window.predefined = predefined;
 			window.settings = settings;
@@ -182,8 +182,22 @@
 			main.addNetworkListeners(network);
 
 			settings.loadSettings();
-			main.setData(predefined.Petersen(), false, true, true);
-			main.printGraphAlgorithms();
+
+			let loadDefault = true;
+			if(settings.checkForLocalStorage()){
+				let s = localStorage.getItem("graphPlayground.lastState");
+				if(s !== null){
+					s = JSON.parse(s);
+					if("nodes" in s.graph){
+						s.graph = new Graph(s.graph.nodes, s.graph.edges, s.graph.directed, s.graph.weighted);
+						loadDefault = false;
+						main.applyState(false, s);
+					}
+				}
+			}
+			if(loadDefault){
+				main.setData(predefined.Petersen(), false, true, true);
+			}
 		});
 	});
 </script>

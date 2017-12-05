@@ -1,5 +1,3 @@
-keep state between sessions (pickup where you left off)
-
 max clique
 arboricity
 hamiltonicity
