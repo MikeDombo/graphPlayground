@@ -623,7 +623,10 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			shuffleNetworkLayout: () => {
-				self.setData({nodes: graphState.graph.getAllNodes(), edges: graphState.graph.getAllEdges()}, false, false, true);
+				self.setData({
+					nodes: graphState.graph.getAllNodes(),
+					edges: graphState.graph.getAllEdges()
+				}, false, false, true);
 			},
 
 			newRandomNetworkLayout: (network) => {

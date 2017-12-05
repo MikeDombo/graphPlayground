@@ -21,7 +21,7 @@ define("Graph", [], () => {
 					nodeList[n.id] = this.addNode(n);
 				});
 			}
-			else {
+			else{
 				// Create the nodes
 				for(let i = 0; i < nodeNum; i++){
 					nodeList.push(this.addNode({}));
@@ -43,7 +43,7 @@ define("Graph", [], () => {
 		Graph.prototype = {
 			constructor: Graph,
 
-			clone: function(){
+			clone: function () {
 				let G = new Graph(this.numNodes, null, this.directed, this.weighted);
 
 				this.nodes.forEach((v) => {
@@ -118,7 +118,7 @@ define("Graph", [], () => {
 					if(n.id === id){
 						nodeMap[n.id] = -1;
 					}
-					else {
+					else{
 						nodeMap[n.id] = nodeCount++;
 					}
 					origPos[n.id] = {x: n.x, y: n.y};
@@ -235,7 +235,7 @@ define("Graph", [], () => {
 				return this.nodes[id].adjacency;
 			},
 
-			getFullAdjacency: function() {
+			getFullAdjacency: function () {
 				let adj = [];
 				this.nodes.forEach((n) => {
 					adj[n.id] = n.adjacency;
@@ -248,7 +248,7 @@ define("Graph", [], () => {
 				return this.nodes[id].adjacency.length;
 			},
 
-			getAllOutDegrees: function(){
+			getAllOutDegrees: function () {
 				let degrees = [];
 				this.nodes.forEach((node) => {
 					degrees[node.id] = node.adjacency.length;
@@ -257,19 +257,19 @@ define("Graph", [], () => {
 				return degrees;
 			},
 
-			getAllNodes: function(){
+			getAllNodes: function () {
 				return this.nodes;
 			},
 
-			getAllEdges: function(){
+			getAllEdges: function () {
 				return this.edges;
 			},
 
-			getNumberOfNodes: function(){
+			getNumberOfNodes: function () {
 				return this.numNodes;
 			},
 
-			getNumberOfEdges: function(){
+			getNumberOfEdges: function () {
 				return this.edges.length;
 			},
 
@@ -277,7 +277,7 @@ define("Graph", [], () => {
 				return this.nodes[id1].adjacency.includes(id2);
 			},
 
-			getEdgesBetween: function(id1, id2) {
+			getEdgesBetween: function (id1, id2) {
 				let edgeList = [];
 				this.edges.forEach((edge) => {
 					if(!this.directed){
@@ -294,7 +294,7 @@ define("Graph", [], () => {
 				return edgeList;
 			},
 
-			getMinWeightEdgeBetween: function(id1, id2) {
+			getMinWeightEdgeBetween: function (id1, id2) {
 				let minWeight = Infinity;
 				this.getEdgesBetween(id1, id2).forEach((edge) => {
 					if(edge.weight < minWeight){
@@ -305,7 +305,7 @@ define("Graph", [], () => {
 				return minWeight;
 			},
 
-			getNodeInDegree: function(id) {
+			getNodeInDegree: function (id) {
 				let degree = 0;
 				this.nodes.forEach((node) => {
 					node.adjacency.forEach((n) => {
@@ -381,7 +381,7 @@ define("Graph", [], () => {
 				return G;
 			},
 
-			reverseDiGraph: function() {
+			reverseDiGraph: function () {
 				// Only reverse directed graphs
 				if(!this.directed){
 					return false;
@@ -394,11 +394,11 @@ define("Graph", [], () => {
 				});
 			},
 
-			isWeighted: function(){
+			isWeighted: function () {
 				return this.weighted;
 			},
 
-			isDirected: function (){
+			isDirected: function () {
 				return this.directed;
 			},
 		};

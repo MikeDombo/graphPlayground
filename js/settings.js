@@ -8,13 +8,13 @@ define([], () => {
 		current: {},
 
 		checkForLocalStorage: () => {
-			try {
+			try{
 				let x = '__storage_test__';
 				localStorage.setItem(x, x);
 				localStorage.removeItem(x);
 				return true;
 			}
-			catch(e) {
+			catch(e){
 				return false;
 			}
 		},
