@@ -1,5 +1,5 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
-	($, gAlgo, gHelp, help) => {
+define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
+	($, gAlgo, gHelp, help, Graph) => {
 		let self = {
 			backHistory: [],
 			forwardHistory: [],
@@ -56,15 +56,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 					}
 				},
 			],
-			state: {
-				graph: new jsgraphs.Graph(),
-				nodes: [],
-				edges: [],
-				adjacency: [],
-				degrees: [],
-				directed: false,
-				weighted: false
-			},
+			state: {},
+			graph: null,
 			graphProperties: {
 				vertices: 0,
 				edges: 0,
@@ -113,16 +106,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			makeAndPrintProperties: (recalcLong = false) => {
 				let directional = settings.getOption("direction");
 
-				let gs = self.state;
+				self.graphProperties.vertices = self.graph.getNumberOfNodes();
+				self.graphProperties.edges = self.graph.getNumberOfEdges();
 
-				let d = self.getGraphData();
-				gs.nodes = d.nodes;
-				gs.edges = d.edges;
-				self.graphProperties.vertices = gs.nodes.length;
-				self.graphProperties.edges = gs.edges.length;
-
-				gs.adjacency = gs.graph.adjList;
-				gs.degrees = gHelp.findVertexDegrees(gs.adjacency);
 				if(!directional){
 					self.getProperty("eulerian", true);
 				}
@@ -153,65 +139,43 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				$("#graphProps").html("<p class='nav-link'>" + p + "</p>");
 			},
 
-			addEdge: (from, to, weight = 0) => {
-				let d = self.getGraphData();
-				d.edges.push({from: from, to: to, weight: weight});
-				d.nodes = self.clearColorFromNodes(d.nodes);
-				main.setData({nodes: d.nodes, edges: d.edges});
+			addEdge: (from, to, weight = 0, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.addEdge(from, to, weight);
+
+				let n = graph.getAllNodes();
+				n = self.clearColorFromNodes(n);
+				main.setData({nodes: n, edges: graph.getAllEdges()});
 			},
 
-			addNode: (data) => {
-				let d = self.getGraphData();
-				d.nodes.push({id: d.nodes.length, label: data.label, x: data.x, y: data.y});
-				main.setData({nodes: d.nodes, edges: d.edges});
+			addNode: (data, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.addNode({label: data.label, x: data.x, y: data.y});
+				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
 			},
 
-			editNode: (id, label) => {
-				self.state.graph.node(id).label = label;
-				let d = self.getGraphData();
-				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
+			editNode: (id, label, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.editNode(id, {label: label});
+				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()}, false, false);
 			},
 
-			editEdge: (from, to, newWeight) => {
-				let d = self.getGraphData();
-				d.edges.forEach((v) => {
-					if(v.from === from && v.to === to){
-						v.weight = newWeight;
-					}
-				});
-				main.setData({nodes: d.nodes, edges: d.edges}, false, false);
+			editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.editEdge(from, to, newWeight, oldWeight);
+				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()}, false, false);
 			},
 
-			deleteEdge: (from, to) => {
-				let d = self.getGraphData();
-				let newEdges = [];
-				d.edges.forEach((v) => {
-					if(!(v.from === from && v.to === to)){
-						newEdges.push(v);
-					}
-				});
-				main.setData({nodes: d.nodes, edges: newEdges});
+			deleteEdge: (from, to, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.deleteEdge(from, to, null, false);
+				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
 			},
 
-			deleteNode: (id) => {
-				let d = self.getGraphData();
-
-				let newNodes = [];
-				let nodes = d.nodes;
-				nodes.forEach((v) => {
-					if(v.id !== id){
-						newNodes.push(v);
-					}
-				});
-				let newEdges = [];
-				let edges = d.edges;
-				edges.forEach((v) => {
-					if(v.from !== id && v.to !== id){
-						newEdges.push(v);
-					}
-				});
-
-				main.setData({nodes: newNodes, edges: newEdges});
+			deleteNode: (id, graph = self.graph) => {
+				graph = self.getNewGraph();
+				graph.deleteNode(id);
+				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
 			},
 
 			clearColorFromNodes: (nodes) => {
@@ -221,80 +185,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return nodes;
 			},
 
-			getGraphType: (graph) => {
-				let directed = graph instanceof jsgraphs.DiGraph || graph instanceof jsgraphs.WeightedDiGraph;
-				let weighted = graph instanceof jsgraphs.WeightedGraph || graph instanceof jsgraphs.FlowNetwork || graph instanceof jsgraphs.WeightedDiGraph;
-
-				return {directed: directed, weighted: weighted};
-			},
-
-			getGraphData: (graph) => {
-				let directed = false;
-				let weighted = false;
-
-				if(graph === null || typeof graph === "undefined"){
-					graph = self.state.graph;
-					directed = self.state.directed;
-					weighted = self.state.weighted;
-				}
-				else{
-					let t = self.getGraphType(graph);
-					directed = t.directed;
-					weighted = t.weighted;
-				}
-
-				let nodes = [];
-				let edges = [];
-
-				let i = 0;
-				graph.nodeInfo.forEach((v) => {
-					let n = {id: i++, label: v.label};
-
-					if("color" in v && v.color !== null && typeof v.color !== "undefined"){
-						n.color = v.color;
-					}
-
-					if(typeof v.x !== "undefined" && v.x !== null){
-						n.x = v.x;
-					}
-					if(typeof v.y !== "undefined" && v.y !== null){
-						n.y = v.y;
-					}
-
-					nodes.push(n);
-				});
-
-				if("edges" in graph){
-					Object.keys(graph.edges).forEach((k) => {
-						let v = graph.edges[k];
-						edges.push({from: v.from(), to: v.to()});
-					});
-				}
-				else{
-					graph.adjList.forEach((node) => {
-						node.forEach((edge) => {
-							let existingEdge = edges.find((e) => {
-								return e.from === edge.v && e.to === edge.w && e.weight === edge.weight;
-							});
-							let repeatedEdge = edges.find((e) => {
-								return e.from === edge.w && e.to === edge.v && e.weight === edge.weight;
-							});
-
-							if((typeof existingEdge === "undefined" || existingEdge.length === 0) && (directed || typeof repeatedEdge === "undefined")){
-								if(typeof edge.weight === "undefined"){
-									edge.weight = 0;
-								}
-								edges.push({from: edge.v, to: edge.w, weight: edge.weight});
-							}
-						});
-					});
-				}
-
-				return {nodes: nodes, edges: edges, directed: directed, weighted: weighted};
-			},
-
-			nodeIDToLabel: (id, graph = self.state.graph) => {
-				let n = self.getGraphData(graph).nodes;
+			nodeIDToLabel: (id, graph = self.graph) => {
+				let n = graph.getAllNodes();
 				n = n.find((node) => {
 					return node.id === id;
 				});
@@ -306,8 +198,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			},
 
 			// Preferentially search by ID, label, and case-insensitive label
-			nodeLabelToID: (label, graph = self.state.graph) => {
-				let n = self.getGraphData(graph).nodes;
+			nodeLabelToID: (label, graph = self.graph) => {
+				let n = graph.getAllNodes();
 				n = n.filter((node) => {
 					return node.label.toLowerCase() === label.toLowerCase() || node.id.toString() === label;
 				});
@@ -355,8 +247,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 			},
 
 			getGraphAsDataSet: (graph) => {
-				let d = self.getGraphData(graph);
-				if(d.weighted){
+				graph = graph.clone();
+				let d = {nodes: graph.getAllNodes(), edges: graph.getAllEdges()};
+				if(graph.isWeighted()){
 					d.edges.forEach((e) => {
 						e.label = e.weight.toString();
 					});
@@ -365,54 +258,28 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
-			setLocations: (locations) => {
-				self.state.graph.nodeInfo.forEach((v, i) => {
-					v.x = locations[i].x;
-					v.y = locations[i].y;
+			getNewGraph: (graph = self.graph) => {
+				graph = graph.clone();
+				return graph;
+			},
+
+			setLocations: (locations, graph = self.graph) => {
+				Object.keys(locations).forEach((i) => {
+					let v = locations[i];
+					graph.editNode(i, {x: v.x, y: v.y});
 				});
 			},
 
 			dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
 				let d = self.alignData(0, nodes, edges);
-				nodes = d.nodes;
-				edges = d.edges;
+				let g = new Graph(d.nodes.length, null, directional, weighted);
 
-				let g = new jsgraphs.Graph(nodes.length);
-				if(directional && weighted){
-					g = new jsgraphs.WeightedDiGraph(nodes.length);
-				}
-				else if(directional && !weighted){
-					g = new jsgraphs.DiGraph(nodes.length);
-				}
-				else if(!directional && weighted){
-					g = new jsgraphs.WeightedGraph(nodes.length);
-				}
-
-				edges.forEach((v) => {
-					if(weighted){
-						// Add weights if none exist
-						if(!("weight" in v) || typeof v.weight === "undefined" || v.weight === null){
-							v.weight = 1;
-						}
-						g.addEdge(new jsgraphs.Edge(v.from, v.to, v.weight));
-						if(directional && doubleEdges){
-							g.addEdge(new jsgraphs.Edge(v.to, v.from, v.weight));
-						}
-					}
-					else{
-						g.addEdge(v.from, v.to);
-						if(directional && doubleEdges){
-							g.addEdge(v.to, v.from);
-						}
-					}
+				d.nodes.forEach((n) => {
+					g.editNode(n.id, {label: n.label, color: n.color, x: n.x, y: n.y});
 				});
 
-				nodes.forEach((v) => {
-					let n = g.node(v.id);
-					n.label = v.label;
-					n.x = v.x;
-					n.y = v.y;
-					n.color = v.color;
+				d.edges.forEach((edge) => {
+					g.addEdge(edge.from, edge.to, edge.weight);
 				});
 
 				return g;

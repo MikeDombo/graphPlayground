@@ -1,4 +1,4 @@
-define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
+define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH) => {
 	let self = {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
@@ -63,22 +63,11 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 		],
 
 		colorNetwork: (graphState = main.graphState) => {
-			let G = graphState.state.graph;
-			let d = graphState.getGraphData(G);
+			let G = graphState.graph.clone();
 
-			// Get an unweighted graph if ours is weighted. For some reason it doesn't work w/ weights, even though
-			// it should
-			if(d.weighted){
-				G = graphState.dataSetToGraph(d.nodes, d.edges);
-				d = graphState.getGraphData(G);
-			}
-
-			let nodes = d.nodes;
-			let adjacency = G.adjList;
-			let degrees = graphH.findVertexDegrees(adjacency);
-
-			let nodeArr = genericH.datasetToArray(nodes, "id");
+			let nodeArr = genericH.datasetToArray(G.getAllNodes(), "id");
 			// Put vertices in array in decreasing order of degree
+			let degrees = G.getAllOutDegrees();
 			let vertexOrder = nodeArr.sort((a, b) => {
 				return degrees[a] < degrees[b] ? 1 : degrees[a] === degrees[b] ? 0 : -1;
 			});
@@ -97,7 +86,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 					let conflict = false;
 
 					for(let j = 0; j < myGroup.length; j++){
-						if(graphH.isAdjacent(p, myGroup[j], adjacency)){
+						if(G.areAdjacent(p, myGroup[j])){
 							i++;
 							conflict = true;
 							break;
@@ -120,69 +109,147 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 		},
 
 		connectedComponents: (graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			// If weighted, unweight it
-			if(graphState.getGraphType(G).weighted){
-				let d = graphState.getGraphData(G);
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false);
+			let components = {};
+			let componentCount = 0;
+			for(let i = 0; i < G.getNumberOfNodes(); i++){
+				if(!(i in components)){
+					let visited = self.depthFirstSearch(G, i);
+					visited.forEach((v) => {
+						components[v] = componentCount;
+					});
+					componentCount++;
+				}
 			}
 
-			let cc = new jsgraphs.ConnectedComponents(G);
-			let componentIndex = {};
-			for(let v = 0; v < G.V; v++){
-				componentIndex[v] = cc.componentId(v);
-			}
-			return {components: componentIndex, count: cc.componentCount()};
+			return {components: components, count: componentCount};
 		},
 
+		depthFirstSearch: (G = graphState.graph.clone(), start) => {
+			let visisted = [];
+			let Stack = [];
+			Stack.push(start);
+			while(Stack.length > 0){
+				let v = Stack.pop();
+				if(!visisted.includes(v)){
+					visisted.push(v);
+					G.getNodeAdjacency(v).forEach((nodeID) => {
+						Stack.push(nodeID);
+					});
+				}
+			}
+
+			return visisted;
+		},
+
+		// Tarjan's algorithm
 		stronglyConnectedComponents: (graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			// If weighted, unweight it
-			if(graphState.getGraphType(G).weighted){
-				let d = graphState.getGraphData(G);
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, false);
+			let index = 0;
+			let indices = {};
+			let lowlink = {};
+			let S = [];
+			let components = {};
+			let componentCount = 0;
+
+			let strongConnect = (v) => {
+				indices[v] = index;
+				lowlink[v] = index++;
+				S.push(v);
+
+				G.getNodeAdjacency(v).forEach((w) => {
+					if(!(w in indices)){
+						strongConnect(w);
+						lowlink[v] = Math.min(lowlink[v], lowlink[w]);
+					}
+					else if(S.includes(w)){
+						lowlink[v] = Math.min(lowlink[v], indices[w]);
+					}
+				});
+
+				if(lowlink[v] === indices[v]){
+					let w = -1;
+					let addedAny = false;
+					if(S.length > 0){
+						do{
+							w = S.pop();
+							components[w] = componentCount;
+							addedAny = true;
+						}
+						while(w !== v);
+						if(addedAny){
+							componentCount++;
+						}
+					}
+				}
+			};
+
+			for(let i = 0; i < G.getNumberOfNodes(); i++){
+				if(!(i in indices)){
+					strongConnect(i);
+				}
 			}
 
-			let cc = new jsgraphs.StronglyConnectedComponents(G);
-			let componentIndex = {};
-			for(let v = 0; v < G.V; v++){
-				componentIndex[v] = cc.componentId(v);
-			}
-			return {components: componentIndex, count: cc.componentCount()};
+			return {components: components, count: componentCount};
 		},
 
 		breadthFirstSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			// If weighted, unweight it
-			if(graphState.getGraphType(G).weighted){
-				let d = graphState.getGraphData(G);
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, false, false);
+			// Perform the BFS
+			let visisted = [];
+			let Q = []; // Use Push and Shift for Queue operations
+			let edgeTo = {};
+
+			Q.push(startNodeID);
+			while(Q.length > 0){
+				let x = Q.shift();
+				if(!visisted.includes(x)){
+					visisted.push(x);
+					G.getNodeAdjacency(x).forEach((y) => {
+						if(!visisted.includes(y)){
+							edgeTo[y] = x;
+							Q.push(y);
+						}
+					});
+				}
 			}
 
-			let bfs = new jsgraphs.BreadthFirstSearch(G, startNodeID);
+			let pathExists = visisted.includes(targetNodeID);
+			if(pathExists){
+				// Build the path
+				let path = [];
+				for(let x = targetNodeID; x !== startNodeID; x = edgeTo[x]) {
+					path.push(x);
+				}
+				path.push(startNodeID);
+				path = path.reverse();
 
-			if(bfs.hasPathTo(targetNodeID)){
-				return {pathExists: true, path: bfs.pathTo(targetNodeID), distance: bfs.pathTo(targetNodeID).length};
+				// Get the path weight
+				let weight = 0;
+				for(let i = 0; i < path.length-1; i++){
+					weight += G.getMinWeightEdgeBetween(path[i], path[i+1]);
+				}
+
+				return {pathExists: pathExists, path: path, distance: path.length, weight: weight};
 			}
 
-			return {pathExists: false, path: [], distance: -1};
+			return {pathExists: pathExists, path: [], distance: -1, weight: -1};
 		},
 
 		dijkstraSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
-			let G = graphState.state.graph;
-			let d = graphState.getGraphData(G);
+			let G = graphState.graph.clone();
 
-			if(!d.directed){
-				G = graphState.dataSetToGraph(d.nodes, d.edges, true, true, true);
+			if(!G.isDirected()){
+				G.convertToDirected(true);
 			}
-			else if(!d.weighted){
-				G = graphState.dataSetToGraph(d.nodes, d.edges, false, true, true);
+			else if(!G.isWeighted()){
+				G.convertToWeighted();
 			}
 
-			let nonNegative = graphState.getGraphData(G).edges.find((edge) => {
+			let nonNegative = G.getAllEdges().find((edge) => {
 				return edge.weight < 0;
 			});
 			if(typeof nonNegative !== "undefined"){
@@ -193,23 +260,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 				return false;
 			}
 
-			let dijk = new jsgraphs.Dijkstra(G, startNodeID);
-
-			if(dijk.hasPathTo(targetNodeID)){
-				let path = [];
-				dijk.pathTo(targetNodeID).forEach((edge) => {
-					if(!path.includes(edge.v)){
-						path.push(edge.v);
-					}
-					path.push(edge.w);
-				});
-				return {
-					pathExists: true,
-					path: path,
-					distance: dijk.pathTo(targetNodeID).length,
-					cost: dijk.distanceTo(targetNodeID)
-				};
-			}
+			// TODO: Implement Dijkstra
 
 			return {pathExists: false, path: [], distance: -1, cost: 0};
 		},
@@ -275,16 +326,16 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 		},
 
 		topologicalSort: (graphState = main.graphState) => {
-			let G = graphState.state.graph;
-			let d = graphState.getGraphData(G);
+			let G = graphState.graph.clone();
 
-			let adjacency = G.adjList.slice(); // Make sure adjacency list is a copy, because we're modifying it
+			let adjacency = G.getFullAdjacency(); // Make sure adjacency list is a copy, because we're modifying it
 			let degrees = graphH.findVertexDegreesDirectional(adjacency);
 
 			let L = [];
-			let S = d.nodes.filter((n) => {
+			let S = G.getAllNodes().filter((n) => {
 				return degrees[n.id].in === 0;
 			});
+			let edges = G.getAllEdges();
 
 			while(S.length !== 0){
 				let nodeN = S.pop();
@@ -293,7 +344,7 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 				let nodeNConnectedTo = adjacency[nodeN.id];
 
 				// Remove n to m edges for all nodes m
-				d.edges = d.edges.filter((edge) => {
+				edges = edges.filter((edge) => {
 					if(edge.from === nodeN.id && nodeNConnectedTo.includes(edge.to)){
 						degrees[edge.to].in--;
 						adjacency[nodeN.id] = adjacency[nodeN.id].filter((v) => {
@@ -307,12 +358,12 @@ define(["graphHelpers", "genericHelpers"], (graphH, genericH) => {
 				// If m has no more incoming edges, add it to S
 				nodeNConnectedTo.forEach((mID) => {
 					if(degrees[mID].in === 0){
-						S.push(d.nodes[mID]);
+						S.push(G.getNode(mID));
 					}
 				});
 			}
 
-			return d.edges.length > 0 || L;
+			return edges.length > 0 || L;
 		},
 
 		isGraphCyclic: (graphState = main.graphState) => {

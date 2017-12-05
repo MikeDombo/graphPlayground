@@ -105,7 +105,7 @@ define(["graphHelpers", "genericHelpers"], (gHelp, help) => {
 		Complete: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
-					main.setData(completeGraph(vals[0]));
+					main.setData(completeGraph(vals[0]), false, true, true);
 				},
 				"Configurable Complete Graph", "Go",
 				[{
@@ -117,7 +117,7 @@ define(["graphHelpers", "genericHelpers"], (gHelp, help) => {
 		Hypercube: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
-					main.setData(hypercubeGraph(vals[0]));
+					main.setData(hypercubeGraph(vals[0]), false, true, true);
 				},
 				"Configurable Hypercube Graph", "Go",
 				[{
@@ -129,7 +129,7 @@ define(["graphHelpers", "genericHelpers"], (gHelp, help) => {
 		Custom: () => {
 			help.showFormModal(($modal, vals) => {
 					$modal.modal("hide");
-					main.setData(newCustomGraph(vals[0], vals[1], vals[2]));
+					main.setData(newCustomGraph(vals[0], vals[1], vals[2]), false, true, true);
 				},
 				"Configurable Graph", "Go",
 				[

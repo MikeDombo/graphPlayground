@@ -33,14 +33,10 @@ define({
 		},
 
 		interpolateNodesFromEdges: (edges) => {
-			let nodes = new vis.DataSet();
+			let nodes = [];
 			edges.forEach((v) => {
-				if(nodes.get(v.from) === null){
-					nodes.add({id: v.from, label: "" + v.from});
-				}
-				if(nodes.get(v.to) === null){
-					nodes.add({id: v.to, label: "" + v.to});
-				}
+					nodes[v.from] = {id: v.from, label: "" + v.from};
+					nodes[v.to] = {id: v.to, label: "" + v.to};
 			});
 
 			return nodes;

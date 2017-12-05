@@ -1,4 +1,4 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
+define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
 	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
 		let self = {
 			dataImpExp: dataImpExp,
@@ -11,7 +11,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					callback(null);
 					$modal.modal("hide");
 					vals = parseFloat(vals[0]);
-					graphState.editEdge(data.from.id, data.to.id, vals);
+					graphState.editEdge(data.from.id, data.to.id, vals, data.weight);
 				}, "Edit Edge", "Save", [
 					{
 						type: "numeric",
@@ -127,21 +127,22 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			toggleDirectional: () => {
 				let t = !settings.getOption("direction");
 				settings.changeOption("direction", t);
-				let d = self.graphState.getGraphData();
-				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, t, t, self.graphState.state.weighted);
-				d = self.graphState.getGraphData(newGraph);
-				self.setData(d);
+				let G = self.graphState.graph.clone();
+				if(t){
+					G.convertToDirected(true);
+				}
+				else{
+					G = G.getGraphAsUndirected();
+				}
+				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()});
 			},
 
 			toggledWeighted: () => {
 				let t = !settings.getOption("weights");
 				settings.changeOption("weights", t);
-				let d = self.graphState.getGraphData();
-				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, false, self.graphState.state.directed, t);
-				d = self.graphState.getGraphData(newGraph);
-				self.setData(d);
+				let G = self.graphState.graph.clone();
+				G.convertToWeighted();
+				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()});
 			},
 
 			makeAndPrintGraphColoring: () => {
@@ -200,7 +201,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				if(!settings.getOption("direction")){
 					return;
 				}
-				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.state.adjacency));
+				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.graph.getFullAdjacency()));
 				self.graphState.setUpToDate(true, ["eulerian"]);
 				self.graphState.graphProperties.eulerian = t;
 			},
@@ -212,7 +213,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 
 				self.graphState.setUpToDate(true, ["eulerian"]);
-				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(self.graphState.state.degrees);
+				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(graphState.graph.getAllOutDegrees());
 			},
 
 			makeAndPrintStronglyConnectedComponents: () => {
@@ -248,10 +249,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			makeAndPrintBFS: () => {
-				if(settings.getOption("direction")){
-					return;
-				}
-
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 
@@ -479,12 +476,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				let graphColors = graphState.getProperty("graphColoring", true);
 				let chromaticNumber = graphState.getProperty("Chromatic Number", true);
-				let d = graphState.getGraphData();
+
 				let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-				d.nodes.forEach((v) => {
-					v.color = colors[graphColors[v.id]];
+				let G = graphState.getNewGraph();
+				G.getAllNodes().forEach((v) => {
+					G.editNode(v.id, {color: colors[graphColors[v.id]]});
 				});
-				self.setData({nodes: d.nodes, edges: d.edges}, false, false);
+				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()}, false, false);
 			},
 
 			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
@@ -493,15 +491,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					data.nodes.forEach((v) => {
 						delete v.x;
 						delete v.y;
-					});
-				}
-				else{
-					data.nodes.forEach((v) => {
-						let pos = network.getPositions(v.id);
-						if(v.id in pos){
-							v.x = pos[v.id].x;
-							v.y = pos[v.id].y;
-						}
 					});
 				}
 
@@ -520,9 +509,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 				let g = graphState.dataSetToGraph(data.nodes, data.edges, false, directional, weighted);
 
-				graphState.state.graph = g;
-				graphState.state.directed = directional;
-				graphState.state.weighted = weighted;
+				graphState.graph = g;
 
 				// Set a new random seed so that the layout will be different
 				self.newRandomNetworkLayout(network);
@@ -546,8 +533,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.backHistory.shift();
 				}
 
-				let s = self.getStateForSaving();
-				graphState.backHistory.push(s);
+				graphState.backHistory.push(self.getStateForSaving());
 				graphState.forwardHistory = [];
 				$(".fa-undo").parent().parent().addClass("active");
 			},
@@ -561,6 +547,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							state[k] = v;
 						}
 						else{
+							if(k === "graph" && v !== null){
+								state[k] = v.clone();
+							}
 							if(!k.toLowerCase().includes("history")){
 								state[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
 							}
@@ -594,10 +583,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					newState = graphState.forwardHistory.pop();
 				}
 
-				settings.changeOption("direction", newState.state.directed);
-				settings.changeOption("weights", newState.state.weighted);
+				settings.changeOption("direction", newState.graph.isDirected());
+				settings.changeOption("weights", newState.graph.isWeighted());
 
-				let g = graphState.getGraphAsDataSet(newState.state.graph);
+				let g = graphState.getGraphAsDataSet(newState.graph);
 
 				network.setData(g);
 				network.disableEditMode();
@@ -634,7 +623,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			shuffleNetworkLayout: () => {
-				self.setData(self.graphState.getGraphData(), false, false, true);
+				self.setData({nodes: graphState.graph.getAllNodes(), edges: graphState.graph.getAllEdges()}, false, false, true);
 			},
 
 			newRandomNetworkLayout: (network) => {

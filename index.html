@@ -156,7 +156,6 @@
 			modernizr: "vendor/modernizr-3.5.0.min",
 			popper: "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min",
 			bootstrap: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min",
-			jsgraphs: "vendor/js-graph-algorithms/jsgraphs.min",
 		},
 		shim: {
 			"bootstrap": ["jquery"]
@@ -172,7 +171,7 @@
 		});
 	});
 
-	require(["jsgraphs", "vis"], function (j, v){
+	require(["vis"], function (v){
 		window.vis = v;
 		require(["main", "predefinedGraphs", "settings"], (m, predefined, settings) =>{
 			window.main = m;
