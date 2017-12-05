@@ -370,11 +370,17 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						let sink = graphState.nodeLabelToID(values[1]);
 
 						let a = gAlgo.fordFulkerson(source, sink);
+
+						let p = "<h3>Ford-Fulkerson</h3><hr>No path exists from "
+							+ help.htmlEncode(self.graphState.nodeIDToLabel(source))
+							+ " to " + help.htmlEncode(self.graphState.nodeIDToLabel(sink));
+
 						if(a === false){
+							help.printout(p);
 							return;
 						}
 
-						let p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + self.graphState.nodeIDToLabel(source)
+						p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + self.graphState.nodeIDToLabel(source)
 							+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
 						p += "\n\nUsing Capacities:\n\n";
 						p = help.htmlEncode(p);
