@@ -1,4 +1,4 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
+define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
 	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
 		let self = {
 			dataImpExp: dataImpExp,
@@ -11,7 +11,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					callback(null);
 					$modal.modal("hide");
 					vals = parseFloat(vals[0]);
-					graphState.editEdge(data.from.id, data.to.id, vals);
+					graphState.editEdge(data.from.id, data.to.id, vals, parseFloat(data.label));
 				}, "Edit Edge", "Save", [
 					{
 						type: "numeric",
@@ -127,21 +127,27 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			toggleDirectional: () => {
 				let t = !settings.getOption("direction");
 				settings.changeOption("direction", t);
-				let d = self.graphState.getGraphData();
-				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, t, t, self.graphState.state.weighted);
-				d = self.graphState.getGraphData(newGraph);
-				self.setData(d);
+				let G = self.graphState.graph.clone();
+				if(t){
+					G.convertToDirected(true);
+				}
+				else{
+					G = G.getGraphAsUndirected();
+				}
+				self.setData(graphState.getGraphData(G));
 			},
 
 			toggledWeighted: () => {
 				let t = !settings.getOption("weights");
 				settings.changeOption("weights", t);
-				let d = self.graphState.getGraphData();
-				d.nodes = self.graphState.clearColorFromNodes(d.nodes);
-				let newGraph = self.graphState.dataSetToGraph(d.nodes, d.edges, false, self.graphState.state.directed, t);
-				d = self.graphState.getGraphData(newGraph);
-				self.setData(d);
+				let G = self.graphState.graph.clone();
+				if(t){
+					G.convertToWeighted();
+				}
+				else{
+					G.convertToUnWeighted();
+				}
+				self.setData(graphState.getGraphData(G));
 			},
 
 			makeAndPrintGraphColoring: () => {
@@ -200,7 +206,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				if(!settings.getOption("direction")){
 					return;
 				}
-				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.state.adjacency));
+				let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(graphState.graph.getFullAdjacency()));
 				self.graphState.setUpToDate(true, ["eulerian"]);
 				self.graphState.graphProperties.eulerian = t;
 			},
@@ -212,7 +218,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 
 				self.graphState.setUpToDate(true, ["eulerian"]);
-				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(self.graphState.state.degrees);
+				self.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(graphState.graph.getAllOutDegrees());
 			},
 
 			makeAndPrintStronglyConnectedComponents: () => {
@@ -248,10 +254,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			makeAndPrintBFS: () => {
-				if(settings.getOption("direction")){
-					return;
-				}
-
 				help.showFormModal(($modal, values) => {
 						$modal.modal("hide");
 
@@ -368,16 +370,22 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						let sink = graphState.nodeLabelToID(values[1]);
 
 						let a = gAlgo.fordFulkerson(source, sink);
+
+						let p = "<h3>Ford-Fulkerson</h3><hr>No path exists from "
+							+ help.htmlEncode(self.graphState.nodeIDToLabel(source))
+							+ " to " + help.htmlEncode(self.graphState.nodeIDToLabel(sink));
+
 						if(a === false){
+							help.printout(p);
 							return;
 						}
 
-						let p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + self.graphState.nodeIDToLabel(source)
+						p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + self.graphState.nodeIDToLabel(source)
 							+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
 						p += "\n\nUsing Capacities:\n\n";
 						p = help.htmlEncode(p);
-						a.minCut.forEach((v) => {
-							p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w)
+						a.flowPath.forEach((v) => {
+							p += self.graphState.nodeIDToLabel(v.from) + "&rarr;" + self.graphState.nodeIDToLabel(v.to)
 								+ " using " + v.flow + " of " + v.capacity + " \n";
 						});
 						p = p.trim();
@@ -402,7 +410,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n\nUsing Edges:\n\n";
 				p = help.htmlEncode(p);
 				a.mst.forEach((v) => {
-					p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w) + " \n";
+					p += self.graphState.nodeIDToLabel(v.from) + "&rarr;" + self.graphState.nodeIDToLabel(v.to) + " \n";
 				});
 				p = p.trim();
 				p = "<h3>Kruskal Minimum Spanning Tree</h3><hr>" + p;
@@ -479,12 +487,13 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 				let graphColors = graphState.getProperty("graphColoring", true);
 				let chromaticNumber = graphState.getProperty("Chromatic Number", true);
-				let d = graphState.getGraphData();
+
 				let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-				d.nodes.forEach((v) => {
-					v.color = colors[graphColors[v.id]];
+				let G = graphState.getNewGraph();
+				G.getAllNodes().forEach((v) => {
+					G.editNode(v.id, {color: colors[graphColors[v.id]]});
 				});
-				self.setData({nodes: d.nodes, edges: d.edges}, false, false);
+				self.setData(graphState.getGraphData(G), false, false);
 			},
 
 			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
@@ -493,15 +502,6 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					data.nodes.forEach((v) => {
 						delete v.x;
 						delete v.y;
-					});
-				}
-				else{
-					data.nodes.forEach((v) => {
-						let pos = network.getPositions(v.id);
-						if(v.id in pos){
-							v.x = pos[v.id].x;
-							v.y = pos[v.id].y;
-						}
 					});
 				}
 
@@ -520,9 +520,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 				let g = graphState.dataSetToGraph(data.nodes, data.edges, false, directional, weighted);
 
-				graphState.state.graph = g;
-				graphState.state.directed = directional;
-				graphState.state.weighted = weighted;
+				graphState.graph = g;
 
 				// Set a new random seed so that the layout will be different
 				self.newRandomNetworkLayout(network);
@@ -539,6 +537,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.setUpToDate();
 					graphState.makeAndPrintProperties(recalcProps);
 				}
+
+				if(settings.checkForLocalStorage()){
+					localStorage.setItem("graphPlayground.lastState", JSON.stringify(self.getStateForSaving()));
+				}
 			},
 
 			saveState: () => {
@@ -546,8 +548,8 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.backHistory.shift();
 				}
 
-				let s = self.getStateForSaving();
-				graphState.backHistory.push(s);
+				let saveState = self.getStateForSaving();
+				graphState.backHistory.push(saveState);
 				graphState.forwardHistory = [];
 				$(".fa-undo").parent().parent().addClass("active");
 			},
@@ -561,6 +563,9 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							state[k] = v;
 						}
 						else{
+							if(k === "graph" && v !== null){
+								state[k] = v.clone();
+							}
 							if(!k.toLowerCase().includes("history")){
 								state[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
 							}
@@ -583,21 +588,22 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			applyState: (undo = true) => {
+			applyState: (undo = true, newState = null) => {
 				let currentState = self.getStateForSaving();
 
-				let newState = null;
-				if(undo){
-					newState = graphState.backHistory.pop();
-				}
-				else{
-					newState = graphState.forwardHistory.pop();
+				if(newState === null){
+					if(undo){
+						newState = graphState.backHistory.pop();
+					}
+					else{
+						newState = graphState.forwardHistory.pop();
+					}
 				}
 
-				settings.changeOption("direction", newState.state.directed);
-				settings.changeOption("weights", newState.state.weighted);
+				settings.changeOption("direction", newState.graph.isDirected());
+				settings.changeOption("weights", newState.graph.isWeighted());
 
-				let g = graphState.getGraphAsDataSet(newState.state.graph);
+				let g = graphState.getGraphAsDataSet(newState.graph);
 
 				network.setData(g);
 				network.disableEditMode();
@@ -634,7 +640,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			shuffleNetworkLayout: () => {
-				self.setData(self.graphState.getGraphData(), false, false, true);
+				self.setData({
+					nodes: graphState.graph.getAllNodes(),
+					edges: graphState.graph.getAllEdges()
+				}, false, false, true);
 			},
 
 			newRandomNetworkLayout: (network) => {
