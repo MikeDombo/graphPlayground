@@ -141,7 +141,12 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				let t = !settings.getOption("weights");
 				settings.changeOption("weights", t);
 				let G = self.graphState.graph.clone();
-				G.convertToWeighted();
+				if(t){
+					G.convertToWeighted();
+				}
+				else{
+					G.convertToUnWeighted();
+				}
 				self.setData(graphState.getGraphData(G));
 			},
 
@@ -373,8 +378,8 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							+ " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
 						p += "\n\nUsing Capacities:\n\n";
 						p = help.htmlEncode(p);
-						a.minCut.forEach((v) => {
-							p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w)
+						a.flowPath.forEach((v) => {
+							p += self.graphState.nodeIDToLabel(v.from) + "&rarr;" + self.graphState.nodeIDToLabel(v.to)
 								+ " using " + v.flow + " of " + v.capacity + " \n";
 						});
 						p = p.trim();

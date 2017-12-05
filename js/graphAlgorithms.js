@@ -392,9 +392,129 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 		fordFulkerson: (startNodeID, targetNodeID, graphState = main.graphState) => {
 			let G = graphState.graph.clone();
 
-			// TODO: implement ford-fulkerson
+			// Must be a directed graph
+			if(!G.isDirected()){
+				return false;
+			}
 
-			return {maxFlow: fordFulk.value, minCut: fordFulk.minCut(G)};
+			// Source == sink
+			if(startNodeID === targetNodeID){
+				return false;
+			}
+
+			let bfs = self.breadthFirstSearch(startNodeID, targetNodeID, graphState);
+			// No path from source to sink
+			if(!bfs.pathExists){
+				return false;
+			}
+
+			// If we have a multigraph, then reduce the graph to have single edges with the sum of the capacities
+			G.reduceMultiGraph((a, b) => {
+				return a + b;
+			});
+
+			let V = G.getNumberOfNodes();
+			let value = 0;
+			let marked = null;
+			let edgeTo = null;
+
+			let edgeProperties = {};
+			G.getAllEdges().forEach((edge) => {
+				edgeProperties[edge.from + "_" + edge.to] = {
+					from: edge.from,
+					to: edge.to,
+					capacity: edge.weight,
+					flow: 0
+				};
+			});
+
+			let other = (e, x) => {
+				e = e.split("_");
+				let a = parseInt(e[0]);
+				let b = parseInt(e[1]);
+				return x === a ? b : a;
+			};
+
+			let residualCapacity = (e, x) => {
+				let edge = e.split("_");
+				let a = parseInt(edge[0]);
+				if(x === a){
+					return edgeProperties[e].flow;
+				}
+				return edgeProperties[e].capacity - edgeProperties[e].flow;
+			};
+
+			let addResidualFlow = (e, x, deltaFlow) => {
+				let edge = e.split("_");
+				let v = parseInt(edge[0]);
+				if(x === v){
+					edgeProperties[e].flow -= deltaFlow;
+				}
+				else{
+					edgeProperties[e].flow += deltaFlow;
+				}
+			};
+
+			let hasAugmentedPath = () => {
+				marked = [];
+				edgeTo = [];
+				for(let v = 0; v < V; ++v){
+					marked.push(false);
+					edgeTo.push(null);
+				}
+
+				let queue = [];
+				queue.push(startNodeID);
+
+				marked[startNodeID] = true;
+				while(queue.length > 0){
+					let v = queue.shift();
+					let adj_v = G.getNodeAdjacency(v);
+					for(let i = 0; i < adj_v.length; i++){
+						let e = v + "_" + adj_v[i];
+						let w = other(e, v);
+						if(!marked[w] && residualCapacity(e, w) > 0){
+							edgeTo[w] = e;
+							marked[w] = true;
+							if(w === targetNodeID){
+								return true;
+							}
+
+							queue.push(w);
+						}
+					}
+				}
+
+				return false;
+			};
+
+			while(hasAugmentedPath()){
+				let bottleneckValue = Infinity;
+				for(let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x], x)){
+					bottleneckValue = Math.min(bottleneckValue, residualCapacity(edgeTo[x], x));
+				}
+				for(let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x], x)){
+					addResidualFlow(edgeTo[x], x, bottleneckValue);
+				}
+				value += bottleneckValue;
+			}
+
+			let getFlows = () => {
+				let f = [];
+				for(let v = 0; v < V; v++){
+					let adj_v = G.getNodeAdjacency(v);
+					for(let i = 0; i < adj_v.length; i++){
+						let e = v + "_" + adj_v[i];
+						if(edgeProperties[e].flow > 0){
+							f.push(edgeProperties[e]);
+						}
+					}
+				}
+
+				return f;
+			};
+
+			return {maxFlow: value, flowPath: getFlows()};
 		},
 
 		kruskal: (graphState = main.graphState) => {
