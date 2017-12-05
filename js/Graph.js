@@ -341,8 +341,8 @@ define("Graph", [], () => {
 			},
 
 			convertToDirected: function (doubleEdges = false) {
+				this.directed = true;
 				if(!doubleEdges){
-					this.directed = true;
 					return;
 				}
 
@@ -379,6 +379,33 @@ define("Graph", [], () => {
 				});
 
 				return G;
+			},
+
+			reduceMultiGraph: function(reducer, initialValue) {
+				if(typeof initialValue === "undefined"){
+					initialValue = 0;
+				}
+
+				let multiEdges = [];
+				this.nodes.forEach((node) => {
+					// If we have duplicates
+					let uniques = new Set(node.adjacency);
+					if(uniques.size < node.adjacency.length){
+						uniques.forEach((to) => {
+							let newWeight = this.getEdgesBetween(node.id, to).reduce((acc, edge) => {
+								return reducer(acc, edge.weight);
+							}, initialValue);
+
+							multiEdges.push({from: node.id, to: to, weight: newWeight});
+						});
+					}
+				});
+
+				// Remove all multigraph edges and replace them with single new edges
+				multiEdges.forEach((edge) => {
+					this.deleteEdge(edge.from, edge.to);
+					this.addEdge(edge.from, edge.to, edge.weight);
+				});
 			},
 
 			reverseDiGraph: function () {
