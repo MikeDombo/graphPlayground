@@ -56,7 +56,11 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 					}
 				},
 			],
-			state: {},
+			state: {
+				stronglyConnectedComponents: null,
+				connectedComponents: null,
+				graphColoring: null,
+			},
 			graph: null,
 			graphProperties: {
 				vertices: 0,
@@ -88,7 +92,6 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				let a = self.upToDate.find((v) => {
 					return ("name" in v && v.name === property);
 				});
-
 				if(!a.upToDate){
 					if("applyFunc" in a && updateIfNotUpdated){
 						a.applyFunc();

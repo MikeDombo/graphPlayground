@@ -538,18 +538,19 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					graphState.makeAndPrintProperties(recalcProps);
 				}
 
-				if(settings.checkForLocalStorage()){
-					localStorage.setItem("graphPlayground.lastState", JSON.stringify(self.getStateForSaving()));
-				}
+				self.saveStateLocalStorage();
 			},
 
 			saveState: () => {
+				if(graphState.graph === null){
+					return;
+				}
+
 				if(graphState.backHistory.length >= graphState.maxHistory){
 					graphState.backHistory.shift();
 				}
 
-				let saveState = self.getStateForSaving();
-				graphState.backHistory.push(saveState);
+				graphState.backHistory.push(self.getStateForSaving());
 				graphState.forwardHistory = [];
 				$(".fa-undo").parent().parent().addClass("active");
 			},
@@ -618,7 +619,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						graphState[k] = v;
 					}
 					else if(!k.toLowerCase().includes("history")){
-						graphState[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
+						graphState[k] = $.extend(true, graphState[k], v);
 					}
 				});
 
@@ -636,6 +637,14 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 						$(".fa-repeat").parent().parent().removeClass("active");
 					}
 					graphState.backHistory.push(currentState);
+				}
+
+				self.saveStateLocalStorage();
+			},
+
+			saveStateLocalStorage: () => {
+				if(settings.checkForLocalStorage()){
+					localStorage.setItem("graphPlayground.lastState", JSON.stringify(self.getStateForSaving()));
 				}
 			},
 

@@ -91,13 +91,13 @@ define(["graphHelpers", "genericHelpers"], (gHelp, help) => {
 	return {
 		graphNames: ["Petersen", "Konigsberg", "Complete", "Hypercube"],
 		Petersen: () => ({
-			edges: petersenEdges,
+			edges: petersenEdges.slice(),
 			nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
 			directed: false,
 			weighted: false,
 		}),
 		Konigsberg: () => ({
-			edges: konigsbergEdges,
+			edges: konigsbergEdges.slice(),
 			nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
 			directed: false,
 			weighted: false,
