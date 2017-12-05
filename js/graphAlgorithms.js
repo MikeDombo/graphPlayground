@@ -221,7 +221,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 			if(pathExists){
 				// Build the path
 				let path = [];
-				for(let x = targetNodeID; x !== startNodeID; x = edgeTo[x]) {
+				for(let x = targetNodeID; x !== startNodeID; x = edgeTo[x]){
 					path.push(x);
 				}
 				path.push(startNodeID);
@@ -229,8 +229,8 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 
 				// Get the path weight
 				let weight = 0;
-				for(let i = 0; i < path.length-1; i++){
-					weight += G.getMinWeightEdgeBetween(path[i], path[i+1]);
+				for(let i = 0; i < path.length - 1; i++){
+					weight += G.getMinWeightEdgeBetween(path[i], path[i + 1]);
 				}
 
 				return {pathExists: pathExists, path: path, distance: path.length, weight: weight};
@@ -260,64 +260,148 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				return false;
 			}
 
-			// TODO: Implement Dijkstra
+
+			// Priority Queue implementation for Dijkstra
+			let PriorityQueue = function () {
+				this._nodes = [];
+
+				this.enqueue = function (priority, key) {
+					this._nodes.push({key: key, priority: priority});
+					this.sort();
+				};
+				this.dequeue = function () {
+					return this._nodes.shift().key;
+				};
+				this.sort = function () {
+					this._nodes.sort(function (a, b) {
+						return a.priority - b.priority;
+					});
+				};
+				this.isEmpty = function () {
+					return !this._nodes.length;
+				};
+			};
+
+			let queue = new PriorityQueue();
+			let distances = {};
+			let previous = {};
+			let path = [];
+
+			// Initialize Queue and distances
+			G.getAllNodes().forEach((node) => {
+				if(node.id === startNodeID){
+					distances[node.id] = 0;
+					queue.enqueue(0, node.id);
+				}
+				else{
+					distances[node.id] = Infinity;
+					queue.enqueue(Infinity, node.id);
+				}
+				previous[node.id] = null;
+			});
+
+			while(!queue.isEmpty()){
+				let smallest = queue.dequeue();
+
+				if(smallest === targetNodeID){
+					path = [];
+					while(previous[smallest]){
+						path.push(smallest);
+						smallest = previous[smallest];
+					}
+					break;
+				}
+
+				if(!smallest || distances[smallest] === Infinity){
+					continue;
+				}
+
+				G.getNodeAdjacency(smallest).forEach((neighbor) => {
+					let alt = distances[smallest] + G.getMinWeightEdgeBetween(smallest, neighbor);
+
+					if(alt < distances[neighbor]){
+						distances[neighbor] = alt;
+						previous[neighbor] = smallest;
+
+						queue.enqueue(alt, neighbor);
+					}
+				});
+			}
+
+			path.push(startNodeID);
+			path = path.reverse();
+
+			if(distances[targetNodeID] !== Infinity){
+				return {pathExists: true, path: path, distance: path.length, cost: distances[targetNodeID]};
+			}
+
 
 			return {pathExists: false, path: [], distance: -1, cost: 0};
 		},
 
 		bellmanFord: (startNodeID, targetNodeID, graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			let bellmanF = new jsgraphs.BellmanFord(G, startNodeID);
+			let distances = [];
+			let parents = [];
 
-			if(bellmanF.hasPathTo(targetNodeID)){
-				let path = [];
-				bellmanF.pathTo(targetNodeID).forEach((edge) => {
-					if(!path.includes(edge.v)){
-						path.push(edge.v);
+			// Initialize
+			G.getAllNodes().forEach((node) => {
+				distances[node.id] = Infinity;
+				parents[node.id] = null;
+			});
+
+			// Relax Edges
+			distances[startNodeID] = 0;
+			for(let i = 0; i < G.getNumberOfNodes() - 1; i++){
+				G.getAllEdges().forEach((edge) => {
+					if(distances[edge.from] + edge.weight < distances[edge.to]){
+						distances[edge.to] = distances[edge.from] + edge.weight;
+						parents[edge.to] = edge.from;
 					}
-					path.push(edge.w);
 				});
-				return {
-					pathExists: true,
-					path: path,
-					distance: bellmanF.pathTo(targetNodeID).length,
-					cost: bellmanF.distanceTo(targetNodeID)
-				};
+			}
+
+			// Check for negative weight cycles
+			let negativeCylce = false;
+			G.getAllEdges().forEach((edge) => {
+				if(distances[edge.from] + edge.weight < distances[edge.to]){
+					negativeCylce = true;
+				}
+			});
+
+			if(distances[targetNodeID] !== Infinity){
+				let path = [targetNodeID];
+				while(!path.includes(startNodeID)){
+					path.push(parents[path.slice().pop()]);
+				}
+				path = path.reverse();
+
+				return {pathExists: true, path: path, distance: path.length, cost: distances[targetNodeID]};
+			}
+
+			if(negativeCylce){
+				genericH.showErrorModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
+					" with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>");
+				return false;
 			}
 
 			return {pathExists: false, path: [], distance: -1, cost: 0};
 		},
 
 		fordFulkerson: (startNodeID, targetNodeID, graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			let d = graphState.getGraphData(G);
-			G = new jsgraphs.FlowNetwork(d.nodes.length);
-			let error = false;
-			d.edges.forEach((edge) => {
-				if(edge.weight < 0){
-					error = true;
-				}
-				G.addEdge(new jsgraphs.FlowEdge(edge.from, edge.to, edge.weight));
-			});
-
-			if(error){
-				genericH.showErrorModal("Ford-Fulkerson Error", "<p>The Ford-Fulkerson algorithm only works on graphs" +
-					" with totally non-negative capacities. Please fix the graph so that there are no" +
-					" negative capacities.</p>");
-				return false;
-			}
-
-			let fordFulk = new jsgraphs.FordFulkerson(G, startNodeID, targetNodeID);
+			// TODO: implement ford-fulkerson
 
 			return {maxFlow: fordFulk.value, minCut: fordFulk.minCut(G)};
 		},
 
 		kruskal: (graphState = main.graphState) => {
-			let G = graphState.state.graph;
+			let G = graphState.graph.clone();
 
-			let kruskal = new jsgraphs.KruskalMST(G).mst;
+			// TODO: implement Kruskal MST
+
 			let weight = kruskal.reduce((acc, e) => {
 				return acc + e.weight;
 			}, 0);
