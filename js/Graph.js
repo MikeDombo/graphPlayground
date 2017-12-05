@@ -44,7 +44,7 @@ define("Graph", [], () => {
 			constructor: Graph,
 
 			clone: function () {
-				let G = new Graph(this.numNodes, null, this.directed, this.weighted);
+				let G = new Graph(this.nodes.length, null, this.directed, this.weighted);
 
 				this.nodes.forEach((v) => {
 					G.editNode(v.id, {label: v.label, color: v.color, x: v.x, y: v.y});
