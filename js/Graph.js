@@ -221,7 +221,7 @@ define("Graph", [], () => {
 				}
 
 				this.edges.forEach((edge) => {
-					if(edge.from === from && edge.to === edge.to && (oldWeight === null || edge.weight === oldWeight)){
+					if(edge.from === from && edge.to === to && (oldWeight === null || edge.weight === oldWeight)){
 						edge.weight = newWeight;
 					}
 				});

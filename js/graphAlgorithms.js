@@ -1,4 +1,35 @@
 define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH) => {
+	let SpanningTree = function (V) {
+		this.id = [];
+		for(let v = 0; v < V; v++){
+			this.id.push(v);
+		}
+	};
+
+	SpanningTree.prototype = {
+		constructor: SpanningTree,
+		union: function (v, w) {
+			let q = this.root(v);
+			let p = this.root(w);
+
+			if(p !== q){
+				this.id[p] = q;
+			}
+		},
+
+		root: function (q) {
+			while(this.id[q] !== q){
+				q = this.id[q];
+			}
+			return q;
+		},
+
+		connected: function (v, w) {
+			return this.root(v) === this.root(w);
+		}
+	};
+
+
 	let self = {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
@@ -520,8 +551,30 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 		kruskal: (graphState = main.graphState) => {
 			let G = graphState.graph.clone();
 
-			// TODO: implement Kruskal MST
+			// If we have a multigraph, reduce it by using the minimum edge weights
+			G.reduceMultiGraph(Math.min, Infinity);
 
+			let Q = [];
+			G.getAllEdges().forEach((edge) => {
+				Q.push({from: edge.from, to: edge.to, weight: edge.weight});
+			});
+
+			// Sort edges by weight so that they are added to the tree in the order of lowest possible weight
+			Q.sort((a, b) => {
+				return a.weight - b.weight;
+			});
+
+			let kruskal = [];
+			let set = new SpanningTree(G.getNumberOfNodes());
+			while(Q.length > 0 && kruskal.length < G.getNumberOfNodes() - 1){
+				let e = Q.shift();
+				if(!set.connected(e.from, e.to)){
+					set.union(e.from, e.to);
+					kruskal.push(e);
+				}
+			}
+
+			// Get the total cost of the MST
 			let weight = kruskal.reduce((acc, e) => {
 				return acc + e.weight;
 			}, 0);

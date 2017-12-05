@@ -11,7 +11,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					callback(null);
 					$modal.modal("hide");
 					vals = parseFloat(vals[0]);
-					graphState.editEdge(data.from.id, data.to.id, vals, data.weight);
+					graphState.editEdge(data.from.id, data.to.id, vals, parseFloat(data.label));
 				}, "Edit Edge", "Save", [
 					{
 						type: "numeric",
@@ -410,7 +410,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				p += "\n\nUsing Edges:\n\n";
 				p = help.htmlEncode(p);
 				a.mst.forEach((v) => {
-					p += self.graphState.nodeIDToLabel(v.v) + "&rarr;" + self.graphState.nodeIDToLabel(v.w) + " \n";
+					p += self.graphState.nodeIDToLabel(v.from) + "&rarr;" + self.graphState.nodeIDToLabel(v.to) + " \n";
 				});
 				p = p.trim();
 				p = "<h3>Kruskal Minimum Spanning Tree</h3><hr>" + p;
