@@ -134,7 +134,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				else{
 					G = G.getGraphAsUndirected();
 				}
-				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()});
+				self.setData(graphState.getGraphData(G));
 			},
 
 			toggledWeighted: () => {
@@ -142,7 +142,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("weights", t);
 				let G = self.graphState.graph.clone();
 				G.convertToWeighted();
-				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()});
+				self.setData(graphState.getGraphData(G));
 			},
 
 			makeAndPrintGraphColoring: () => {
@@ -482,7 +482,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				G.getAllNodes().forEach((v) => {
 					G.editNode(v.id, {color: colors[graphColors[v.id]]});
 				});
-				self.setData({nodes: G.getAllNodes(), edges: G.getAllEdges()}, false, false);
+				self.setData(graphState.getGraphData(G), false, false);
 			},
 
 			setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {

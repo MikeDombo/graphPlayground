@@ -1,4 +1,4 @@
-implement multigraph by adding a number of copies field to the edge object
+keep state between sessions (pickup where you left off)
 
 max clique
 arboricity

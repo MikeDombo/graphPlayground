@@ -264,7 +264,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 			let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground --" +
 				" https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
-			let adj = main.graphState.state.adjacency;
+			let adj = main.graphState.graph.getFullAdjacency();
 			adj = adj.filter((v) => {
 				return v.length !== 0;
 			});

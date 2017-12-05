@@ -151,31 +151,31 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 			addNode: (data, graph = self.graph) => {
 				graph = self.getNewGraph();
 				graph.addNode({label: data.label, x: data.x, y: data.y});
-				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
+				main.setData(self.getGraphData(graph));
 			},
 
 			editNode: (id, label, graph = self.graph) => {
 				graph = self.getNewGraph();
 				graph.editNode(id, {label: label});
-				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()}, false, false);
+				main.setData(self.getGraphData(graph), false, false);
 			},
 
 			editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
 				graph = self.getNewGraph();
 				graph.editEdge(from, to, newWeight, oldWeight);
-				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()}, false, false);
+				main.setData(self.getGraphData(graph), false, false);
 			},
 
 			deleteEdge: (from, to, graph = self.graph) => {
 				graph = self.getNewGraph();
 				graph.deleteEdge(from, to, null, false);
-				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
+				main.setData(self.getGraphData(graph));
 			},
 
 			deleteNode: (id, graph = self.graph) => {
 				graph = self.getNewGraph();
 				graph.deleteNode(id);
-				main.setData({nodes: graph.getAllNodes(), edges: graph.getAllEdges()});
+				main.setData(self.getGraphData(graph));
 			},
 
 			clearColorFromNodes: (nodes) => {
@@ -248,7 +248,7 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 
 			getGraphAsDataSet: (graph) => {
 				graph = graph.clone();
-				let d = {nodes: graph.getAllNodes(), edges: graph.getAllEdges()};
+				let d = self.getGraphData(graph);
 				if(graph.isWeighted()){
 					d.edges.forEach((e) => {
 						e.label = e.weight.toString();
@@ -268,6 +268,10 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 					let v = locations[i];
 					graph.editNode(i, {x: v.x, y: v.y});
 				});
+			},
+
+			getGraphData: (graph = self.graph) => {
+				return {nodes: graph.getAllNodes(), edges: graph.getAllEdges(), directed: graph.isDirected(), weighted: graph.isWeighted()};
 			},
 
 			dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
