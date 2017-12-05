@@ -1,4 +1,4 @@
-define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
+define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 	($, gAlgo, gHelp, help, Graph) => {
 		let self = {
 			backHistory: [],
