@@ -381,7 +381,7 @@ define("Graph", [], () => {
 				return G;
 			},
 
-			reduceMultiGraph: function(reducer, initialValue) {
+			reduceMultiGraph: function (reducer, initialValue) {
 				if(typeof initialValue === "undefined"){
 					initialValue = 0;
 				}

@@ -93,6 +93,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 			{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
 		],
 
+		// Welsh-Powell Algorithm
 		colorNetwork: (graphState = main.graphState) => {
 			let G = graphState.graph.clone();
 
@@ -210,6 +211,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 							addedAny = true;
 						}
 						while(w !== v);
+
 						if(addedAny){
 							componentCount++;
 						}
@@ -248,8 +250,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				}
 			}
 
-			let pathExists = visisted.includes(targetNodeID);
-			if(pathExists){
+			if(visisted.includes(targetNodeID)){
 				// Build the path
 				let path = [];
 				for(let x = targetNodeID; x !== startNodeID; x = edgeTo[x]){
@@ -264,10 +265,10 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 					weight += G.getMinWeightEdgeBetween(path[i], path[i + 1]);
 				}
 
-				return {pathExists: pathExists, path: path, distance: path.length, weight: weight};
+				return {pathExists: true, path: path, distance: path.length, weight: weight};
 			}
 
-			return {pathExists: pathExists, path: [], distance: -1, weight: -1};
+			return {pathExists: false, path: [], distance: -1, weight: -1};
 		},
 
 		dijkstraSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
@@ -320,14 +321,13 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 
 			// Initialize Queue and distances
 			G.getAllNodes().forEach((node) => {
+				let dist = Infinity;
 				if(node.id === startNodeID){
-					distances[node.id] = 0;
-					queue.enqueue(0, node.id);
+					dist = 0;
 				}
-				else{
-					distances[node.id] = Infinity;
-					queue.enqueue(Infinity, node.id);
-				}
+
+				distances[node.id] = dist;
+				queue.enqueue(dist, node.id);
 				previous[node.id] = null;
 			});
 
@@ -336,14 +336,14 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 
 				if(smallest === targetNodeID){
 					path = [];
-					while(previous[smallest]){
+					while(previous[smallest] !== null){
 						path.push(smallest);
 						smallest = previous[smallest];
 					}
 					break;
 				}
 
-				if(!smallest || distances[smallest] === Infinity){
+				if(distances[smallest] === Infinity){
 					continue;
 				}
 
@@ -585,7 +585,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 		topologicalSort: (graphState = main.graphState) => {
 			let G = graphState.graph.clone();
 
-			let adjacency = G.getFullAdjacency(); // Make sure adjacency list is a copy, because we're modifying it
+			let adjacency = G.getFullAdjacency();
 			let degrees = graphH.findVertexDegreesDirectional(adjacency);
 
 			let L = [];

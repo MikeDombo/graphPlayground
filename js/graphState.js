@@ -271,7 +271,12 @@ define(["jquery", "graphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 			},
 
 			getGraphData: (graph = self.graph) => {
-				return {nodes: graph.getAllNodes(), edges: graph.getAllEdges(), directed: graph.isDirected(), weighted: graph.isWeighted()};
+				return {
+					nodes: graph.getAllNodes(),
+					edges: graph.getAllEdges(),
+					directed: graph.isDirected(),
+					weighted: graph.isWeighted()
+				};
 			},
 
 			dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
