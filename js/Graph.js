@@ -220,9 +220,15 @@ define("Graph", [], () => {
 					return;
 				}
 
+				let foundFirst = false;
+
 				this.edges.forEach((edge) => {
+					if(foundFirst){
+						return;
+					}
 					if(edge.from === from && edge.to === to && (oldWeight === null || edge.weight === oldWeight)){
-						edge.weight = newWeight;
+						edge.weight = parseFloat(newWeight);
+						foundFirst = true;
 					}
 				});
 			},
@@ -232,13 +238,13 @@ define("Graph", [], () => {
 			},
 
 			getNodeAdjacency: function (id) {
-				return this.nodes[id].adjacency;
+				return this.nodes[id].adjacency.slice();
 			},
 
 			getFullAdjacency: function () {
 				let adj = [];
 				this.nodes.forEach((n) => {
-					adj[n.id] = n.adjacency;
+					adj[n.id] = n.adjacency.slice();
 				});
 
 				return adj;
@@ -258,11 +264,11 @@ define("Graph", [], () => {
 			},
 
 			getAllNodes: function () {
-				return this.nodes;
+				return this.nodes.slice();
 			},
 
 			getAllEdges: function () {
-				return this.edges;
+				return this.edges.slice();
 			},
 
 			getNumberOfNodes: function () {
@@ -282,12 +288,12 @@ define("Graph", [], () => {
 				this.edges.forEach((edge) => {
 					if(!this.directed){
 						if(edge.from === id2 && edge.to === id1){
-							edgeList.push(edge);
+							edgeList.push(Object.assign({}, edge));
 						}
 					}
 
 					if(edge.from === id1 && edge.to === id2){
-						edgeList.push(edge);
+						edgeList.push(Object.assign({}, edge));
 					}
 				});
 
