@@ -438,5 +438,4 @@ define("Graph", [], () => {
 
 		return Graph;
 	}
-)
-;
+);
