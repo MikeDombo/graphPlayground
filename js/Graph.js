@@ -33,7 +33,7 @@ define("Graph", [], () => {
 				edges.forEach((edge) => {
 					let weight = 0;
 					if("weight" in edge && this.weighted){
-						weight = edge.weight;
+						weight = parseFloat(edge.weight);
 					}
 					this.addEdge(nodeList[edge.from], nodeList[edge.to], weight);
 				});
@@ -177,6 +177,10 @@ define("Graph", [], () => {
 					});
 				};
 
+				if(weight !== null){
+					weight = parseFloat(weight);
+				}
+
 				let foundOneEdge = false;
 
 				this.edges = this.edges.filter((edge) => {
@@ -221,6 +225,10 @@ define("Graph", [], () => {
 				}
 
 				let foundFirst = false;
+
+				if(oldWeight !== null){
+					oldWeight = parseFloat(oldWeight);
+				}
 
 				this.edges.forEach((edge) => {
 					if(foundFirst){
@@ -402,7 +410,7 @@ define("Graph", [], () => {
 								return reducer(acc, edge.weight);
 							}, initialValue);
 
-							multiEdges.push({from: node.id, to: to, weight: newWeight});
+							multiEdges.push({from: node.id, to: to, weight: parseFloat(newWeight)});
 						});
 					}
 				});
