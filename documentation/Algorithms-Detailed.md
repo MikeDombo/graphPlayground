@@ -49,7 +49,7 @@ For directed graphs, see [Strongly Connected Components](#strongly-connected-com
 
 
 ## Strongly Connected Components
-For directed graphs, a strongly conncted component (scc) is a subgraph containing some number of vertices for which each pair is connected by an edge so that every vertex can reach every other vertex in that scc.
+For directed graphs, a strongly conncted component (scc) is a subgraph containing some number of vertices for which each pair is connected by an edge so that every vertex can reach every other vertex in that scc. The algorithm implemented is Tarjan's strongly connected components algorithm, [see Wikipedia here for more.](https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm)
 
 ### Usage in Graph Algorithm Playground
 For directed graphs, click on "Strongly Connected Components" in the Algorithms pane, or click "calculate All Properties" in the toolbar.
