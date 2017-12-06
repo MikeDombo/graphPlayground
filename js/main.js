@@ -89,7 +89,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							callback(null);
 						}
 						data.edges.forEach((v) => {
-							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId);
+							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId, parseFloat(network.body.data.edges._data[v].label));
 						});
 					},
 					deleteNode: function (data, callback) {

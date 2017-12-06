@@ -169,9 +169,9 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				main.setData(self.getGraphData(graph), false, false);
 			},
 
-			deleteEdge: (from, to, graph = self.graph) => {
+			deleteEdge: (from, to, weight = null, graph = self.graph) => {
 				graph = self.getNewGraph();
-				graph.deleteEdge(from, to, null, false);
+				graph.deleteEdge(from, to, weight, false);
 				main.setData(self.getGraphData(graph));
 			},
 
