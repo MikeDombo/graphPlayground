@@ -590,9 +590,10 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			},
 
 			applyState: (undo = true, newState = null) => {
+				let firstLoad = newState !== null;
 				let currentState = self.getStateForSaving();
 
-				if(newState === null){
+				if(!firstLoad){
 					if(undo){
 						newState = graphState.backHistory.pop();
 					}
@@ -605,6 +606,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("weights", newState.graph.isWeighted());
 
 				let g = graphState.getGraphAsDataSet(newState.graph);
+				graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, false, newState.graph.isDirected(), newState.graph.isWeighted());
 
 				network.setData(g);
 				network.disableEditMode();
@@ -618,20 +620,27 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					if(typeof v !== "object"){
 						graphState[k] = v;
 					}
-					else if(!k.toLowerCase().includes("history")){
-						graphState[k] = $.extend(true, graphState[k], v);
+					else if(!k.toLowerCase().includes("history") && k.toLowerCase() !== "graph"){
+						if(k.toLowerCase() === "uptodate"){
+							Object.keys(graphState[k]).forEach((oldKey) => {
+								graphState[k][oldKey].upToDate = v[oldKey].upToDate;
+							});
+						}
+						else{
+							graphState[k] = $.extend(true, graphState[k], v);
+						}
 					}
 				});
 
 				graphState.makeAndPrintProperties();
-				if(undo){
+				if(undo && !firstLoad){
 					$(".fa-repeat").parent().parent().addClass("active");
 					if(graphState.backHistory.length === 0){
 						$(".fa-undo").parent().parent().removeClass("active");
 					}
 					graphState.forwardHistory.push(currentState);
 				}
-				else{
+				else if(!undo && !firstLoad){
 					$(".fa-undo").parent().parent().addClass("active");
 					if(graphState.forwardHistory.length === 0){
 						$(".fa-repeat").parent().parent().removeClass("active");
