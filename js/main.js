@@ -682,6 +682,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 
 				network.on("dragEnd", () => {
 					self.graphState.setLocations(network.getPositions());
+					self.saveStateLocalStorage(); // Save the new locations as part of the state
 				});
 
 				// Delete nodes/edges when hit "Delete"
