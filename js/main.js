@@ -6,6 +6,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 			graphHelper: gHelp,
 			graphAlgorithms: gAlgo,
 			container: document.getElementById('network'),
+			// Function used to overwrite the edge edit functionality when weights are active
 			visWeightEdgeEdit: (data, callback) => {
 				help.showFormModal(($modal, vals) => {
 					callback(null);
@@ -523,7 +524,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				graphState.graph = g;
 
 				// Set a new random seed so that the layout will be different
-				self.newRandomNetworkLayout(network);
+				self.randomizeNetworkLayoutSeed(network);
 
 				network.setData(graphState.getGraphAsDataSet(g));
 				self.graphState.setLocations(network.getPositions());
@@ -664,13 +665,14 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}, false, false, true);
 			},
 
-			newRandomNetworkLayout: (network) => {
+			randomizeNetworkLayoutSeed: network => {
 				let r = Math.round(Math.random() * 1000000);
 				network.layoutEngine.randomSeed = r;
 				network.layoutEngine.initialRandomSeed = r;
 			},
 
 			addNetworkListeners: (network) => {
+				// Enable edit node/edge when double clicking
 				network.on("doubleClick", (p) => {
 					if(settings.getOption("weights") && "edges" in p && p.edges.length === 1){
 						network.editEdgeMode();
@@ -680,6 +682,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					}
 				});
 
+				// Save locations of nodes after dragging
 				network.on("dragEnd", () => {
 					self.graphState.setLocations(network.getPositions());
 					self.saveStateLocalStorage(); // Save the new locations as part of the state
@@ -691,6 +694,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 					lastNetworkClickEvent = event;
 				});
 
+				// Delete key to delete node or edge
 				$(document).on('keyup', (key) => {
 					if(key.key === "Delete" && lastNetworkClickEvent !== null){
 						if($(self.container).has($(lastNetworkClickEvent.event.target)).length > 0){

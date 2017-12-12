@@ -29,7 +29,6 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 		}
 	};
 
-
 	let self = {
 		algorithms: [
 			{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
@@ -95,9 +94,11 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 
 		// Welsh-Powell Algorithm
 		colorNetwork: (graphState = main.graphState) => {
-			let G = graphState.graph.clone();
+			let G = graphState.graph.clone(); // Always clone the graph so we don't change anything in the active graph
 
+			// Get node ID's only
 			let nodeArr = genericH.datasetToArray(G.getAllNodes(), "id");
+
 			// Put vertices in array in decreasing order of degree
 			let degrees = G.getAllOutDegrees();
 			let vertexOrder = nodeArr.sort((a, b) => {
@@ -624,6 +625,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 		},
 
 		isGraphCyclic: (graphState = main.graphState) => {
+			// If the topological sorting returns true, then it failed, so the graph has a cycle
 			return self.topologicalSort(graphState) === true ? true : false;
 		},
 
@@ -654,7 +656,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				return v % 2 !== 0;
 			});
 
-			// If any nodes have odd degree, it cannot be Eulerian
+			// If any nodes have odd degree, we can short-circuit the algorithm because it cannot be Eulerian
 			if(oddDegree.length !== 0){
 				return false;
 			}

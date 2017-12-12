@@ -262,6 +262,19 @@ define("Graph", [], () => {
 				return this.nodes[id].adjacency.length;
 			},
 
+			getNodeInDegree: function (id) {
+				let degree = 0;
+				this.nodes.forEach((node) => {
+					node.adjacency.forEach((n) => {
+						if(n === id){
+							degree++;
+						}
+					});
+				});
+
+				return degree;
+			},
+
 			getAllOutDegrees: function () {
 				let degrees = [];
 				this.nodes.forEach((node) => {
@@ -317,19 +330,6 @@ define("Graph", [], () => {
 				});
 
 				return minWeight;
-			},
-
-			getNodeInDegree: function (id) {
-				let degree = 0;
-				this.nodes.forEach((node) => {
-					node.adjacency.forEach((n) => {
-						if(n === id){
-							degree++;
-						}
-					});
-				});
-
-				return degree;
 			},
 
 			getGraphType: function () {
@@ -395,6 +395,7 @@ define("Graph", [], () => {
 				return G;
 			},
 
+			// Take a multigraph and reduce all multiple edges to a single edge, weighted using the reducer
 			reduceMultiGraph: function (reducer, initialValue) {
 				if(typeof initialValue === "undefined"){
 					initialValue = 0;

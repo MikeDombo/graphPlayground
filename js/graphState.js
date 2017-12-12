@@ -249,6 +249,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				return rID;
 			},
 
+			// Return graph as a Vis compatible dataset
 			getGraphAsDataSet: (graph) => {
 				graph = graph.clone();
 				let d = self.getGraphData(graph);
@@ -261,6 +262,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 			},
 
+			// Clones the graph and returns the new one
 			getNewGraph: (graph = self.graph) => {
 				graph = graph.clone();
 				return graph;
@@ -282,6 +284,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				};
 			},
 
+			// return graph object built from input nodes and edges
 			dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
 				let d = self.alignData(0, nodes, edges);
 				let g = new Graph(d.nodes.length, null, directional, weighted);
@@ -297,6 +300,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
 				return g;
 			},
 
+			// Align ID's of nodes to a start value (typically 0)
 			alignData: (start, nodes, edges) => {
 				let nodeMap = {};
 				let nodeCount = start;

@@ -1,14 +1,4 @@
 define({
-		isAdjacent: (a, b, adjacencyMatrix) => {
-			return adjacencyMatrix[a].indexOf(b) !== -1;
-		},
-
-		findVertexDegrees: (adjacencyMatrix) => {
-			return adjacencyMatrix.map((v) => {
-				return v.length;
-			});
-		},
-
 		findVertexDegreesDirectional: (adjacencyMatrix) => {
 			// Adjacency stores IDs of edges TO
 			let degrees = [];
