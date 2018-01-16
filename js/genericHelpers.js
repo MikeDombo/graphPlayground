@@ -91,13 +91,19 @@ define(["jquery"], ($) => {
 			$modal.modal("show");
 		},
 
-		makeFormModal: (title, successText, form) => {
+		makeFormModal: (title, successText, form, footer = true) => {
 			let f = $("<div>", {class: "modal-body form-group"});
 			form.forEach((formRow, i) => {
 				if(!("initialValue" in formRow)){
 					formRow.initialValue = "";
 				}
-				let basicMap = {class: "form-control", id: "form-modal-" + i, value: formRow.initialValue};
+
+				let id = "form-modal-" + i;
+				if("id" in formRow && formRow.id !== "" && formRow.id !== null && typeof formRow.id === "string"){
+					id = formRow.id;
+				}
+
+				let basicMap = {class: "form-control", id: id, value: formRow.initialValue};
 
 				if("extraAttrs" in formRow){
 					for(let attrname in formRow.extraAttrs){
@@ -132,21 +138,38 @@ define(["jquery"], ($) => {
 				if(formRow.type === "html"){
 					f.append($(formRow.initialValue));
 				}
+				else if(formRow.type === "button"){
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
+					if("clickDismiss" in formRow && formRow.clickDismiss === true){
+						basicMap.class += " btn-dismiss";
+					}
+					f.append($("<button>", basicMap).text(formRow.initialValue));
+				}
 				else if(formRow.type === "numeric"){
-					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "number";
 					f.append($("<input>", basicMap).on("blur validate", (e) => {
 						generalValidator(e, parseFloat);
 					}));
 				}
 				else if(formRow.type === "text"){
-					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
 					basicMap.type = "text";
 					f.append($("<input>", basicMap).on("blur validate", generalValidator));
 				}
+				else if(formRow.type === "file"){
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
+					basicMap.type = "file";
+					basicMap.class = "form-control-file form-control";
+					f.append($("<input>", basicMap).on("blur validate", generalValidator));
+				}
 				else if(formRow.type === "textarea"){
-					f.append($("<label>", {for: "form-modal-" + i, class: "col-form-label"}).text(formRow.label));
-					f.append($("<textarea>", basicMap).on("blur validate", generalValidator));
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
+					let $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
+					if("onclick" in formRow){
+						$b.on("click", formRow.onclick);
+					}
+					f.append($b);
 				}
 				else if(formRow.type === "checkbox"){
 					basicMap.type = "checkbox";
@@ -157,13 +180,33 @@ define(["jquery"], ($) => {
 					}
 
 					f.append($("<div>", {class: "form-check"})
-						.append($("<label>",
-							{for: "form-modal-" + i, class: "form-check-label"})
-							.text(formRow.label).prepend($("<input>", basicMap))
+						.append($("<label>", {for: id, class: "form-check-label"}).text(formRow.label)
+						                                                                         .prepend($("<input>", basicMap))
 						)
 					);
 				}
+				else if(formRow.type === "select"){
+					f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
+					let $options = $("<select>", basicMap);
+					formRow.optionText.forEach((oText, oIndex) => {
+						if(oIndex < formRow.optionValues.length){
+							$options.append($("<option>", {value: formRow.optionValues[oIndex]}).text(oText));
+						}
+						else{
+							$options.append($("<option>").text(oText));
+						}
+					});
+					f.append($options.on("blur validate", generalValidator));
+				}
 			});
+
+			let $footer = $("<div>", {class: "modal-footer"})
+				.append($("<button>", {class: "btn btn-success", type: "button"}).text(successText))
+				.append($("<button>", {class: "btn btn-danger btn-cancel", type: "button"}).text("Cancel"));
+
+			if(footer === false){
+				$footer = null;
+			}
 
 			let $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
 			$modal
@@ -176,10 +219,7 @@ define(["jquery"], ($) => {
 							)
 						)
 						.append(f)
-						.append($("<div>", {class: "modal-footer"})
-							.append($("<button>", {class: "btn btn-success", type: "button"}).text(successText))
-							.append($("<button>", {class: "btn btn-danger btn-cancel", type: "button"}).text("Cancel"))
-						)
+						.append($footer)
 					)
 				);
 			$modal.find("input, textarea").off("keyup").on("keyup", (e) => {
@@ -196,16 +236,18 @@ define(["jquery"], ($) => {
 
 		showFormModal: (successCb, title, successText, form, cancelCb = ($modal) => {
 			$modal.modal("hide");
-		}) => {
-			let $modal = self.makeFormModal(title, successText, form);
+		}, footer = true) => {
+			let $modal = self.makeFormModal(title, successText, form, footer);
 
 			$modal.on("click", ".btn-cancel", () => {
 				cancelCb($modal);
+			}).on("click", ".btn-dismiss", () => {
+				$modal.modal("hide");
 			}).on("click", ".btn-success", () => {
 				let vals = [];
 				let hasErrors = false;
 
-				$modal.find("input", "textarea", "select").each((i, v) => {
+				$modal.find("input, textarea, select").each((i, v) => {
 					let $v = $(v);
 
 					if($v.tagName === "SELECT"){
@@ -213,6 +255,9 @@ define(["jquery"], ($) => {
 					}
 					if($v.attr("type") === "checkbox"){
 						vals.push($v.prop("checked"));
+					}
+					if($v.attr("type") === "file"){
+						vals.push($v.get(0).files);
 					}
 					else if($v.attr("type") === "number"){
 						vals.push(parseFloat($v.val()));
