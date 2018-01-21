@@ -71,9 +71,9 @@ define([], () => {
 			self.setAll();
 
 			// Reset graph to just a plain graph. Not sure if this should actually happen or not.
-			let G = main.graphState.dataSetToGraph(main.graphState.graph.getAllNodes(), main.graphState.graph.getAllNodes(), false, self.defaults.direction, self.defaults.weights);
+			let G = main.graphState.dataSetToGraph(main.graphState.graph.getAllNodes(),
+				main.graphState.graph.getAllNodes(), false, self.defaults.direction, self.defaults.weights);
 			main.setData(main.graphState.getGraphData(G));
-
 		}
 	};
 	return self;

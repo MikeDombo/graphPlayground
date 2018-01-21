@@ -348,7 +348,8 @@ define("Graph", [], () => {
 			convertToUnWeighted: function () {
 				this.weighted = false;
 				this.edges.forEach((edge) => {
-					if(!("weight" in edge) || typeof edge.weight === "undefined" || edge.weight === null || edge.weight !== 1){
+					if(!("weight" in edge) || typeof edge.weight === "undefined"
+						|| edge.weight === null || edge.weight !== 1){
 						edge.weight = 1;
 					}
 				});
