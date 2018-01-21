@@ -9,12 +9,12 @@ define(["genericHelpers", "jquery"], (help, $) => {
 						main.setData(n, false, true, false);
 					}
 					else{
-						help.showErrorModal("Data Import Error", "<p>The provided input does not conform the the" +
+						help.showSimpleModal("Data Import Error", "<p>The provided input does not conform the the" +
 							" import specifications.</p>");
 					}
 				}
 				catch(err){
-					help.showErrorModal("JSON Parse Error", "<p>There was an error parsing your input as JSON.</p>"
+					help.showSimpleModal("JSON Parse Error", "<p>There was an error parsing your input as JSON.</p>"
 						+ "<pre>" + err + "</pre>");
 				}
 			}
@@ -26,7 +26,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 					let vals = l.split(/\s+/);
 					if(vals[0].toLowerCase() === "p"){
 						if(vals[1].toLowerCase() !== "edge"){
-							help.showErrorModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +
+							help.showSimpleModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +
 								" &quot;edge&quot; formatted DIMACS files.</p>");
 							error = true;
 							return;
@@ -39,7 +39,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 				});
 
 				if(graph === null && !error){
-					help.showErrorModal("DIMACS Parse Error", "<p>No program line found!</p>");
+					help.showSimpleModal("DIMACS Parse Error", "<p>No program line found!</p>");
 					error = true;
 				}
 
@@ -52,7 +52,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 				}
 			}
 			else{
-				help.showErrorModal("Unrecognized Input Format", "<p>The format of your input is incorrect.</p>");
+				help.showSimpleModal("Unrecognized Input Format", "<p>The format of your input is incorrect.</p>");
 			}
 		},
 

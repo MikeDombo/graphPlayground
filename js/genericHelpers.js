@@ -71,24 +71,8 @@ define(["jquery"], ($) => {
 			});
 		},
 
-		showErrorModal: (title, body) => {
-			let $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
-			$modal
-				.append($("<div>", {class: "modal-dialog"})
-					.append($("<div>", {class: "modal-content"})
-						.append($("<div>", {class: "modal-header"})
-							.append($("<h5>", {class: "modal-title"}).text(title))
-							.append($("<button>", {class: "close", "data-dismiss": "modal", "aria-label": "close"})
-								.append($("<span>", {"aria-hidden": "true"}).html("&times;"))
-							)
-						)
-						.append($("<div>", {class: "modal-body"}).html(body))
-					)
-				);
-			$modal.on("hidden.bs.modal", () => {
-				$modal.remove();
-			});
-			$modal.modal("show");
+		showSimpleModal: (title, body) => {
+			self.showFormModal(null, title, null, [{type: "html", initialValue: body}], null, false);
 		},
 
 		makeFormModal: (title, successText, form, footer = true) => {
@@ -176,12 +160,12 @@ define(["jquery"], ($) => {
 					basicMap.class = "form-check-input";
 					delete basicMap.value;
 					if(formRow.initialValue){
-						basicMap.checked = null;
+						basicMap.checked = "";
 					}
 
 					f.append($("<div>", {class: "form-check"})
 						.append($("<label>", {for: id, class: "form-check-label"}).text(formRow.label)
-						                                                                         .prepend($("<input>", basicMap))
+						                                                          .prepend($("<input>", basicMap))
 						)
 					);
 				}
@@ -228,7 +212,7 @@ define(["jquery"], ($) => {
 				}
 			});
 			$modal.on("shown.bs.modal", () => {
-				$modal.find("input, textarea, select").first().focus();
+				$modal.find("input[type='text'], input[type='number'], textarea").first().focus();
 			});
 
 			return $modal;
@@ -240,7 +224,12 @@ define(["jquery"], ($) => {
 			let $modal = self.makeFormModal(title, successText, form, footer);
 
 			$modal.on("click", ".btn-cancel", () => {
-				cancelCb($modal);
+				if(typeof cancelCb === "function"){
+					cancelCb($modal);
+				}
+				else{
+					$modal.modal("hide");
+				}
 			}).on("click", ".btn-dismiss", () => {
 				$modal.modal("hide");
 			}).on("click", ".btn-success", () => {
@@ -253,10 +242,10 @@ define(["jquery"], ($) => {
 					if($v.tagName === "SELECT"){
 						vals.push($v.find(":selected").val());
 					}
-					if($v.attr("type") === "checkbox"){
+					else if($v.attr("type") === "checkbox"){
 						vals.push($v.prop("checked"));
 					}
-					if($v.attr("type") === "file"){
+					else if($v.attr("type") === "file"){
 						vals.push($v.get(0).files);
 					}
 					else if($v.attr("type") === "number"){
@@ -272,7 +261,7 @@ define(["jquery"], ($) => {
 
 				});
 
-				if(!hasErrors){
+				if(!hasErrors && typeof successCb === "function"){
 					successCb($modal, vals);
 				}
 			}).on("hidden.bs.modal", () => {

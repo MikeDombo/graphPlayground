@@ -57,18 +57,13 @@
 			<li class="nav-item active">
 				<a class="nav-link" href="#" onclick="main.shuffleNetworkLayout();">New Graph Layout</a>
 			</li>
-			<li class="nav-item dropdown active">
-				<a class="nav-link dropdown-toggle" href="#" id="optionsDropdown" role="button" data-toggle="dropdown"
-				   aria-haspopup="true" aria-expanded="false">
-					Options
-				</a>
-				<div class="dropdown-menu" aria-labelledby="optionsDropdown">
-					<a class="dropdown-item" href="#" onclick="main.togglePhysics();">Enable/Disable Physics</a>
-					<a class="dropdown-item" href="#" onclick="main.toggleDirectional();">Enable/Disable DiGraph</a>
-					<a class="dropdown-item" href="#" onclick="main.toggledWeighted();">Enable/Disable Edge Weights</a>
-					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href="#" onclick="settings.resetToDefault();">Reset Preferences</a>
-				</div>
+		</ul>
+		<ul class="navbar-nav mr-sm-2">
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.printOptions();">Options</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.printHelp();">Help</a>
 			</li>
 		</ul>
 	</div>

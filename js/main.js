@@ -1,4 +1,5 @@
-define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor", "graphState", "dataImportExport"],
+define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor",
+		"graphState", "dataImportExport"],
 	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
 		let self = {
 			dataImpExp: dataImpExp,
@@ -90,7 +91,9 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							callback(null);
 						}
 						data.edges.forEach((v) => {
-							graphState.deleteEdge(network.body.edges[v].fromId, network.body.edges[v].toId, parseFloat(network.body.data.edges._data[v].label));
+							graphState.deleteEdge(network.body.edges[v].fromId,
+								network.body.edges[v].toId,
+								parseFloat(network.body.data.edges._data[v].label));
 						});
 					},
 					deleteNode: function (data, callback) {
@@ -120,35 +123,49 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}
 			},
 
-			togglePhysics: () => {
-				let t = !settings.getOption("nodePhysics");
-				settings.changeOption("nodePhysics", t);
+			printHelp: () => {
+				help.showSimpleModal("Help",
+					"<h4>For support see the <a href='https://github.com/MikeDombo/graphPlayground' " +
+					"target='_blank'>GitHub repository</a> for guides</h4>" +
+					"<h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues'" +
+					" target='_blank'>GitHub issues</a> to submit bugs or feature requests.</h4>");
 			},
 
-			toggleDirectional: () => {
-				let t = !settings.getOption("direction");
-				settings.changeOption("direction", t);
-				let G = self.graphState.graph.clone();
-				if(t){
-					G.convertToDirected(true);
-				}
-				else{
-					G = G.getGraphAsUndirected();
-				}
-				self.setData(graphState.getGraphData(G));
-			},
-
-			toggledWeighted: () => {
-				let t = !settings.getOption("weights");
-				settings.changeOption("weights", t);
-				let G = self.graphState.graph.clone();
-				if(t){
-					G.convertToWeighted();
-				}
-				else{
-					G.convertToUnWeighted();
-				}
-				self.setData(graphState.getGraphData(G));
+			printOptions: () => {
+				help.showFormModal(
+					($modal, vals) => {
+						$modal.modal("hide");
+						if(settings.getOption("nodePhysics") !== vals[0]){
+							settings.changeOption("nodePhysics", vals[0]); // Physics
+						}
+						if(settings.getOption("direction") !== vals[1]){
+							settings.changeOption("direction", vals[1]);
+							let G = self.graphState.graph.clone();
+							if(vals[1]){
+								G.convertToDirected(true);
+							}
+							else{
+								G = G.getGraphAsUndirected();
+							}
+							self.setData(graphState.getGraphData(G));
+						}
+						if(settings.getOption("weights") !== vals[2]){
+							settings.changeOption("weights", vals[2]);
+							let G = self.graphState.graph.clone();
+							if(vals[2]){
+								G.convertToWeighted();
+							}
+							else{
+								G.convertToUnWeighted();
+							}
+							self.setData(graphState.getGraphData(G));
+						}
+					},
+					"Options", "Save", [
+						{label: "Graph Physics", initialValue: settings.getOption("nodePhysics"), type: "checkbox"},
+						{label: "Directed Graph", initialValue: settings.getOption("direction"), type: "checkbox"},
+						{label: "Weighted Graph", initialValue: settings.getOption("weights"), type: "checkbox"}
+					], null);
 			},
 
 			makeAndPrintGraphColoring: () => {
@@ -267,8 +284,10 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 							+ help.htmlEncode(source) + " to " + help.htmlEncode(sink);
 
 						if(a.pathExists){
-							p = "Breadth-First Shortest Path From " + self.graphState.nodeIDToLabel(source) + " to " + self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
+							p = "Breadth-First Shortest Path From " + self.graphState.nodeIDToLabel(source) + " to ";
+							p += self.graphState.nodeIDToLabel(sink) + ": " + a.distance;
 							p += "\n\nUsing Path: ";
+
 							p = help.htmlEncode(p);
 							a.path.forEach((v) => {
 								p += help.htmlEncode(self.graphState.nodeIDToLabel(v)) + " &rarr; ";
@@ -607,7 +626,8 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				settings.changeOption("weights", newState.graph.isWeighted());
 
 				let g = graphState.getGraphAsDataSet(newState.graph);
-				graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, false, newState.graph.isDirected(), newState.graph.isWeighted());
+				graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, false,
+					newState.graph.isDirected(), newState.graph.isWeighted());
 
 				network.setData(g);
 				network.disableEditMode();

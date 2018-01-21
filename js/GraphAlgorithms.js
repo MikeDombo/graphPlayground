@@ -286,7 +286,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				return edge.weight < 0;
 			});
 			if(typeof nonNegative !== "undefined"){
-				genericH.showErrorModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
+				genericH.showSimpleModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
 					" with totally non-negative edge weights. Please fix the graph so that there are no" +
 					" negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
 					" exactly this problem.</p>");
@@ -413,7 +413,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 			}
 
 			if(negativeCylce){
-				genericH.showErrorModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
+				genericH.showSimpleModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
 					" with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>");
 				return false;
 			}
