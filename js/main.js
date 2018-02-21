@@ -685,7 +685,7 @@ define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings
 				}, false, false, true);
 			},
 
-			randomizeNetworkLayoutSeed: network => {
+			randomizeNetworkLayoutSeed: (network) => {
 				let r = Math.round(Math.random() * 1000000);
 				network.layoutEngine.randomSeed = r;
 				network.layoutEngine.initialRandomSeed = r;

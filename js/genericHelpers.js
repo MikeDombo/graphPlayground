@@ -41,7 +41,9 @@ define(["jquery"], ($) => {
 		flatten: (map) => {
 			let r = [];
 			for(let i in map){
-				r.push(map[i]);
+				if({}.hasOwnProperty.call(map, i)){
+					r.push(map[i]);
+				}
 			}
 			return r;
 		},
@@ -165,7 +167,7 @@ define(["jquery"], ($) => {
 
 					f.append($("<div>", {class: "form-check"})
 						.append($("<label>", {for: id, class: "form-check-label"}).text(formRow.label)
-						                                                          .prepend($("<input>", basicMap))
+							.prepend($("<input>", basicMap))
 						)
 					);
 				}
