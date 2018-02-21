@@ -93,7 +93,9 @@ define(["jquery"], ($) => {
 
 				if("extraAttrs" in formRow){
 					for(let attrname in formRow.extraAttrs){
-						basicMap[attrname] = formRow.extraAttrs[attrname];
+						if({}.hasOwnProperty.call(formRow.extraAttrs, attrname)){
+							basicMap[attrname] = formRow.extraAttrs[attrname];
+						}
 					}
 				}
 

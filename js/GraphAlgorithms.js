@@ -496,9 +496,9 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				marked[startNodeID] = true;
 				while(queue.length > 0){
 					let v = queue.shift();
-					let adj_v = G.getNodeAdjacency(v);
-					for(let i = 0; i < adj_v.length; i++){
-						let e = v + "_" + adj_v[i];
+					let vertexAdjacency = G.getNodeAdjacency(v);
+					for(let i = 0; i < vertexAdjacency.length; i++){
+						let e = v + "_" + vertexAdjacency[i];
 						let w = other(e, v);
 						if(!marked[w] && residualCapacity(e, w) > 0){
 							edgeTo[w] = e;
