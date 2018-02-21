@@ -529,9 +529,9 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 			let getFlows = () => {
 				let f = [];
 				for(let v = 0; v < V; v++){
-					let adj_v = G.getNodeAdjacency(v);
-					for(let i = 0; i < adj_v.length; i++){
-						let e = v + "_" + adj_v[i];
+					let vertexAdjacency = G.getNodeAdjacency(v);
+					for(let i = 0; i < vertexAdjacency.length; i++){
+						let e = v + "_" + vertexAdjacency[i];
 						if(edgeProperties[e].flow > 0){
 							f.push(edgeProperties[e]);
 						}
