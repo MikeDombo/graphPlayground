@@ -1,4 +1,4 @@
-define(["genericHelpers", "jquery"], (help, $) => {
+define(["genericHelpers", "jquery", "Graph"], (help, $, Graph) => {
 	let self = {
 		importByString: (string, format) => {
 			if(format.toLowerCase() === "json"){
@@ -31,7 +31,7 @@ define(["genericHelpers", "jquery"], (help, $) => {
 							error = true;
 							return;
 						}
-						graph = new jsgraphs.Graph(parseInt(vals[2]));
+						graph = new Graph(parseInt(vals[2]));
 					}
 					else if(vals[0].toLowerCase() === "e" && graph !== null){
 						graph.addEdge(parseInt(vals[1]) - 1, parseInt(vals[2]) - 1);
