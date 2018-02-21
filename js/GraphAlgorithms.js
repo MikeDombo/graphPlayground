@@ -204,18 +204,13 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 
 				if(lowlink[v] === indices[v]){
 					let w = -1;
-					let addedAny = false;
 					if(S.length > 0){
 						do{
 							w = S.pop();
 							components[w] = componentCount;
-							addedAny = true;
 						}
 						while(w !== v);
-
-						if(addedAny){
-							componentCount++;
-						}
+						componentCount++;
 					}
 				}
 			};
@@ -258,7 +253,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 					path.push(x);
 				}
 				path.push(startNodeID);
-				path = path.reverse();
+				path.reverse();
 
 				// Get the path weight
 				let weight = 0;
@@ -361,7 +356,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 			}
 
 			path.push(startNodeID);
-			path = path.reverse();
+			path.reverse();
 
 			if(distances[targetNodeID] !== Infinity){
 				return {pathExists: true, path: path, distance: path.length, cost: distances[targetNodeID]};
@@ -407,7 +402,7 @@ define("GraphAlgorithms", ["genericHelpers", "graphHelpers"], (genericH, graphH)
 				while(!path.includes(startNodeID)){
 					path.push(parents[path.slice().pop()]);
 				}
-				path = path.reverse();
+				path.reverse();
 
 				return {pathExists: true, path: path, distance: path.length, cost: distances[targetNodeID]};
 			}
