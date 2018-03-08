@@ -6,32 +6,30 @@ let filesToCache = [
 	'js/main.js',
 ];
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function (event) {
 	event.waitUntil(
-		caches.open(dataCacheName).then(function(cache) {
+		caches.open(dataCacheName).then(function (cache) {
 			return cache.addAll(filesToCache);
 		})
 	);
 });
 
-self.addEventListener('activate', function (e){
-	caches.keys();
-	e.waitUntil(
-		caches.keys().then(function (cacheNames){
-			return Promise.all(cacheNames.map(function (thisCacheName){
-				if(thisCacheName !== dataCacheName){
-					return caches.delete(thisCacheName);
-				}
-			}));
-		})
-	);
-});
-
-// Get files from network first, then the cache
-self.addEventListener('fetch', function(event) {
+// Get files from network first (cache if not cached already), then the cache
+self.addEventListener('fetch', function (event) {
 	event.respondWith(
-		fetch(event.request).catch(function() {
-			return caches.match(event.request);
-		})
+		fetch(event.request)
+			.then(response => {
+				return caches.open(dataCacheName).then(cache => {
+					let newResp = response.clone();
+					// Check if the response is for a real URL, not base64 encoded data
+					if(!newResp.url.includes("data:")){
+						cache.put(event.request, newResp);
+					}
+					return response;
+				});
+			})
+			.catch(() => {
+				return caches.match(event.request);
+			})
 	);
 });
