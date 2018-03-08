@@ -1,4 +1,4 @@
-define(["genericHelpers", "jquery", "Graph"], (help, $, Graph) => {
+define(["genericHelpers", "Graph"], (help, Graph) => {
 	let self = {
 		importByString: (string, format) => {
 			if(format.toLowerCase() === "json"){

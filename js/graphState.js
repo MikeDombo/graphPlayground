@@ -1,5 +1,5 @@
-define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
-	($, gAlgo, gHelp, help, Graph) => {
+define(["GraphAlgorithms", "graphHelpers", "genericHelpers", "Graph"],
+	(gAlgo, gHelp, help, Graph) => {
 		let self = {
 			backHistory: [],
 			forwardHistory: [],

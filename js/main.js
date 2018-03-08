@@ -1,6 +1,6 @@
-define(["jquery", "GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor",
+define(["GraphAlgorithms", "graphHelpers", "genericHelpers", "settings", "lib/randomColor",
 		"graphState", "dataImportExport"],
-	($, gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
+	(gAlgo, gHelp, help, settings, randomColor, graphState, dataImpExp) => {
 		let self = {
 			dataImpExp: dataImpExp,
 			graphState: graphState,

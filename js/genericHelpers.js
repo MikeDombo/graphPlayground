@@ -1,4 +1,4 @@
-define(["jquery"], ($) => {
+define(() => {
 	let self = {
 		datasetToArray: (ds, key) => {
 			let r = [];

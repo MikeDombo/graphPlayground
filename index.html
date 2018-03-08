@@ -8,6 +8,7 @@
 	      content="Interactive Graph Creator to run Graph Algorithms including: graph coloring (Welsh-Powell), Dijkstra shortest path, Bellman-Ford, Max-flow min-cut (Ford-Fulkerson), and more.">
 	<meta name="keywords"
 	      content="graph,network,free,online,graph creator,graph algorithms,network algorithms,graph coloring,shortest path">
+	<meta name="theme-color" content="#E6986A">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="manifest" href="manifest.json">
 
@@ -20,10 +21,58 @@
 	<meta name="msapplication-TileColor" content="#E6986A"/>
 	<meta name="msapplication-TileImage" content="mstile-144x144.png"/>
 
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
+	      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
-	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+	      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+	        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"
+	        integrity="sha256-JuQeAGbk9rG/EoRMixuy5X8syzICcvB0dj3KindZkY0=" crossorigin="anonymous" async
+	        defer></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"
+	        integrity="sha384-feJI7QwhOS+hwpX2zkaeJQjeiwlhOP+SdQDqhgvvo1DsjtiSQByFdThsxO669S2D" crossorigin="anonymous"
+	        async defer></script>
+
+	<!-- Tracking Codes -->
+	<script src="https://www.google-analytics.com/analytics.js" async defer></script>
+	<script>
+		window.ga = function () {
+			ga.q.push(arguments);
+		};
+		ga.q = [];
+		ga.l = +new Date;
+		ga('create', 'UA-4436865-12', 'auto');
+		ga('send', 'pageview');
+	</script>
+	<script>
+		(function () {
+			var
+				t, i, e, n = window, o = document, a = arguments, s = "script",
+				r = ["config", "track", "identify", "visit", "push", "call", "trackForm", "trackClick"],
+				c = function () {
+					var t, i = this;
+					for(i._e = [], t = 0; r.length > t; t++){
+						(function (t) {
+							i[t] = function () {
+								return i._e.push([t].concat(Array.prototype.slice.call(arguments, 0))), i;
+							};
+						})(r[t]);
+					}
+				};
+			for(n._w = n._w || {}, t = 0; a.length > t; t++){
+				n._w[a[t]] = n[a[t]] = n[a[t]] || new c;
+			}
+			i = o.createElement(s), i.async = 1, i.src = "https://static.woopra.com/js/w.js", e = o.getElementsByTagName(s)[0], e.parentNode.insertBefore(i, e);
+		})("woopra");
+
+		woopra.config({
+			domain: 'mikedombo.github.io'
+		});
+		woopra.track();
+	</script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -143,31 +192,33 @@
 	</div>
 </div>
 
-<script src="js/require.js"></script>
 <script>
-	requirejs.config({
-		baseUrl: 'js',
-		paths: {
-			jquery: "https://code.jquery.com/jquery-3.2.1.min",
-			vis: "https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min",
-			bootstrap: "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min",
-		},
-		shim: {
-			"bootstrap": ["jquery"]
-		},
-		priority: ['jquery']
-	});
-
-	require(["jquery"], function (popper, $){
-		window.$ = $;
-		require(["bootstrap"], function (bootstrap){
-			window.bootstrap = bootstrap;
+	function defer(method, reqs) {
+		let hasProps = true;
+		reqs.forEach((v) => {
+			if(!window.hasOwnProperty(v)){
+				hasProps = false;
+				setTimeout(() => {
+					defer(method, reqs);
+				}, 50);
+			}
 		});
-	});
+		if(hasProps){
+			method();
+		}
+	}
 
-	require(["vis"], function (v){
-		window.vis = v;
-		require(["main", "predefinedGraphs", "settings", "Graph"], (m, predefined, settings, Graph) =>{
+	defer(() => {
+		$.ajaxSetup({cache: true});
+		$.getScript("js/require.js");
+	}, ["$", "vis"]);
+
+	defer(() => {
+		requirejs.config({
+			baseUrl: 'js'
+		});
+
+		require(["main", "predefinedGraphs", "settings", "Graph"], (m, predefined, settings, Graph) => {
 			window.main = m;
 			window.predefined = predefined;
 			window.settings = settings;
@@ -193,40 +244,20 @@
 				main.setData(predefined.Petersen(), false, true, true);
 			}
 		});
-	});
+	}, ["requirejs", "$", "vis"]);
 </script>
 
 <script>
 	if('serviceWorker' in navigator){
-		window.addEventListener('load', function (){
-			navigator.serviceWorker.register('pwaServiceWorker.js').then(function (registration){
+		window.addEventListener('load', function () {
+			navigator.serviceWorker.register('pwaServiceWorker.js').then(function (registration) {
 				console.log('ServiceWorker registration successful with scope: ', registration.scope);
-			}).catch(function (err){
+			}).catch(function (err) {
 				console.log('ServiceWorker registration failed: ', err);
 			});
 		});
 	}
 </script>
 
-<script>
-	window.ga = function (){
-		ga.q.push(arguments);
-	};
-	ga.q = [];
-	ga.l = +new Date;
-	ga('create', 'UA-4436865-12', 'auto');
-	ga('send', 'pageview');
-</script>
-<script src="https://www.google-analytics.com/analytics.js" async defer></script>
-<script>
-	(function(){
-		var t,i,e,n=window,o=document,a=arguments,s="script",r=["config","track","identify","visit","push","call","trackForm","trackClick"],c=function(){var t,i=this;for(i._e=[],t=0;r.length>t;t++)(function(t){i[t]=function(){return i._e.push([t].concat(Array.prototype.slice.call(arguments,0))),i}})(r[t])};for(n._w=n._w||{},t=0;a.length>t;t++)n._w[a[t]]=n[a[t]]=n[a[t]]||new c;i=o.createElement(s),i.async=1,i.src="//static.woopra.com/js/w.js",e=o.getElementsByTagName(s)[0],e.parentNode.insertBefore(i,e)
-	})("woopra");
-
-	woopra.config({
-		domain: 'mikedombo.github.io'
-	});
-	woopra.track();
-</script>
 </body>
 </html>
