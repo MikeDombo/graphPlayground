@@ -1,6 +1,6 @@
 // randomColor by David Merfield under the CC0 license
 // https://github.com/davidmerfield/randomColor/
-(function (root, factory){
+(function (root, factory) {
 
 	// Support CommonJS
 	if(typeof exports === 'object'){
@@ -23,7 +23,7 @@
 		root.randomColor = factory();
 	}
 
-}(this, function (){
+}(this, function () {
 
 	// Seed to get repeatable colors
 	var seed = null;
@@ -34,7 +34,7 @@
 	// Populate the color dictionary
 	loadColorBounds();
 
-	var randomColor = function (options){
+	var randomColor = function (options) {
 
 		options = options || {};
 
@@ -96,7 +96,7 @@
 		return setFormat([H, S, B], options);
 	};
 
-	function pickHue(options){
+	function pickHue(options) {
 
 		var hueRange = getHueRange(options.hue),
 			hue = randomWithin(hueRange);
@@ -111,7 +111,7 @@
 
 	}
 
-	function pickSaturation(hue, options){
+	function pickSaturation(hue, options) {
 
 		if(options.hue === 'monochrome'){
 			return 0;
@@ -145,7 +145,7 @@
 
 	}
 
-	function pickBrightness(H, S, options){
+	function pickBrightness(H, S, options) {
 
 		var bMin = getMinimumBrightness(H, S),
 			bMax = 100;
@@ -169,7 +169,7 @@
 		return randomWithin([bMin, bMax]);
 	}
 
-	function setFormat(hsv, options){
+	function setFormat(hsv, options) {
 
 		switch(options.format){
 
@@ -206,7 +206,7 @@
 
 	}
 
-	function getMinimumBrightness(H, S){
+	function getMinimumBrightness(H, S) {
 
 		var lowerBounds = getColorInfo(H).lowerBounds;
 
@@ -231,7 +231,7 @@
 		return 0;
 	}
 
-	function getHueRange(colorInput){
+	function getHueRange(colorInput) {
 
 		if(typeof parseInt(colorInput) === 'number'){
 
@@ -260,11 +260,11 @@
 
 	}
 
-	function getSaturationRange(hue){
+	function getSaturationRange(hue) {
 		return getColorInfo(hue).saturationRange;
 	}
 
-	function getColorInfo(hue){
+	function getColorInfo(hue) {
 
 		// Maps red colors to make picking hue easier
 		if(hue >= 334 && hue <= 360){
@@ -282,7 +282,7 @@
 		return 'Color not found';
 	}
 
-	function randomWithin(range){
+	function randomWithin(range) {
 		if(seed === null){
 			return Math.floor(range[0] + Math.random() * (range[1] + 1 - range[0]));
 		}else{
@@ -295,11 +295,11 @@
 		}
 	}
 
-	function HSVtoHex(hsv){
+	function HSVtoHex(hsv) {
 
 		var rgb = HSVtoRGB(hsv);
 
-		function componentToHex(c){
+		function componentToHex(c) {
 			var hex = c.toString(16);
 			return hex.length == 1 ? '0' + hex : hex;
 		}
@@ -310,7 +310,7 @@
 
 	}
 
-	function defineColor(name, hueRange, lowerBounds){
+	function defineColor(name, hueRange, lowerBounds) {
 
 		var sMin = lowerBounds[0][0],
 			sMax = lowerBounds[lowerBounds.length - 1][0],
@@ -327,7 +327,7 @@
 
 	}
 
-	function loadColorBounds(){
+	function loadColorBounds() {
 
 		defineColor(
 			'monochrome',
@@ -379,7 +379,7 @@
 
 	}
 
-	function HSVtoRGB(hsv){
+	function HSVtoRGB(hsv) {
 
 		// this doesn't work for the values of 0 and 360
 		// here's the hacky fix
@@ -442,7 +442,7 @@
 		return result;
 	}
 
-	function HexToHSB(hex){
+	function HexToHSB(hex) {
 		hex = hex.replace(/^#/, '');
 		hex = hex.length === 3 ? hex.replace(/(.)/g, '$1$1') : hex;
 
@@ -464,7 +464,7 @@
 		}
 	}
 
-	function HSVtoHSL(hsv){
+	function HSVtoHSL(hsv) {
 		var h = hsv[0],
 			s = hsv[1] / 100,
 			v = hsv[2] / 100,
@@ -477,7 +477,7 @@
 		];
 	}
 
-	function stringToInteger(string){
+	function stringToInteger(string) {
 		var total = 0;
 		for(var i = 0; i !== string.length; i++){
 			if(total >= Number.MAX_SAFE_INTEGER){
