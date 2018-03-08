@@ -21,14 +21,8 @@
 	<meta name="msapplication-TileColor" content="#E6986A"/>
 	<meta name="msapplication-TileImage" content="mstile-144x144.png"/>
 
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
-	      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
-	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-	      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-	        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous" defer></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"
 	        integrity="sha256-JuQeAGbk9rG/EoRMixuy5X8syzICcvB0dj3KindZkY0=" crossorigin="anonymous" async
 	        defer></script>
@@ -193,10 +187,42 @@
 </div>
 
 <script>
+	function getScript(...args) {
+		let src;
+		let script = document.createElement('script');
+		script.type = "text/javascript";
+
+		if(args.length >= 1 && typeof args[0] !== "object"){
+			src = args[0];
+			if(args.length >= 2){
+				script.async = args[1];
+			}
+			if(args.length >= 3){
+				script.defer = args[2];
+			}
+			if(args.length >= 4){
+				script.integrity = args[3];
+			}
+			if(args.length >= 5){
+				script.crossOrigin = args[5];
+			}
+		}
+		else{
+			args = args[0];
+			src = args.src;
+			Object.keys(args).forEach((key) => {
+				script[key] = args[key];
+			});
+		}
+
+		script.src = src;
+		document.getElementsByTagName('head')[0].appendChild(script);
+	}
+
 	function defer(method, reqs) {
 		let hasProps = true;
 		reqs.forEach((v) => {
-			if(!window.hasOwnProperty(v)){
+			if(!window.hasOwnProperty(v) && hasProps){
 				hasProps = false;
 				setTimeout(() => {
 					defer(method, reqs);
@@ -209,8 +235,7 @@
 	}
 
 	defer(() => {
-		$.ajaxSetup({cache: true});
-		$.getScript("js/require.js");
+		getScript("js/require.js");
 	}, ["$", "vis"]);
 
 	defer(() => {
@@ -258,6 +283,12 @@
 		});
 	}
 </script>
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
 </body>
 </html>
