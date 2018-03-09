@@ -2,8 +2,7 @@ let dataCacheName = 'graphs-v1';
 
 let filesToCache = [
 	'index.html',
-	'js/require.js',
-	'js/main.js',
+	'bundle.js',
 ];
 
 self.addEventListener('install', function (event) {

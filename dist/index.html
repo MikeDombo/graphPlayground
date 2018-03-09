@@ -21,15 +21,6 @@
 	<meta name="msapplication-TileColor" content="#E6986A"/>
 	<meta name="msapplication-TileImage" content="mstile-144x144.png"/>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-	        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous" defer></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"
-	        integrity="sha256-JuQeAGbk9rG/EoRMixuy5X8syzICcvB0dj3KindZkY0=" crossorigin="anonymous" async
-	        defer></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js"
-	        integrity="sha384-feJI7QwhOS+hwpX2zkaeJQjeiwlhOP+SdQDqhgvvo1DsjtiSQByFdThsxO669S2D" crossorigin="anonymous"
-	        async defer></script>
-
 	<!-- Tracking Codes -->
 	<script src="https://www.google-analytics.com/analytics.js" async defer></script>
 	<script>
@@ -176,8 +167,7 @@
 						</div>
 						<div class="card-body">
 							<div id="printout"
-							     style="/*overflow-y: scroll; height: 60vh;*/
-							     white-space:pre-wrap;"></div>
+							     style="white-space:pre-wrap;"></div>
 						</div>
 					</div>
 				</div>
@@ -186,103 +176,7 @@
 	</div>
 </div>
 
-<script>
-	function getScript(...args) {
-		let src;
-		let script = document.createElement('script');
-		script.type = "text/javascript";
-
-		if(args.length >= 1 && typeof args[0] !== "object"){
-			src = args[0];
-			if(args.length >= 2){
-				script.async = args[1];
-			}
-			if(args.length >= 3){
-				script.defer = args[2];
-			}
-			if(args.length >= 4){
-				script.integrity = args[3];
-			}
-			if(args.length >= 5){
-				script.crossOrigin = args[5];
-			}
-		}
-		else{
-			args = args[0];
-			src = args.src;
-			Object.keys(args).forEach((key) => {
-				script[key] = args[key];
-			});
-		}
-
-		script.src = src;
-		document.getElementsByTagName('head')[0].appendChild(script);
-	}
-
-	function defer(method, reqs) {
-		let hasProps = true;
-		reqs.forEach((v) => {
-			if(!window.hasOwnProperty(v) && hasProps){
-				hasProps = false;
-				setTimeout(() => {
-					defer(method, reqs);
-				}, 50);
-			}
-		});
-		if(hasProps){
-			method();
-		}
-	}
-
-	defer(() => {
-		getScript("js/require.js");
-	}, ["$", "vis"]);
-
-	defer(() => {
-		requirejs.config({
-			baseUrl: 'js'
-		});
-
-		require(["main", "predefinedGraphs", "settings", "Graph"], (m, predefined, settings, Graph) => {
-			window.main = m;
-			window.predefined = predefined;
-			window.settings = settings;
-			window.network = new vis.Network(m.container, {}, m.visOptions);
-
-			main.addNetworkListeners(network);
-
-			settings.loadSettings();
-
-			let loadDefault = true;
-			if(settings.checkForLocalStorage()){
-				let s = localStorage.getItem("graphPlayground.lastState");
-				if(s !== null){
-					s = JSON.parse(s);
-					if("nodes" in s.graph){
-						s.graph = new Graph(s.graph.nodes, s.graph.edges, s.graph.directed, s.graph.weighted);
-						loadDefault = false;
-						main.applyState(false, s);
-					}
-				}
-			}
-			if(loadDefault){
-				main.setData(predefined.Petersen(), false, true, true);
-			}
-		});
-	}, ["requirejs", "$", "vis"]);
-</script>
-
-<script>
-	if('serviceWorker' in navigator){
-		window.addEventListener('load', function () {
-			navigator.serviceWorker.register('pwaServiceWorker.js').then(function (registration) {
-				console.log('ServiceWorker registration successful with scope: ', registration.scope);
-			}).catch(function (err) {
-				console.log('ServiceWorker registration failed: ', err);
-			});
-		});
-	}
-</script>
+<script src = "bundle.js"></script>
 
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">

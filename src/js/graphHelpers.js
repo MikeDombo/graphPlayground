@@ -1,4 +1,4 @@
-define({
+export default {
 		findVertexDegreesDirectional: (adjacencyMatrix) => {
 			// Adjacency stores IDs of edges TO
 			let degrees = [];
@@ -31,5 +31,4 @@ define({
 
 			return nodes;
 		},
-	}
-);
+	};

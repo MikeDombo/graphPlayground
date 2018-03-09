@@ -1,0 +1,32 @@
+{
+  "name": "graphPlayground",
+  "version": "1.0.0",
+  "description": "A single-page webapp to build graphs and run algorithms on them with no server-side components.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikeDombo/graphPlayground.git"
+  },
+  "scripts": {
+    "build": "webpack --mode development",
+    "buildProd": "webpack --mode production"
+  },
+  "keywords": [],
+  "author": "Michael Dombrowski",
+  "bugs": {
+    "url": "https://github.com/MikeDombo/graphPlayground/issues"
+  },
+  "homepage": "https://github.com/MikeDombo/graphPlayground#readme",
+  "devDependencies": {
+    "copy-webpack-plugin": "^4.5.1",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.10"
+  },
+  "dependencies": {
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1",
+    "npm": "^5.7.1",
+    "popper.js": "^1.12.9",
+    "randomcolor": "^0.5.3",
+    "vis": "^4.21.0"
+  }
+}

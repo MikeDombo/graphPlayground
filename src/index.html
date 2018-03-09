@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Graph Algorithm Playground</title>
+	<meta name="description"
+	      content="Interactive Graph Creator to run Graph Algorithms including: graph coloring (Welsh-Powell), Dijkstra shortest path, Bellman-Ford, Max-flow min-cut (Ford-Fulkerson), and more.">
+	<meta name="keywords"
+	      content="graph,network,free,online,graph creator,graph algorithms,network algorithms,graph coloring,shortest path">
+	<meta name="theme-color" content="#E6986A">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="manifest" href="manifest.json">
+
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="apple-touch-icon-144x144.png"/>
+	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="apple-touch-icon-152x152.png"/>
+	<link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196"/>
+	<link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16"/>
+	<meta name="application-name" content="Graph Algorithm Playground"/>
+	<meta name="msapplication-TileColor" content="#E6986A"/>
+	<meta name="msapplication-TileImage" content="mstile-144x144.png"/>
+
+	<!-- Tracking Codes -->
+	<script src="https://www.google-analytics.com/analytics.js" async defer></script>
+	<script>
+		window.ga = function () {
+			ga.q.push(arguments);
+		};
+		ga.q = [];
+		ga.l = +new Date;
+		ga('create', 'UA-4436865-12', 'auto');
+		ga('send', 'pageview');
+	</script>
+	<script>
+		(function () {
+			var
+				t, i, e, n = window, o = document, a = arguments, s = "script",
+				r = ["config", "track", "identify", "visit", "push", "call", "trackForm", "trackClick"],
+				c = function () {
+					var t, i = this;
+					for(i._e = [], t = 0; r.length > t; t++){
+						(function (t) {
+							i[t] = function () {
+								return i._e.push([t].concat(Array.prototype.slice.call(arguments, 0))), i;
+							};
+						})(r[t]);
+					}
+				};
+			for(n._w = n._w || {}, t = 0; a.length > t; t++){
+				n._w[a[t]] = n[a[t]] = n[a[t]] || new c;
+			}
+			i = o.createElement(s), i.async = 1, i.src = "https://static.woopra.com/js/w.js", e = o.getElementsByTagName(s)[0], e.parentNode.insertBefore(i, e);
+		})("woopra");
+
+		woopra.config({
+			domain: 'mikedombo.github.io'
+		});
+		woopra.track();
+	</script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+	        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+			<li class="nav-item">
+				<a class="nav-link" href="#" onclick="main.undo();"><i class="fa fa-undo" aria-hidden="true"></i></a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="#" onclick="main.redo();"><i class="fa fa-repeat" aria-hidden="true"></i></a>
+			</li>
+
+			<li class="nav-item dropdown active">
+				<a class="nav-link dropdown-toggle" href="#" id="fileDropdown" role="button" data-toggle="dropdown"
+				   aria-haspopup="true" aria-expanded="false">
+					File
+				</a>
+				<div class="dropdown-menu" aria-labelledby="fileDropdown">
+					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeImportFileModal()">Import File</a>
+					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeImportTextModal()">Import Text</a>
+					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeExportFileModal()">Export To File</a>
+					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeExportTextModal()">Export To Text</a>
+				</div>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.graphState.makeAndPrintProperties(true);">
+					Calculate All Properties</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.shuffleNetworkLayout();">New Graph Layout</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.printOptions();">Graph Options</a>
+			</li>
+		</ul>
+		<ul class="navbar-nav mr-sm-2">
+			<li class="nav-item active">
+				<a class="nav-link" href="#" onclick="main.printHelp();">Help</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-lg-2">
+			<div class="row col">
+				<div class="card-body">
+					<h4>Example Graphs</h4>
+					<nav class="nav flex-lg-column flex-row">
+						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen(), false, true, true);">
+							Load Petersen Graph
+						</a>
+						<a class="nav-link" href="#"
+						   onclick="main.setData(predefined.Konigsberg(), false, true, true);">
+							Load Königsberg Bridges Graph
+						</a>
+						<a class="nav-link" href="#" onclick="predefined.Complete();">
+							Load Complete Graph
+						</a>
+						<a class="nav-link" href="#" onclick="predefined.Hypercube();">
+							Load Hypercube Graph
+						</a>
+						<a class="nav-link" href="#" onclick="predefined.Custom();">
+							Make Custom Graph
+						</a>
+					</nav>
+				</div>
+			</div>
+			<hr class="d-none d-lg-block"/>
+			<div class="row col">
+				<div class="card-body">
+					<h4>Algorithms</h4>
+					<nav class="nav flex-lg-column flex-row" id="algorithms-pane">
+					</nav>
+				</div>
+			</div>
+			<hr class="d-none d-lg-block"/>
+			<div class="row col">
+				<div class="card-body">
+					<h4>Graph Properties</h4>
+					<nav class="nav flex-column" id="graphProps">
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-10">
+			<div class="row">
+				<div class="col">
+					<div class="card" style="margin-bottom:1rem; margin-top:1rem;">
+						<div class="card-body" style="padding:0">
+							<div id="network" style="height: 80vh;" tabindex="0"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">Results</h4>
+						</div>
+						<div class="card-body">
+							<div id="printout"
+							     style="white-space:pre-wrap;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src = "bundle.js"></script>
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+</body>
+</html>

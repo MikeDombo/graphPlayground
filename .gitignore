@@ -46,7 +46,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-.idea/**
-.idea/*
-.scannerwork/**
-.scannerwork/*
+/.idea/
+/node_modules/
+/.scannerwork/

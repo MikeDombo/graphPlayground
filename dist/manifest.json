@@ -1,0 +1,20 @@
+{
+  "short_name": "Graph Playground",
+  "name": "Graph Algorithm Playground",
+  "icons": [
+    {
+      "src": "favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "favicon-196x196.png",
+      "type": "image/png",
+      "sizes": "196x196"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#FFFFFF",
+  "theme_color": "#E6986A",
+  "display": "standalone"
+}
