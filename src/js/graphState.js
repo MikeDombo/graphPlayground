@@ -254,8 +254,7 @@ let self = {
 
 	// Return graph as a Vis compatible dataset
 	getGraphAsDataSet: (graph) => {
-		graph = graph.clone();
-		let d = self.getGraphData(graph);
+		let d = self.getGraphData(self.getNewGraph(graph));
 		if(graph.isWeighted()){
 			d.edges.forEach((e) => {
 				e.label = e.weight.toString();
@@ -309,10 +308,11 @@ let self = {
 		let nodeCount = start;
 		let newNodes = [];
 		nodes.forEach((v) => {
+			let label = v.label;
 			if(v.label === v.id.toString()){
-				v.label = nodeCount.toString();
+				label = nodeCount.toString();
 			}
-			let thisNode = {id: nodeCount, label: v.label, color: v.color, x: v.x, y: v.y};
+			let thisNode = {id: nodeCount, label: label, color: v.color, x: v.x, y: v.y};
 			newNodes.push(thisNode);
 			nodeMap[v.id] = nodeCount++;
 		});
@@ -323,7 +323,7 @@ let self = {
 			newEdges.push(thisEdge);
 		});
 
-		return {nodes: newNodes, edges: newEdges};
+		return help.deepFreeze({nodes: newNodes, edges: newEdges});
 	},
 };
 

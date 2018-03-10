@@ -1,12 +1,28 @@
 import $ from 'jquery';
 
 let self = {
+	deepFreeze: (o) => {
+		Object.freeze(o);
+
+		Object.getOwnPropertyNames(o).forEach(prop => {
+			if(o.hasOwnProperty(prop) && o[prop] !== null
+				&& (typeof o[prop] === "object" || typeof o[prop] === "function")
+				&& !Object.isFrozen(o[prop])){
+				self.deepFreeze(o[prop]);
+			}
+		});
+
+		return o;
+	},
+	sort: (arr, compareFunction) => {
+		return [...arr].sort(compareFunction);
+	},
 	datasetToArray: (ds, key) => {
 		let r = [];
 		ds.forEach((v) => {
 			r.push(v[key]);
 		});
-		return r;
+		return self.deepFreeze(r);
 	},
 
 	keepOnlyKeys: (arr, keys) => {
@@ -19,7 +35,7 @@ let self = {
 				}
 			});
 		});
-		return arr;
+		return self.deepFreeze(arr);
 	},
 
 	getFileExtension: (filename) => {
@@ -46,7 +62,7 @@ let self = {
 				r.push(map[i]);
 			}
 		}
-		return r;
+		return self.deepFreeze(r);
 	},
 
 	rotate: (map) => {
@@ -59,7 +75,7 @@ let self = {
 				r[map[i]] = [i];
 			}
 		}
-		return r;
+		return self.deepFreeze(r);
 	},
 
 	max: (iterable) => {
@@ -170,7 +186,7 @@ let self = {
 
 				f.append($("<div>", {class: "form-check"})
 					.append($("<label>", {for: id, class: "form-check-label"}).text(formRow.label)
-						.prepend($("<input>", basicMap))
+					                                                          .prepend($("<input>", basicMap))
 					)
 				);
 			}

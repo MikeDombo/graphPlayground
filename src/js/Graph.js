@@ -1,4 +1,5 @@
 "use strict";
+import help from './genericHelpers';
 
 let Graph = function (V, edges = null, directed = false, weighted = false) {
 this.nodes = [];
@@ -241,7 +242,7 @@ Graph.prototype = {
 	},
 
 	getNode: function (id) {
-		return this.nodes[id];
+		return help.deepFreeze(this.nodes[id]);
 	},
 
 	getNodeAdjacency: function (id) {

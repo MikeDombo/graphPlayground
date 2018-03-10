@@ -1,7 +1,7 @@
 import gHelp from './graphHelpers';
 import help from './genericHelpers';
 
-let petersenEdges = [
+const petersenEdges = help.deepFreeze([
 	{from: 1, to: 2},
 	{from: 2, to: 3},
 	{from: 3, to: 4},
@@ -19,9 +19,9 @@ let petersenEdges = [
 	{from: 3, to: 8},
 	{from: 4, to: 9},
 	{from: 5, to: 10}
-];
+]);
 
-let konigsbergEdges = [
+const konigsbergEdges = help.deepFreeze([
 	{from: 1, to: 2},
 	{from: 2, to: 3},
 	{from: 2, to: 4},
@@ -29,9 +29,9 @@ let konigsbergEdges = [
 	{from: 3, to: 4},
 	{from: 4, to: 1},
 	{from: 4, to: 1},
-];
+]);
 
-let completeGraph = (V) => {
+const completeGraph = (V) => {
 	let edges = [];
 	let nodes = [];
 
@@ -45,7 +45,7 @@ let completeGraph = (V) => {
 	return {nodes: nodes, edges: edges, directed: false, weighted: false};
 };
 
-let hypercubeGraph = (D) => {
+const hypercubeGraph = (D) => {
 	let edges = [];
 	let nodes = [];
 
@@ -55,7 +55,7 @@ let hypercubeGraph = (D) => {
 		return str.length < max ? pad("0" + str, max) : str;
 	};
 
-	let generateDifferByOne = (input, numBits) => {
+	const generateDifferByOne = (input, numBits) => {
 		let inputBits = pad((input).toString(2), numBits).split("").reverse();
 		let allDiffer = [];
 
@@ -78,32 +78,32 @@ let hypercubeGraph = (D) => {
 		});
 	}
 
-	return {nodes: nodes, edges: edges, directed: false, weighted: false};
+	return help.deepFreeze({nodes: nodes, edges: edges, directed: false, weighted: false});
 };
 
-let newCustomGraph = (V, directed = false, weighted = false) => {
+const newCustomGraph = (V, directed = false, weighted = false) => {
 	let nodes = [];
 	for(let i = 0; i < V; i++){
 		nodes.push({id: i, label: i.toString()});
 	}
 
-	return {nodes: nodes, edges: [], directed: directed, weighted: weighted};
+	return help.deepFreeze({nodes: nodes, edges: [], directed: directed, weighted: weighted});
 };
 
 export default {
-	graphNames: ["Petersen", "Konigsberg", "Complete", "Hypercube"],
-	Petersen: () => ({
-		edges: petersenEdges.slice(),
+	graphNames: help.deepFreeze(["Petersen", "Konigsberg", "Complete", "Hypercube"]),
+	Petersen: () => (help.deepFreeze({
+		edges: petersenEdges,
 		nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
 		directed: false,
 		weighted: false,
-	}),
-	Konigsberg: () => ({
-		edges: konigsbergEdges.slice(),
+	})),
+	Konigsberg: () => (help.deepFreeze({
+		edges: konigsbergEdges,
 		nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
 		directed: false,
 		weighted: false,
-	}),
+	})),
 	Complete: () => {
 		help.showFormModal(($modal, vals) => {
 				$modal.modal("hide");

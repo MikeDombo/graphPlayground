@@ -1,14 +1,14 @@
 import 'bootstrap';
 import vis from 'vis';
-import m from './main';
+import main from './main';
 import predefined from './predefinedGraphs';
 import settings from './settings';
 import Graph from './Graph';
 
-window.main = m;
+window.main = main;
 window.predefined = predefined;
+window.network = new vis.Network(main.container, {}, main.visOptions);
 window.settings = settings;
-window.network = new vis.Network(m.container, {}, m.visOptions);
 
 main.addNetworkListeners(network);
 

@@ -1,38 +1,9 @@
 import genericH from './genericHelpers';
 import graphH from './graphHelpers';
-
-let SpanningTree = function (V) {
-	this.id = [];
-	for(let v = 0; v < V; v++){
-		this.id.push(v);
-	}
-};
-
-SpanningTree.prototype = {
-	constructor: SpanningTree,
-	union: function (v, w) {
-		let q = this.root(v);
-		let p = this.root(w);
-
-		if(p !== q){
-			this.id[p] = q;
-		}
-	},
-
-	root: function (q) {
-		while(this.id[q] !== q){
-			q = this.id[q];
-		}
-		return q;
-	},
-
-	connected: function (v, w) {
-		return this.root(v) === this.root(w);
-	}
-};
+import SpanningTree from './SpanningTree';
 
 let self = {
-	algorithms: [
+	algorithms: genericH.deepFreeze([
 		{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
 		{
 			name: "Connected Components",
@@ -92,7 +63,7 @@ let self = {
 		},
 		{name: "Eulerian", directional: false, display: false, applyFunc: null},
 		{name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
-	],
+	]),
 
 	// Welsh-Powell Algorithm
 	colorNetwork: (graphState = main.graphState) => {
@@ -103,7 +74,7 @@ let self = {
 
 		// Put vertices in array in decreasing order of degree
 		let degrees = G.getAllOutDegrees();
-		let vertexOrder = nodeArr.sort((a, b) => {
+		let vertexOrder = genericH.sort(nodeArr, (a, b) => {
 			return degrees[a] < degrees[b] ? 1 : degrees[a] === degrees[b] ? 0 : -1;
 		});
 
@@ -148,12 +119,13 @@ let self = {
 
 		let components = {};
 		let componentCount = 0;
+		const setComponentNum = (v) => {
+			components[v] = componentCount;
+		};
 		for(let i = 0; i < G.getNumberOfNodes(); i++){
 			if(!(i in components)){
 				let visited = self.depthFirstSearch(G, i);
-				visited.forEach((v) => {
-					components[v] = componentCount;
-				});
+				visited.forEach(setComponentNum);
 				componentCount++;
 			}
 		}
@@ -161,7 +133,7 @@ let self = {
 		return {components: components, count: componentCount};
 	},
 
-	depthFirstSearch: (G = graphState.graph.clone(), start) => {
+	depthFirstSearch: (G = main.graphState.graph.clone(), start) => {
 		let visisted = [];
 		let Stack = [];
 		Stack.push(start);
@@ -292,7 +264,7 @@ let self = {
 
 
 		// Priority Queue implementation for Dijkstra
-		let PriorityQueue = function () {
+		const PriorityQueue = function () {
 			this._nodes = [];
 
 			this.enqueue = function (priority, key) {
@@ -457,14 +429,14 @@ let self = {
 			};
 		});
 
-		let other = (e, x) => {
+		const other = (e, x) => {
 			e = e.split("_");
 			let a = parseInt(e[0]);
 			let b = parseInt(e[1]);
 			return x === a ? b : a;
 		};
 
-		let residualCapacity = (e, x) => {
+		const residualCapacity = (e, x) => {
 			let edge = e.split("_");
 			let a = parseInt(edge[0]);
 			if(x === a){
@@ -473,7 +445,7 @@ let self = {
 			return edgeProperties[e].capacity - edgeProperties[e].flow;
 		};
 
-		let addResidualFlow = (e, x, deltaFlow) => {
+		const addResidualFlow = (e, x, deltaFlow) => {
 			let edge = e.split("_");
 			let v = parseInt(edge[0]);
 			if(x === v){
@@ -484,7 +456,7 @@ let self = {
 			}
 		};
 
-		let hasAugmentedPath = () => {
+		const hasAugmentedPath = () => {
 			marked = [];
 			edgeTo = [];
 			for(let v = 0; v < V; ++v){
@@ -528,7 +500,7 @@ let self = {
 			value += bottleneckValue;
 		}
 
-		let getFlows = () => {
+		const getFlows = () => {
 			let f = [];
 			for(let v = 0; v < V; v++){
 				let vertexAdjacency = G.getNodeAdjacency(v);
@@ -623,7 +595,7 @@ let self = {
 
 	isGraphCyclic: (graphState = main.graphState) => {
 		// If the topological sorting returns true, then it failed, so the graph has a cycle
-		return self.topologicalSort(graphState) === true ? true : false;
+		return self.topologicalSort(graphState) === true;
 	},
 
 	directionalEulerian: (directionalDegrees, graphState = main.graphState) => {
