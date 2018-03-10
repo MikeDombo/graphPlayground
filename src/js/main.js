@@ -95,9 +95,13 @@ let self = {
 					callback(null);
 				}
 				data.edges.forEach((v) => {
+					let weight = null;
+					if(typeof network.body.data.edges._data[v].label !== "undefined"){
+						weight = parseFloat(network.body.data.edges._data[v].label);
+					}
+
 					graphState.deleteEdge(network.body.edges[v].fromId,
-						network.body.edges[v].toId,
-						parseFloat(network.body.data.edges._data[v].label));
+						network.body.edges[v].toId, weight);
 				});
 			},
 			deleteNode: function (data, callback) {

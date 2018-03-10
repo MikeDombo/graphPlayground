@@ -164,7 +164,7 @@ Graph.prototype = {
 	},
 
 	deleteEdge: function (from, to, weight = null, deleteAll = true) {
-		let adjacencyFilter = (id1, id2) => {
+		const adjacencyFilter = (id1, id2) => {
 			let found = false;
 			this.nodes[id1].adjacency = this.nodes[id1].adjacency.filter((n) => {
 				if(found && !deleteAll){
