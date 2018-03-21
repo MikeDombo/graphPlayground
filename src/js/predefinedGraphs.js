@@ -107,7 +107,7 @@ export default {
 	Complete: () => {
 		help.showFormModal(($modal, vals) => {
 				$modal.modal("hide");
-				main.setData(completeGraph(vals[0]), false, true, true);
+				window.main.setData(completeGraph(vals[0]), false, true, true);
 			},
 			"Configurable Complete Graph", "Go",
 			[{
@@ -119,7 +119,7 @@ export default {
 	Hypercube: () => {
 		help.showFormModal(($modal, vals) => {
 				$modal.modal("hide");
-				main.setData(hypercubeGraph(vals[0]), false, true, true);
+				window.main.setData(hypercubeGraph(vals[0]), false, true, true);
 			},
 			"Configurable Hypercube Graph", "Go",
 			[{
@@ -131,7 +131,7 @@ export default {
 	Custom: () => {
 		help.showFormModal(($modal, vals) => {
 				$modal.modal("hide");
-				main.setData(newCustomGraph(vals[0], vals[1], vals[2]), false, true, true);
+				window.main.setData(newCustomGraph(vals[0], vals[1], vals[2]), false, true, true);
 			},
 			"Configurable Graph", "Go",
 			[

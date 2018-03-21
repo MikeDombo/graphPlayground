@@ -1,0 +1,17 @@
+{
+	"extends": "eslint:recommended",
+	"rules": {
+		"comma-dangle": 0,
+		"no-console": 0
+	},
+	"parserOptions": {
+		"sourceType": "module"
+	},
+	"env" : {
+		"jquery" : true,
+		"browser": true,
+		"es6": true,
+		"serviceworker": true,
+		"node": true
+	}
+}

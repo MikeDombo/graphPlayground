@@ -66,7 +66,7 @@ let self = {
 	]),
 
 	// Welsh-Powell Algorithm
-	colorNetwork: (graphState = main.graphState) => {
+	colorNetwork: (graphState = window.main.graphState) => {
 		let G = graphState.graph.clone(); // Always clone the graph so we don't change anything in the active graph
 
 		// Get node ID's only
@@ -114,7 +114,7 @@ let self = {
 		return {colors: colorIndex, chromaticNumber: chromaticNumber};
 	},
 
-	connectedComponents: (graphState = main.graphState) => {
+	connectedComponents: (graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		let components = {};
@@ -133,7 +133,7 @@ let self = {
 		return {components: components, count: componentCount};
 	},
 
-	depthFirstSearch: (G = main.graphState.graph.clone(), start) => {
+	depthFirstSearch: (G = window.main.graphState.graph.clone(), start) => {
 		let visisted = [];
 		let Stack = [];
 		Stack.push(start);
@@ -151,7 +151,7 @@ let self = {
 	},
 
 	// Tarjan's algorithm
-	stronglyConnectedComponents: (graphState = main.graphState) => {
+	stronglyConnectedComponents: (graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		let index = 0;
@@ -198,7 +198,7 @@ let self = {
 		return {components: components, count: componentCount};
 	},
 
-	breadthFirstSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
+	breadthFirstSearch: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		// Perform the BFS
@@ -241,7 +241,7 @@ let self = {
 		return {pathExists: false, path: [], distance: -1, weight: -1};
 	},
 
-	dijkstraSearch: (startNodeID, targetNodeID, graphState = main.graphState) => {
+	dijkstraSearch: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		if(!G.isDirected()){
@@ -340,7 +340,7 @@ let self = {
 		return {pathExists: false, path: [], distance: -1, cost: 0};
 	},
 
-	bellmanFord: (startNodeID, targetNodeID, graphState = main.graphState) => {
+	bellmanFord: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		let distances = [];
@@ -390,7 +390,7 @@ let self = {
 		return {pathExists: false, path: [], distance: -1, cost: 0};
 	},
 
-	fordFulkerson: (startNodeID, targetNodeID, graphState = main.graphState) => {
+	fordFulkerson: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		// Must be a directed graph
@@ -518,7 +518,7 @@ let self = {
 		return {maxFlow: value, flowPath: getFlows()};
 	},
 
-	kruskal: (graphState = main.graphState) => {
+	kruskal: (graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		// If we have a multigraph, reduce it by using the minimum edge weights
@@ -552,7 +552,7 @@ let self = {
 		return {mst: kruskal, totalWeight: weight};
 	},
 
-	topologicalSort: (graphState = main.graphState) => {
+	topologicalSort: (graphState = window.main.graphState) => {
 		let G = graphState.graph.clone();
 
 		let adjacency = G.getFullAdjacency();
@@ -593,12 +593,12 @@ let self = {
 		return edges.length > 0 || L;
 	},
 
-	isGraphCyclic: (graphState = main.graphState) => {
+	isGraphCyclic: (graphState = window.main.graphState) => {
 		// If the topological sorting returns true, then it failed, so the graph has a cycle
 		return self.topologicalSort(graphState) === true;
 	},
 
-	directionalEulerian: (directionalDegrees, graphState = main.graphState) => {
+	directionalEulerian: (directionalDegrees, graphState = window.main.graphState) => {
 		let scc = graphState.getProperty("stronglyConnectedComponents", true);
 
 		let eulerian = true;
@@ -620,7 +620,7 @@ let self = {
 		return eulerian;
 	},
 
-	hasEulerianCircuit: (degrees, graphState = main.graphState) => {
+	hasEulerianCircuit: (degrees, graphState = window.main.graphState) => {
 		let oddDegree = degrees.filter((v) => {
 			return v % 2 !== 0;
 		});

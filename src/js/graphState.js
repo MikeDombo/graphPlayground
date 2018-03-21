@@ -11,13 +11,13 @@ let self = {
 		{
 			name: "Chromatic Number", upToDate: false, type: "property",
 			applyFunc: () => {
-				main.makeAndPrintGraphColoring();
+				window.main.makeAndPrintGraphColoring();
 			}
 		},
 		{
 			name: "graphColoring", upToDate: false, type: "state",
 			applyFunc: () => {
-				main.makeAndPrintGraphColoring();
+				window.main.makeAndPrintGraphColoring();
 			}
 		},
 		{name: "vertices", upToDate: true, always: true, type: "property"},
@@ -25,37 +25,37 @@ let self = {
 		{
 			name: "eulerian", upToDate: false, type: "property",
 			applyFunc: () => {
-				main.makeAndPrintEulerian();
+				window.main.makeAndPrintEulerian();
 			}
 		},
 		{
 			name: "Connected Components", upToDate: false, type: "property",
 			applyFunc: () => {
-				main.makeAndPrintConnectedComponents();
+				window.main.makeAndPrintConnectedComponents();
 			}
 		},
 		{
 			name: "connectedComponents", upToDate: false, type: "state",
 			applyFunc: () => {
-				main.makeAndPrintConnectedComponents();
+				window.main.makeAndPrintConnectedComponents();
 			}
 		},
 		{
 			name: "Strongly Connected Components", upToDate: false, type: "property",
 			applyFunc: () => {
-				main.makeAndPrintStronglyConnectedComponents();
+				window.main.makeAndPrintStronglyConnectedComponents();
 			}
 		},
 		{
 			name: "stronglyConnectedComponents", upToDate: false, type: "state",
 			applyFunc: () => {
-				main.makeAndPrintStronglyConnectedComponents();
+				window.main.makeAndPrintStronglyConnectedComponents();
 			}
 		},
 		{
 			name: "cyclic", upToDate: false, type: "property",
 			applyFunc: () => {
-				main.makeAndPrintIsCyclic();
+				window.main.makeAndPrintIsCyclic();
 			}
 		},
 	],
@@ -110,7 +110,7 @@ let self = {
 	},
 
 	makeAndPrintProperties: (recalcLong = false) => {
-		let directional = settings.getOption("direction");
+		let directional = window.settings.getOption("direction");
 
 		self.graphProperties.vertices = self.graph.getNumberOfNodes();
 		self.graphProperties.edges = self.graph.getNumberOfEdges();
@@ -151,37 +151,37 @@ let self = {
 
 		let n = graph.getAllNodes();
 		n = self.clearColorFromNodes(n);
-		main.setData({nodes: n, edges: graph.getAllEdges()});
+		window.main.setData({nodes: n, edges: graph.getAllEdges()});
 	},
 
 	addNode: (data, graph = self.graph) => {
 		graph = self.getNewGraph();
 		graph.addNode({label: data.label, x: data.x, y: data.y});
-		main.setData(self.getGraphData(graph));
+		window.main.setData(self.getGraphData(graph));
 	},
 
 	editNode: (id, label, graph = self.graph) => {
 		graph = self.getNewGraph();
 		graph.editNode(id, {label: label});
-		main.setData(self.getGraphData(graph), false, false);
+		window.main.setData(self.getGraphData(graph), false, false);
 	},
 
 	editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
 		graph = self.getNewGraph();
 		graph.editEdge(from, to, newWeight, oldWeight);
-		main.setData(self.getGraphData(graph), false, false);
+		window.main.setData(self.getGraphData(graph), false, false);
 	},
 
 	deleteEdge: (from, to, weight = null, graph = self.graph) => {
 		graph = self.getNewGraph();
 		graph.deleteEdge(from, to, weight, false);
-		main.setData(self.getGraphData(graph));
+		window.main.setData(self.getGraphData(graph));
 	},
 
 	deleteNode: (id, graph = self.graph) => {
 		graph = self.getNewGraph();
 		graph.deleteNode(id);
-		main.setData(self.getGraphData(graph));
+		window.main.setData(self.getGraphData(graph));
 	},
 
 	clearColorFromNodes: (nodes) => {
@@ -287,7 +287,7 @@ let self = {
 	},
 
 	// return graph object built from input nodes and edges
-	dataSetToGraph: (nodes, edges, doubleEdges = false, directional = false, weighted = false) => {
+	dataSetToGraph: (nodes, edges, directional = false, weighted = false) => {
 		let d = self.alignData(0, nodes, edges);
 		let g = new Graph(d.nodes.length, null, directional, weighted);
 

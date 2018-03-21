@@ -96,12 +96,12 @@ let self = {
 				}
 				data.edges.forEach((v) => {
 					let weight = null;
-					if(typeof network.body.data.edges._data[v].label !== "undefined"){
-						weight = parseFloat(network.body.data.edges._data[v].label);
+					if(typeof window.network.body.data.edges._data[v].label !== "undefined"){
+						weight = parseFloat(window.network.body.data.edges._data[v].label);
 					}
 
-					graphState.deleteEdge(network.body.edges[v].fromId,
-						network.body.edges[v].toId, weight);
+					graphState.deleteEdge(window.network.body.edges[v].fromId,
+						window.network.body.edges[v].toId, weight);
 				});
 			},
 			deleteNode: function (data, callback) {
@@ -546,18 +546,18 @@ let self = {
 		let directional = settings.getOption("direction");
 		let weighted = settings.getOption("weights");
 
-		let g = graphState.dataSetToGraph(data.nodes, data.edges, false, directional, weighted);
+		let g = graphState.dataSetToGraph(data.nodes, data.edges, directional, weighted);
 
 		graphState.graph = g;
 
 		// Set a new random seed so that the layout will be different
-		self.randomizeNetworkLayoutSeed(network);
+		self.randomizeNetworkLayoutSeed(window.network);
 
-		network.setData(graphState.getGraphAsDataSet(g));
-		self.graphState.setLocations(network.getPositions());
+		window.network.setData(graphState.getGraphAsDataSet(g));
+		self.graphState.setLocations(window.network.getPositions());
 
-		network.disableEditMode();
-		network.enableEditMode();
+		window.network.disableEditMode();
+		window.network.enableEditMode();
 
 		if(graphChanged){
 			self.printGraphAlgorithms();
@@ -634,12 +634,11 @@ let self = {
 		settings.changeOption("weights", newState.graph.isWeighted());
 
 		let g = graphState.getGraphAsDataSet(newState.graph);
-		graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, false,
-			newState.graph.isDirected(), newState.graph.isWeighted());
+		graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, newState.graph.isDirected(), newState.graph.isWeighted());
 
-		network.setData(g);
-		network.disableEditMode();
-		network.enableEditMode();
+		window.network.setData(g);
+		window.network.disableEditMode();
+		window.network.enableEditMode();
 
 		self.printGraphAlgorithms();
 		help.printout("");

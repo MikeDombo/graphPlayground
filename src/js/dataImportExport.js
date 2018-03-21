@@ -8,8 +8,9 @@ let self = {
 			try{
 				let n = JSON.parse(string);
 				if("nodes" in n && "edges" in n){
-					network.setData({}); // Clear out the existing network in order to import the proper locations
-					main.setData(n, false, true, false);
+					window.network.setData({}); // Clear out the existing network in order to import the proper
+					// locations
+					window.main.setData(n, false, true, false);
 				}
 				else{
 					help.showSimpleModal("Data Import Error", "<p>The provided input does not conform the the" +
@@ -47,11 +48,11 @@ let self = {
 			}
 
 			if(!error){
-				let d = main.graphState.getGraphData(graph);
+				let d = window.main.graphState.getGraphData(graph);
 				d.nodes.forEach((v) => {
 					v.label = v.id.toString();
 				});
-				main.setData(d, false, true, true);
+				window.main.setData(d, false, true, true);
 			}
 		}
 		else{
@@ -172,8 +173,8 @@ let self = {
 	},
 
 	getDataAsJSON: () => {
-		let d = main.graphState.getGraphData();
-		d = main.graphState.getGraphData(main.graphState.dataSetToGraph(d.nodes, d.edges, false, d.directed, d.weighted));
+		let d = window.main.graphState.getGraphData();
+		d = window.main.graphState.getGraphData(window.main.graphState.dataSetToGraph(d.nodes, d.edges, d.directed, d.weighted));
 		let nodeKeys = ["id", "label", "color", "x", "y"];
 		let edgeKeys = ["from", "to", "weight"];
 		d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys);
@@ -184,11 +185,11 @@ let self = {
 
 	getDataAsDIMACS: () => {
 		// If I add direction, DIMACS cannot be used, it only works for undirected graphs
-		let g = main.graphState.getGraphData();
+		let g = window.main.graphState.getGraphData();
 		let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground --" +
 			" https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
-		let adj = main.graphState.graph.getFullAdjacency();
+		let adj = window.main.graphState.graph.getFullAdjacency();
 		adj = adj.filter((v) => {
 			return v.length !== 0;
 		});

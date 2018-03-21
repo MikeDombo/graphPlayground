@@ -2,42 +2,42 @@
 import help from './genericHelpers';
 
 let Graph = function (V, edges = null, directed = false, weighted = false) {
-this.nodes = [];
-this.edges = [];
-this.numNodes = 0;
-this.directed = directed;
-this.weighted = weighted;
+	this.nodes = [];
+	this.edges = [];
+	this.numNodes = 0;
+	this.directed = directed;
+	this.weighted = weighted;
 
-let nodeNum = V;
-let nodeList = [];
-// If were are given the actual nodes (instead of the number of nodes), add them to a list and count them
-if(typeof V !== "number"){
-	nodeNum = 0;
-	V.forEach((n) => {
-		if(!("id" in n)){
-			n.id = nodeNum++;
-		}
+	let nodeNum = V;
+	let nodeList = [];
+	// If were are given the actual nodes (instead of the number of nodes), add them to a list and count them
+	if(typeof V !== "number"){
+		nodeNum = 0;
+		V.forEach((n) => {
+			if(!("id" in n)){
+				n.id = nodeNum++;
+			}
 
-		nodeList[n.id] = this.addNode(n);
-	});
-}
-else{
-	// Create the nodes
-	for(let i = 0; i < nodeNum; i++){
-		nodeList.push(this.addNode({}));
+			nodeList[n.id] = this.addNode(n);
+		});
 	}
-}
-
-// If we are given edges, add them to the graph
-if(typeof edges !== "undefined" && edges !== null){
-	edges.forEach((edge) => {
-		let weight = 0;
-		if("weight" in edge && this.weighted){
-			weight = parseFloat(edge.weight);
+	else{
+		// Create the nodes
+		for(let i = 0; i < nodeNum; i++){
+			nodeList.push(this.addNode({}));
 		}
-		this.addEdge(nodeList[edge.from], nodeList[edge.to], weight);
-	});
-}
+	}
+
+	// If we are given edges, add them to the graph
+	if(typeof edges !== "undefined" && edges !== null){
+		edges.forEach((edge) => {
+			let weight = 0;
+			if("weight" in edge && this.weighted){
+				weight = parseFloat(edge.weight);
+			}
+			this.addEdge(nodeList[edge.from], nodeList[edge.to], weight);
+		});
+	}
 };
 
 Graph.prototype = {

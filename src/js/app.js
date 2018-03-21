@@ -10,7 +10,7 @@ window.predefined = predefined;
 window.network = new vis.Network(main.container, {}, main.visOptions);
 window.settings = settings;
 
-main.addNetworkListeners(network);
+main.addNetworkListeners(window.network);
 
 settings.loadSettings();
 
@@ -32,8 +32,8 @@ if(loadDefault){
 
 // Register service worker
 if('serviceWorker' in navigator){
-	window.addEventListener('load', function () {
-		navigator.serviceWorker.register('pwaServiceWorkerPack.js').then(function (registration) {
+	document.addEventListener('ready', function () {
+		navigator.serviceWorker.register('service-worker.js').then(function (registration) {
 			console.log('ServiceWorker registration successful with scope: ', registration.scope);
 		}).catch(function (err) {
 			console.log('ServiceWorker registration failed: ', err);

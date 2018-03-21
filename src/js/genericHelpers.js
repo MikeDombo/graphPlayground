@@ -185,8 +185,8 @@ let self = {
 				}
 
 				f.append($("<div>", {class: "form-check"})
-					.append($("<label>", {for: id, class: "form-check-label"}).text(formRow.label)
-					                                                          .prepend($("<input>", basicMap))
+					.append($("<label>", {for: id, class: "form-check-label"})
+						.text(formRow.label).prepend($("<input>", basicMap))
 					)
 				);
 			}

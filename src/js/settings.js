@@ -35,19 +35,19 @@ let self = {
 	},
 
 	setAll: () => {
-		network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
-		network.setOptions({edges: {arrows: {to: self.getOption("direction")}}});
+		window.network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
+		window.network.setOptions({edges: {arrows: {to: self.getOption("direction")}}});
 		if(self.getOption("weights")){
-			network.setOptions({
+			window.network.setOptions({
 				manipulation: {
 					editEdge: {
-						editWithoutDrag: main.visWeightEdgeEdit
+						editWithoutDrag: window.main.visWeightEdgeEdit
 					}
 				}
 			});
 		}
 		else{
-			network.setOptions({manipulation: {editEdge: main.visOptions.manipulation.editEdge}});
+			window.network.setOptions({manipulation: {editEdge: window.main.visOptions.manipulation.editEdge}});
 		}
 	},
 
@@ -70,9 +70,8 @@ let self = {
 		self.setAll();
 
 		// Reset graph to just a plain graph. Not sure if this should actually happen or not.
-		let G = main.graphState.dataSetToGraph(main.graphState.graph.getAllNodes(),
-			main.graphState.graph.getAllNodes(), false, self.defaults.direction, self.defaults.weights);
-		main.setData(main.graphState.getGraphData(G));
+		let G = window.main.graphState.dataSetToGraph(window.main.graphState.graph.getAllNodes(), window.main.graphState.graph.getAllNodes(), self.defaults.direction, self.defaults.weights);
+		window.main.setData(window.main.graphState.getGraphData(G));
 	}
 };
 
