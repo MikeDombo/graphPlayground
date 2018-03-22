@@ -1,3 +1,5 @@
+"use strict";
+
 import help from "./genericHelpers";
 
 export default {

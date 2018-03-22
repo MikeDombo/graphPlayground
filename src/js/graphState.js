@@ -1,3 +1,5 @@
+"use strict";
+
 import $ from 'jquery';
 import vis from 'vis';
 import help from './genericHelpers';

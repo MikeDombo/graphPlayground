@@ -1,3 +1,5 @@
+"use strict";
+
 import $ from 'jquery';
 import help from './genericHelpers';
 import Graph from './Graph';

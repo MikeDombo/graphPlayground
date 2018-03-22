@@ -1,3 +1,5 @@
+"use strict";
+
 import 'bootstrap';
 import vis from 'vis';
 import main from './main';

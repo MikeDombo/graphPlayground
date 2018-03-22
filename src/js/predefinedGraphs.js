@@ -1,3 +1,5 @@
+"use strict";
+
 import gHelp from './graphHelpers';
 import help from './genericHelpers';
 

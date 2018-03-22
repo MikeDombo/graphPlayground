@@ -1,3 +1,5 @@
+"use strict";
+
 import genericH from './genericHelpers';
 import graphH from './graphHelpers';
 import SpanningTree from './SpanningTree';

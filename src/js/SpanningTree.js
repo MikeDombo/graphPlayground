@@ -1,3 +1,5 @@
+"use strict";
+
 import genericH from "./genericHelpers";
 
 let SpanningTree = function (V) {

@@ -1,3 +1,5 @@
+"use strict";
+
 import $ from 'jquery';
 import gAlgo from './GraphAlgorithms';
 import gHelp from './graphHelpers';
