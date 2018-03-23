@@ -3,7 +3,7 @@
 import $ from 'jquery';
 import vis from 'vis';
 import help from './genericHelpers';
-import Graph from './Graph';
+import GraphImmut from './GraphImmut';
 
 let self = {
 	backHistory: [],
@@ -137,19 +137,18 @@ let self = {
 
 	printGraphProperties: (properties) => {
 		let p = "";
-		for(let k in properties){
+		Object.keys(properties).forEach((k) => {
 			if(properties[k] !== null){
 				p += help.toTitleCase(k) + ": " + properties[k] + "\n";
 			}
-		}
+		});
 		p = p.trim();
 		p = help.htmlEncode(p);
 		$("#graphProps").html("<p class='nav-link'>" + p + "</p>");
 	},
 
 	addEdge: (from, to, weight = 0, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.addEdge(from, to, weight);
+		graph = graph.addEdge(from, to, weight);
 
 		let n = graph.getAllNodes();
 		n = self.clearColorFromNodes(n);
@@ -157,32 +156,27 @@ let self = {
 	},
 
 	addNode: (data, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.addNode({label: data.label, x: data.x, y: data.y});
+		graph = graph.addNode({label: data.label, x: data.x, y: data.y});
 		window.main.setData(self.getGraphData(graph));
 	},
 
 	editNode: (id, label, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.editNode(id, {label: label});
+		graph = graph.editNode(id, {label: label});
 		window.main.setData(self.getGraphData(graph), false, false);
 	},
 
 	editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.editEdge(from, to, newWeight, oldWeight);
+		graph = graph.editEdge(from, to, newWeight, oldWeight);
 		window.main.setData(self.getGraphData(graph), false, false);
 	},
 
 	deleteEdge: (from, to, weight = null, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.deleteEdge(from, to, weight, false);
+		graph = graph.deleteEdge(from, to, weight, false);
 		window.main.setData(self.getGraphData(graph));
 	},
 
 	deleteNode: (id, graph = self.graph) => {
-		graph = self.getNewGraph();
-		graph.deleteNode(id);
+		graph = graph.deleteNode(id);
 		window.main.setData(self.getGraphData(graph));
 	},
 
@@ -194,12 +188,9 @@ let self = {
 	},
 
 	nodeIDToLabel: (id, graph = self.graph) => {
-		let n = graph.getAllNodes();
-		n = n.find((node) => {
-			return node.id === id;
-		});
-		if(typeof n !== "undefined" && n.label.trim().length > 0){
-			return n.label.trim();
+		let n = graph.getNode(id, true);
+		if(n !== false && n !== null && typeof n !== "undefined" && n.getLabel().trim().length > 0){
+			return n.getLabel().trim();
 		}
 
 		return id.toString();
@@ -207,24 +198,24 @@ let self = {
 
 	// Preferentially search by ID, label, and case-insensitive label
 	nodeLabelToID: (label, graph = self.graph) => {
-		let n = graph.getAllNodes();
+		let n = graph.getAllNodes(true);
 		n = n.filter((node) => {
-			return node.label.toLowerCase() === label.toLowerCase() || node.id.toString() === label;
+			return node.getLabel().toLowerCase() === label.toLowerCase() || node.getID().toString() === label;
 		});
 
 		if(n.length === 0){
 			return -1;
 		}
 		else if(n.length === 1){
-			return n[0].id;
+			return n[0].getID();
 		}
 
 		let rID = -1;
 		let found = false;
 
 		n.forEach((node) => {
-			if(!found && node.id.toString() === label){
-				rID = node.id;
+			if(!found && node.getID().toString() === label){
+				rID = node.getID();
 				found = true;
 			}
 		});
@@ -234,8 +225,8 @@ let self = {
 		}
 
 		n.forEach((node) => {
-			if(!found && node.label === label){
-				rID = node.id;
+			if(!found && node.getLabel() === label){
+				rID = node.getID();
 				found = true;
 			}
 		});
@@ -245,8 +236,8 @@ let self = {
 		}
 
 		n.forEach((node) => {
-			if(!found && node.label.toLowerCase() === label.toLowerCase()){
-				rID = node.id;
+			if(!found && node.getLabel().toLowerCase() === label.toLowerCase()){
+				rID = node.getID();
 				found = true;
 			}
 		});
@@ -256,7 +247,7 @@ let self = {
 
 	// Return graph as a Vis compatible dataset
 	getGraphAsDataSet: (graph) => {
-		let d = self.getGraphData(self.getNewGraph(graph));
+		let d = self.getGraphData(graph);
 		if(graph.isWeighted()){
 			d.edges.forEach((e) => {
 				e.label = e.weight.toString();
@@ -266,17 +257,13 @@ let self = {
 		return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
 	},
 
-	// Clones the graph and returns the new one
-	getNewGraph: (graph = self.graph) => {
-		graph = graph.clone();
-		return graph;
-	},
-
 	setLocations: (locations, graph = self.graph) => {
 		Object.keys(locations).forEach((i) => {
 			let v = locations[i];
-			graph.editNode(i, {x: v.x, y: v.y});
+			graph = graph.editNode(i, {x: v.x, y: v.y});
 		});
+
+		return graph;
 	},
 
 	getGraphData: (graph = self.graph) => {
@@ -291,17 +278,7 @@ let self = {
 	// return graph object built from input nodes and edges
 	dataSetToGraph: (nodes, edges, directional = false, weighted = false) => {
 		let d = self.alignData(0, nodes, edges);
-		let g = new Graph(d.nodes.length, null, directional, weighted);
-
-		d.nodes.forEach((n) => {
-			g.editNode(n.id, {label: n.label, color: n.color, x: n.x, y: n.y});
-		});
-
-		d.edges.forEach((edge) => {
-			g.addEdge(edge.from, edge.to, edge.weight);
-		});
-
-		return g;
+		return new GraphImmut(d.nodes, d.edges, directional, weighted);
 	},
 
 	// Align ID's of nodes to a start value (typically 0)

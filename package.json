@@ -25,6 +25,7 @@
   "dependencies": {
     "bootstrap": "^4.0.0",
     "clean-webpack-plugin": "^0.1.19",
+    "immutable": "^3.8.2",
     "jquery": "^3.3.1",
     "npm": "^5.7.1",
     "popper.js": "^1.12.9",

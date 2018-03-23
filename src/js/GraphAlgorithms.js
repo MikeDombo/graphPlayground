@@ -69,7 +69,7 @@ let self = {
 
 	// Welsh-Powell Algorithm
 	colorNetwork: (graphState = window.main.graphState) => {
-		let G = graphState.graph.clone(); // Always clone the graph so we don't change anything in the active graph
+		let G = graphState.graph;
 
 		// Get node ID's only
 		let nodeArr = genericH.datasetToArray(G.getAllNodes(), "id");
@@ -117,7 +117,7 @@ let self = {
 	},
 
 	connectedComponents: (graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		let components = {};
 		let componentCount = 0;
@@ -135,7 +135,7 @@ let self = {
 		return {components: components, count: componentCount};
 	},
 
-	depthFirstSearch: (G = window.main.graphState.graph.clone(), start) => {
+	depthFirstSearch: (G = window.main.graphState.graph, start) => {
 		let visisted = [];
 		let Stack = [];
 		Stack.push(start);
@@ -154,7 +154,7 @@ let self = {
 
 	// Tarjan's algorithm
 	stronglyConnectedComponents: (graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		let index = 0;
 		let indices = {};
@@ -201,7 +201,7 @@ let self = {
 	},
 
 	breadthFirstSearch: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		// Perform the BFS
 		let visisted = [];
@@ -244,13 +244,13 @@ let self = {
 	},
 
 	dijkstraSearch: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		if(!G.isDirected()){
-			G.convertToDirected(true);
+			G = G.convertToDirected(true);
 		}
 		else if(!G.isWeighted()){
-			G.convertToWeighted();
+			G = G.convertToWeighted();
 		}
 
 		let nonNegative = G.getAllEdges().find((edge) => {
@@ -263,7 +263,6 @@ let self = {
 				" exactly this problem.</p>");
 			return false;
 		}
-
 
 		// Priority Queue implementation for Dijkstra
 		const PriorityQueue = function () {
@@ -343,7 +342,7 @@ let self = {
 	},
 
 	bellmanFord: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		let distances = [];
 		let parents = [];
@@ -393,7 +392,7 @@ let self = {
 	},
 
 	fordFulkerson: (startNodeID, targetNodeID, graphState = window.main.graphState) => {
-		let G = graphState.graph.clone();
+		let G = graphState.graph;
 
 		// Must be a directed graph
 		if(!G.isDirected()){
@@ -412,7 +411,7 @@ let self = {
 		}
 
 		// If we have a multigraph, then reduce the graph to have single edges with the sum of the capacities
-		G.reduceMultiGraph((a, b) => {
+		G = G.reduceMultiGraph((a, b) => {
 			return a + b;
 		});
 

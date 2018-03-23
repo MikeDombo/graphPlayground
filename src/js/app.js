@@ -5,7 +5,7 @@ import vis from 'vis';
 import main from './main';
 import predefined from './predefinedGraphs';
 import settings from './settings';
-import Graph from './Graph';
+import GraphImmut from "./GraphImmut";
 
 window.main = main;
 window.predefined = predefined;
@@ -22,7 +22,7 @@ if(settings.checkForLocalStorage()){
 	if(s !== null){
 		s = JSON.parse(s);
 		if("nodes" in s.graph){
-			s.graph = new Graph(s.graph.nodes, s.graph.edges, s.graph.directed, s.graph.weighted);
+			s.graph = new GraphImmut(s.graph.nodes, s.graph.edges, s.graph.directed, s.graph.weighted);
 			loadDefault = false;
 			main.applyState(false, s);
 		}

@@ -2,7 +2,7 @@
 
 import $ from 'jquery';
 import help from './genericHelpers';
-import Graph from './Graph';
+import GraphImmut from './GraphImmut';
 
 let self = {
 	importByString: (string, format) => {
@@ -37,10 +37,10 @@ let self = {
 						error = true;
 						return;
 					}
-					graph = new Graph(parseInt(vals[2]));
+					graph = new GraphImmut(parseInt(vals[2]));
 				}
 				else if(vals[0].toLowerCase() === "e" && graph !== null){
-					graph.addEdge(parseInt(vals[1]) - 1, parseInt(vals[2]) - 1);
+					graph = graph.addEdge(parseInt(vals[1]) - 1, parseInt(vals[2]) - 1);
 				}
 			});
 

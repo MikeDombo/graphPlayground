@@ -8,6 +8,7 @@ import settings from './settings';
 import randomColor from 'randomcolor';
 import graphState from './graphState';
 import dataImpExp from './dataImportExport';
+import GraphImmut from "./GraphImmut";
 
 let self = {
 	dataImpExp: dataImpExp,
@@ -150,9 +151,9 @@ let self = {
 				}
 				if(settings.getOption("direction") !== vals[1]){
 					settings.changeOption("direction", vals[1]);
-					let G = self.graphState.graph.clone();
+					let G = self.graphState.graph;
 					if(vals[1]){
-						G.convertToDirected(true);
+						G = G.convertToDirected(true);
 					}
 					else{
 						G = G.getGraphAsUndirected();
@@ -161,12 +162,12 @@ let self = {
 				}
 				if(settings.getOption("weights") !== vals[2]){
 					settings.changeOption("weights", vals[2]);
-					let G = self.graphState.graph.clone();
+					let G = self.graphState.graph;
 					if(vals[2]){
-						G.convertToWeighted();
+						G = G.convertToWeighted();
 					}
 					else{
-						G.convertToUnWeighted();
+						G = G.convertToUnWeighted();
 					}
 					self.setData(graphState.getGraphData(G));
 				}
@@ -519,9 +520,9 @@ let self = {
 		let chromaticNumber = graphState.getProperty("Chromatic Number", true);
 
 		let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-		let G = graphState.getNewGraph();
+		let G = graphState.graph;
 		G.getAllNodes().forEach((v) => {
-			G.editNode(v.id, {color: colors[graphColors[v.id]]});
+			G = G.editNode(v.id, {color: colors[graphColors[v.id]]});
 		});
 		self.setData(graphState.getGraphData(G), false, false);
 	},
@@ -549,14 +550,13 @@ let self = {
 		let weighted = settings.getOption("weights");
 
 		let g = graphState.dataSetToGraph(data.nodes, data.edges, directional, weighted);
-
 		graphState.graph = g;
 
 		// Set a new random seed so that the layout will be different
 		self.randomizeNetworkLayoutSeed(window.network);
 
 		window.network.setData(graphState.getGraphAsDataSet(g));
-		self.graphState.setLocations(window.network.getPositions());
+		self.graphState.graph = self.graphState.setLocations(window.network.getPositions());
 
 		window.network.disableEditMode();
 		window.network.enableEditMode();
@@ -595,7 +595,7 @@ let self = {
 				}
 				else{
 					if(k === "graph" && v !== null){
-						state[k] = v.clone();
+						state[k] = v;
 					}
 					if(!k.toLowerCase().includes("history")){
 						state[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
@@ -631,6 +631,8 @@ let self = {
 				newState = graphState.forwardHistory.pop();
 			}
 		}
+
+		newState.graph = new GraphImmut(newState.graph.nodes, newState.graph.edges, newState.graph.directed, newState.graph.weighted);
 
 		settings.changeOption("direction", newState.graph.isDirected());
 		settings.changeOption("weights", newState.graph.isWeighted());
@@ -713,7 +715,7 @@ let self = {
 
 		// Save locations of nodes after dragging
 		network.on("dragEnd", () => {
-			self.graphState.setLocations(network.getPositions());
+			self.graphState.graph = self.graphState.setLocations(network.getPositions());
 			self.saveStateLocalStorage(); // Save the new locations as part of the state
 		});
 
