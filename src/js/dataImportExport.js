@@ -2,7 +2,7 @@
 
 import $ from 'jquery';
 import help from './genericHelpers';
-import GraphImmut from './GraphImmut';
+import GraphImmut from './GraphImmut/GraphImmut';
 
 let self = {
 	importByString: (string, format) => {

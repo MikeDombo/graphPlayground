@@ -3,7 +3,7 @@
 import $ from 'jquery';
 import vis from 'vis';
 import help from './genericHelpers';
-import GraphImmut from './GraphImmut';
+import GraphImmut from './GraphImmut/GraphImmut';
 
 let self = {
 	backHistory: [],
@@ -149,10 +149,7 @@ let self = {
 
 	addEdge: (from, to, weight = 0, graph = self.graph) => {
 		graph = graph.addEdge(from, to, weight);
-
-		let n = graph.getAllNodes();
-		n = self.clearColorFromNodes(n);
-		window.main.setData({nodes: n, edges: graph.getAllEdges()});
+		window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
 	},
 
 	addNode: (data, graph = self.graph) => {
@@ -266,9 +263,9 @@ let self = {
 		return graph;
 	},
 
-	getGraphData: (graph = self.graph) => {
+	getGraphData: (graph = self.graph, clearColors = false) => {
 		return {
-			nodes: graph.getAllNodes(),
+			nodes: clearColors ? self.clearColorFromNodes(graph.getAllNodes()) : graph.getAllNodes(),
 			edges: graph.getAllEdges(),
 			directed: graph.isDirected(),
 			weighted: graph.isWeighted()

@@ -1,101 +1,17 @@
+"use strict";
+
 import {List} from "immutable";
+import NodeImmut from './NodeImmut';
+import EdgeImmut from './EdgeImmut';
 
-export class NodeImmut {
-	constructor (id, label = null, extraAttrs = null) {
-		this.id = id;
-
-		if (label === null) {
-			this.label = id.toString();
-		}
-		else {
-			this.label = label;
-		}
-
-		this.attributes = {};
-		if (extraAttrs !== null && typeof extraAttrs === "object") {
-			Object.keys(extraAttrs).forEach((key) => {
-				this.attributes[key] = Object.freeze(extraAttrs[key]);
-			});
-		}
-
-		this.attributes = Object.freeze(this.attributes);
-		this.label = Object.freeze(this.label);
-		this.id = Object.freeze(this.id);
-	}
-
-	toPlain () {
-		let toReturn = {id: this.id, label: this.label};
-		Object.keys(this.attributes).forEach((key) => {
-			if (!(key in toReturn)) {
-				toReturn[key] = this.attributes[key];
-			}
-		});
-
-		return toReturn;
-	}
-
-	getID () {
-		return this.id;
-	}
-
-	getLabel () {
-		return this.label;
-	}
-
-	getAttribute (attribute) {
-		if (attribute in this.attributes) {
-			return this.attributes[attribute];
-		}
-
-		return null;
-	}
-
-	getAllAttributes () {
-		return this.attributes;
-	}
-
-	editNode (label = null, extraAttrs = null) {
-		if (label === null) {
-			label = this.getLabel();
-		}
-
-		// Merge existing and new attributes favoring the new
-		let attributes = Object.assign({}, this.attributes);
-		Object.keys(extraAttrs).forEach((key) => {
-			attributes[key] = extraAttrs[key];
-		});
-
-		return new NodeImmut(this.getID(), label, attributes);
-	}
-}
-
-export class EdgeImmut {
-	constructor (from, to, weight = 1) {
-		this.from = Object.freeze(from);
-		this.to = Object.freeze(to);
-		this.weight = Object.freeze(parseFloat(weight));
-	}
-
-	getFrom () {
-		return this.from;
-	}
-
-	getTo () {
-		return this.to;
-	}
-
-	getWeight () {
-		return this.weight;
-	}
-
-	toPlain () {
-		return {from: this.from, to: this.to, weight: this.weight};
-	}
-
-	editEdge (newWeight) {
-		return new EdgeImmut(this.getFrom(), this.getTo(), newWeight);
-	}
-}
+const filterNodeExtraAttr = (data) => {
+	return Object.keys(data)
+	             .filter((key) => !(["label", "id"]).includes(key))
+	             .reduce((obj, key) => {
+		             obj[key] = data[key];
+		             return obj;
+	             }, {});
+};
 
 export default class GraphImmut {
 	constructor (nodes, edges = null, directed = false, weighted = false) {
@@ -132,10 +48,10 @@ export default class GraphImmut {
 						label = n.label;
 					}
 					if ("attributes" in n) {
-						extraAttrs = this._filterNodeExtraAttr(n.attributes);
+						extraAttrs = filterNodeExtraAttr(n.attributes);
 					}
 					else {
-						extraAttrs = this._filterNodeExtraAttr(n);
+						extraAttrs = filterNodeExtraAttr(n);
 					}
 				}
 
@@ -147,7 +63,7 @@ export default class GraphImmut {
 
 		// If we are given edges, add them to the graph
 		if (edges !== null) {
-			this.numEdges = edges.length;
+			this.numEdges = edges instanceof List ? edges.size : edges.length;
 
 			edges.forEach((edge) => {
 				let weight = 0;
@@ -175,15 +91,10 @@ export default class GraphImmut {
 		}
 
 		this.numEdges = Object.freeze(this.numEdges);
-	}
 
-	_filterNodeExtraAttr (data) {
-		return Object.keys(data)
-		             .filter((key) => !(["label", "id"]).includes(key))
-		             .reduce((obj, key) => {
-			             obj[key] = data[key];
-			             return obj;
-		             }, {});
+		if(new.target === GraphImmut){
+			Object.freeze(this);
+		}
 	}
 
 	clone () {
@@ -207,7 +118,7 @@ export default class GraphImmut {
 			data.label = data.id.toString();
 		}
 
-		let extraAttrs = this._filterNodeExtraAttr(data);
+		let extraAttrs = filterNodeExtraAttr(data);
 
 		return new GraphImmut(this.nodes.set(data.id, new NodeImmut(data.id, data.label, extraAttrs)),
 			this.edges, this.directed, this.weighted);
@@ -218,7 +129,7 @@ export default class GraphImmut {
 			return false;
 		}
 
-		let extraAttrs = this._filterNodeExtraAttr(data);
+		let extraAttrs = filterNodeExtraAttr(data);
 		if (!("label" in data)) {
 			data.label = this.getNode(id, true).getLabel();
 		}

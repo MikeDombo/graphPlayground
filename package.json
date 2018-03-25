@@ -18,19 +18,19 @@
   },
   "homepage": "https://github.com/MikeDombo/graphPlayground#readme",
   "devDependencies": {
+    "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
-    "webpack": "^4.1.1",
-    "webpack-cli": "^2.0.10"
+    "webpack": "^4.2.0",
+    "webpack-cli": "^2.0.13"
   },
   "dependencies": {
     "bootstrap": "^4.0.0",
-    "clean-webpack-plugin": "^0.1.19",
     "immutable": "^3.8.2",
     "jquery": "^3.3.1",
-    "npm": "^5.7.1",
-    "popper.js": "^1.12.9",
+    "npm": "^5.8.0",
+    "popper.js": "^1.14.1",
     "randomcolor": "^0.5.3",
-    "vis": "^4.21.0",
-    "workbox-webpack-plugin": "^3.0.0"
+    "raven": "^2.4.2",
+    "vis": "^4.21.0"
   }
 }

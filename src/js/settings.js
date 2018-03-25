@@ -72,7 +72,8 @@ let self = {
 		self.setAll();
 
 		// Reset graph to just a plain graph. Not sure if this should actually happen or not.
-		let G = window.main.graphState.dataSetToGraph(window.main.graphState.graph.getAllNodes(), window.main.graphState.graph.getAllNodes(), self.defaults.direction, self.defaults.weights);
+		let G = window.main.graphState.dataSetToGraph(window.main.graphState.graph.getAllNodes(),
+			window.main.graphState.graph.getAllNodes(), self.defaults.direction, self.defaults.weights);
 		window.main.setData(window.main.graphState.getGraphData(G));
 	}
 };

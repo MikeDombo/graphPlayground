@@ -5,7 +5,6 @@ import vis from 'vis';
 import main from './main';
 import predefined from './predefinedGraphs';
 import settings from './settings';
-import GraphImmut from "./GraphImmut";
 
 window.main = main;
 window.predefined = predefined;
@@ -22,7 +21,6 @@ if(settings.checkForLocalStorage()){
 	if(s !== null){
 		s = JSON.parse(s);
 		if("nodes" in s.graph){
-			s.graph = new GraphImmut(s.graph.nodes, s.graph.edges, s.graph.directed, s.graph.weighted);
 			loadDefault = false;
 			main.applyState(false, s);
 		}
@@ -35,7 +33,7 @@ if(loadDefault){
 // Register service worker
 if('serviceWorker' in navigator){
 	window.addEventListener('load', function () {
-		navigator.serviceWorker.register('service-worker.js').then(function (registration) {
+		navigator.serviceWorker.register('pwaPacked.js').then(function (registration) {
 			console.log('ServiceWorker registration successful with scope: ', registration.scope);
 		}).catch(function (err) {
 			console.log('ServiceWorker registration failed: ', err);

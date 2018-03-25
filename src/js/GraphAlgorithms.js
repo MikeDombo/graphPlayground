@@ -6,7 +6,7 @@ import SpanningTree from './SpanningTree';
 
 let self = {
 	algorithms: genericH.deepFreeze([
-		{name: "Graph Coloring", directional: false, applyFunc: "main.applyColors();", display: true},
+		{name: "Graph Coloring", directional: false, applyFunc: "main.makeAndPrintGraphColoring();", display: true},
 		{
 			name: "Connected Components",
 			directional: false,
@@ -249,7 +249,7 @@ let self = {
 		if(!G.isDirected()){
 			G = G.convertToDirected(true);
 		}
-		else if(!G.isWeighted()){
+		if(!G.isWeighted()){
 			G = G.convertToWeighted();
 		}
 

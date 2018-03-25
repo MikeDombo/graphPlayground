@@ -8,7 +8,7 @@ import settings from './settings';
 import randomColor from 'randomcolor';
 import graphState from './graphState';
 import dataImpExp from './dataImportExport';
-import GraphImmut from "./GraphImmut";
+import GraphImmut from "./GraphImmut/GraphImmut";
 
 let self = {
 	dataImpExp: dataImpExp,
@@ -158,7 +158,8 @@ let self = {
 					else{
 						G = G.getGraphAsUndirected();
 					}
-					self.setData(graphState.getGraphData(G));
+					// Clear node coloring because graph color doesn't apply to directed graphs
+					self.setData(graphState.getGraphData(G, true));
 				}
 				if(settings.getOption("weights") !== vals[2]){
 					settings.changeOption("weights", vals[2]);
@@ -183,7 +184,12 @@ let self = {
 		if(settings.getOption("direction")){
 			return;
 		}
-		let a = gAlgo.colorNetwork();
+
+		// Use cached responses when able
+		let a = {chromaticNumber: graphState.getProperty("Chromatic Number"), colors: graphState.state.graphColoring};
+		if (!(a.chromaticNumber !== null && graphState.getProperty("graphColoring") !== null)) {
+			a = gAlgo.colorNetwork();
+		}
 
 		graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
 		graphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
@@ -204,6 +210,7 @@ let self = {
 		p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
 
 		help.printout(p);
+		self.applyColors();
 	},
 
 	makeAndPrintConnectedComponents: () => {
