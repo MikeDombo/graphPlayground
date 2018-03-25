@@ -2,6 +2,7 @@
 
 import genericH from './genericHelpers';
 import graphH from './graphHelpers';
+import SpanningTree from './SpanningTree';
 
 let self = {
     algorithms: genericH.deepFreeze([
