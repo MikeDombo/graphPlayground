@@ -154,7 +154,7 @@ let self = {
 
     addNode: (data, graph = self.graph) => {
         graph = graph.addNode({label: data.label, x: data.x, y: data.y});
-        window.main.setData(self.getGraphData(graph));
+        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
     },
 
     editNode: (id, label, graph = self.graph) => {
@@ -169,12 +169,12 @@ let self = {
 
     deleteEdge: (from, to, weight = null, graph = self.graph) => {
         graph = graph.deleteEdge(from, to, weight, false);
-        window.main.setData(self.getGraphData(graph));
+        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
     },
 
     deleteNode: (id, graph = self.graph) => {
         graph = graph.deleteNode(id);
-        window.main.setData(self.getGraphData(graph));
+        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
     },
 
     clearColorFromNodes: (nodes) => {
