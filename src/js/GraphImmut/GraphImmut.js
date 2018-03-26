@@ -36,14 +36,10 @@ export default class GraphImmut {
                 let extraAttrs = null;
 
                 if (n instanceof NodeImmut) {
-                    id = n.getID();
                     label = n.getLabel();
                     extraAttrs = n.getAllAttributes();
                 }
                 else {
-                    if ("id" in n) {
-                        id = n.id;
-                    }
                     if ("label" in n) {
                         label = n.label;
                     }
@@ -55,7 +51,7 @@ export default class GraphImmut {
                     }
                 }
 
-                this.nodes = this.nodes.set(n.id, new NodeImmut(id, label, extraAttrs));
+                this.nodes = this.nodes.set(id, new NodeImmut(id, label, extraAttrs));
             });
 
             this.numNodes = Object.freeze(nodeNum);
@@ -66,15 +62,14 @@ export default class GraphImmut {
             this.numEdges = edges instanceof List ? edges.size : edges.length;
 
             edges.forEach((edge) => {
-                let weight = 0;
-                let from = 0;
-                let to = 0;
                 if (edge instanceof EdgeImmut) {
-                    weight = edge.getWeight();
-                    from = edge.getFrom();
-                    to = edge.getTo();
+                    this.edges = this.edges.push(edge);
                 }
                 else {
+                    let weight = 0;
+                    let from = 0;
+                    let to = 0;
+
                     if ("weight" in edge && this.weighted) {
                         weight = parseFloat(edge.weight);
                     }
@@ -84,9 +79,9 @@ export default class GraphImmut {
                     if ("to" in edge) {
                         to = edge.to;
                     }
-                }
 
-                this.edges = this.edges.push(new EdgeImmut(from, to, weight));
+                    this.edges = this.edges.push(new EdgeImmut(from, to, weight));
+                }
             });
         }
 
@@ -95,10 +90,6 @@ export default class GraphImmut {
         if (new.target === GraphImmut) {
             Object.freeze(this);
         }
-    }
-
-    clone () {
-        return new GraphImmut(this.nodes, this.edges, this.directed, this.weighted);
     }
 
     getNode (id, rich = false) {
@@ -113,14 +104,14 @@ export default class GraphImmut {
             data = {};
         }
 
-        data.id = this.numNodes;
+        let id = this.numNodes;
         if (!("label" in data)) {
-            data.label = data.id.toString();
+            data.label = id.toString();
         }
 
         let extraAttrs = filterNodeExtraAttr(data);
 
-        return new GraphImmut(this.nodes.set(data.id, new NodeImmut(data.id, data.label, extraAttrs)),
+        return new GraphImmut(this.nodes.set(id, new NodeImmut(id, data.label, extraAttrs)),
             this.edges, this.directed, this.weighted);
     }
 
