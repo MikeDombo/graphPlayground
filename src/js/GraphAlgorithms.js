@@ -253,8 +253,8 @@ let self = {
             G = G.convertToWeighted();
         }
 
-        let nonNegative = G.getAllEdges().find((edge) => {
-            return edge.weight < 0;
+        let nonNegative = G.getAllEdges(true).find((edge) => {
+            return edge.getWeight() < 0;
         });
         if (typeof nonNegative !== "undefined") {
             genericH.showSimpleModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
@@ -291,15 +291,15 @@ let self = {
         let path = [];
 
         // Initialize Queue and distances
-        G.getAllNodes().forEach((node) => {
+        G.getAllNodes(true).forEach((node) => {
             let dist = Infinity;
-            if (node.id === startNodeID) {
+            if (node.getID() === startNodeID) {
                 dist = 0;
             }
 
-            distances[node.id] = dist;
-            queue.enqueue(dist, node.id);
-            previous[node.id] = null;
+            distances[node.getID()] = dist;
+            queue.enqueue(dist, node.getID());
+            previous[node.getID()] = null;
         });
 
         while (!queue.isEmpty()) {
@@ -348,26 +348,26 @@ let self = {
         let parents = [];
 
         // Initialize
-        G.getAllNodes().forEach((node) => {
-            distances[node.id] = Infinity;
-            parents[node.id] = null;
+        G.getAllNodes(true).forEach((node) => {
+            distances[node.getID()] = Infinity;
+            parents[node.getID()] = null;
         });
 
         // Relax Edges
         distances[startNodeID] = 0;
         for (let i = 0; i < G.getNumberOfNodes() - 1; i++) {
-            G.getAllEdges().forEach((edge) => {
-                if (distances[edge.from] + edge.weight < distances[edge.to]) {
-                    distances[edge.to] = distances[edge.from] + edge.weight;
-                    parents[edge.to] = edge.from;
+            G.getAllEdges(true).forEach((edge) => {
+                if (distances[edge.getFrom()] + edge.getWeight() < distances[edge.getTo()]) {
+                    distances[edge.getTo()] = distances[edge.getFrom()] + edge.getWeight();
+                    parents[edge.getTo()] = edge.getFrom();
                 }
             });
         }
 
         // Check for negative weight cycles
         let negativeCylce = false;
-        G.getAllEdges().forEach((edge) => {
-            if (distances[edge.from] + edge.weight < distances[edge.to]) {
+        G.getAllEdges(true).forEach((edge) => {
+            if (distances[edge.getFrom()] + edge.getWeight() < distances[edge.getTo()]) {
                 negativeCylce = true;
             }
         });
@@ -421,11 +421,11 @@ let self = {
         let edgeTo = null;
 
         let edgeProperties = {};
-        G.getAllEdges().forEach((edge) => {
-            edgeProperties[edge.from + "_" + edge.to] = {
-                from: edge.from,
-                to: edge.to,
-                capacity: edge.weight,
+        G.getAllEdges(true).forEach((edge) => {
+            edgeProperties[edge.getFrom() + "_" + edge.getTo()] = {
+                from: edge.getFrom(),
+                to: edge.getTo(),
+                capacity: edge.getWeight(),
                 flow: 0
             };
         });
@@ -520,63 +520,60 @@ let self = {
     },
 
     kruskal: (graphState = window.main.graphState) => {
-        let G = graphState.graph.clone();
+        let G = graphState.graph;
 
         // If we have a multigraph, reduce it by using the minimum edge weights
         G.reduceMultiGraph(Math.min, Infinity);
 
-        let Q = [];
-        G.getAllEdges().forEach((edge) => {
-            Q.push({from: edge.from, to: edge.to, weight: edge.weight});
-        });
+        let Q = G.getAllEdges(true);
 
         // Sort edges by weight so that they are added to the tree in the order of lowest possible weight
         Q.sort((a, b) => {
-            return a.weight - b.weight;
+            return a.getWeight() - b.getWeight();
         });
 
         let kruskal = [];
         let set = new SpanningTree(G.getNumberOfNodes());
         while (Q.length > 0 && kruskal.length < G.getNumberOfNodes() - 1) {
             let e = Q.shift();
-            if (!set.connected(e.from, e.to)) {
-                set.union(e.from, e.to);
+            if (!set.connected(e.getFrom(), e.getTo())) {
+                set.union(e.getFrom(), e.getTo());
                 kruskal.push(e);
             }
         }
 
         // Get the total cost of the MST
         let weight = kruskal.reduce((acc, e) => {
-            return acc + e.weight;
+            return acc + e.getWeight();
         }, 0);
 
         return {mst: kruskal, totalWeight: weight};
     },
 
     topologicalSort: (graphState = window.main.graphState) => {
-        let G = graphState.graph.clone();
+        let G = graphState.graph;
 
         let adjacency = G.getFullAdjacency();
         let degrees = graphH.findVertexDegreesDirectional(adjacency);
 
         let L = [];
-        let S = G.getAllNodes().filter((n) => {
-            return degrees[n.id].in === 0;
+        let S = G.getAllNodes(true).filter((n) => {
+            return degrees[n.getID()].in === 0;
         });
-        let edges = G.getAllEdges();
+        let edges = G.getAllEdges(true);
 
         while (S.length !== 0) {
             let nodeN = S.pop();
             L.push(nodeN);
 
-            let nodeNConnectedTo = adjacency[nodeN.id];
+            let nodeNConnectedTo = adjacency[nodeN.getID()];
 
             // Remove n to m edges for all nodes m
             edges = edges.filter((edge) => {
-                if (edge.from === nodeN.id && nodeNConnectedTo.includes(edge.to)) {
-                    degrees[edge.to].in--;
-                    adjacency[nodeN.id] = adjacency[nodeN.id].filter((v) => {
-                        return v !== edge.to;
+                if (edge.getFrom() === nodeN.getID() && nodeNConnectedTo.includes(edge.getTo())) {
+                    degrees[edge.getTo()].in--;
+                    adjacency[nodeN.getID()] = adjacency[nodeN.getID()].filter((v) => {
+                        return v !== edge.getTo();
                     });
                     return false;
                 }
@@ -586,7 +583,7 @@ let self = {
             // If m has no more incoming edges, add it to S
             nodeNConnectedTo.forEach((mID) => {
                 if (degrees[mID].in === 0) {
-                    S.push(G.getNode(mID));
+                    S.push(G.getNode(mID, true));
                 }
             });
         }
