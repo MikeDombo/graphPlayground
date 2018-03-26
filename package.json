@@ -1,6 +1,6 @@
 {
   "name": "graphPlayground",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A single-page webapp to build graphs and run algorithms on them with no server-side components.",
   "repository": {
     "type": "git",
@@ -9,7 +9,8 @@
   "scripts": {
     "build": "webpack --mode development",
     "buildProd": "webpack --mode production",
-    "deployGHP": "git subtree push --prefix dist origin gh-pages"
+    "deployGHP": "git subtree push --prefix dist origin gh-pages",
+	"sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat"
   },
   "keywords": [],
   "author": "Michael Dombrowski",

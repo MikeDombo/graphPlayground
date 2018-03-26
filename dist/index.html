@@ -73,10 +73,10 @@
 	<div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav mr-auto">
 			<li class="nav-item">
-				<a class="nav-link" href="#" onclick="main.undo();"><i class="fa fa-undo" aria-hidden="true"></i></a>
+				<a id="undo-link" class="nav-link" href="#"><i class="fa fa-undo" aria-hidden="true"></i></a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" href="#" onclick="main.redo();"><i class="fa fa-repeat" aria-hidden="true"></i></a>
+				<a id="redo-link" class="nav-link" href="#"><i class="fa fa-repeat" aria-hidden="true"></i></a>
 			</li>
 
 			<li class="nav-item dropdown active">
@@ -85,26 +85,25 @@
 					File
 				</a>
 				<div class="dropdown-menu" aria-labelledby="fileDropdown">
-					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeImportFileModal()">Import File</a>
-					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeImportTextModal()">Import Text</a>
-					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeExportFileModal()">Export To File</a>
-					<a class="dropdown-item" href="#" onclick="main.dataImpExp.makeExportTextModal()">Export To Text</a>
+					<a id="import-file-link" class="dropdown-item" href="#" >Import File</a>
+					<a id="import-text-link" class="dropdown-item" href="#">Import Text</a>
+					<a id="export-file-link" class="dropdown-item" href="#">Export To File</a>
+					<a id="export-text-link" class="dropdown-item" href="#">Export To Text</a>
 				</div>
 			</li>
 			<li class="nav-item active">
-				<a class="nav-link" href="#" onclick="main.graphState.makeAndPrintProperties(true);">
-					Calculate All Properties</a>
+				<a id="calculate-all-properties-link" class="nav-link" href="#">Calculate All Properties</a>
 			</li>
 			<li class="nav-item active">
-				<a class="nav-link" href="#" onclick="main.shuffleNetworkLayout();">New Graph Layout</a>
+				<a id="new-graph-layout-link" class="nav-link" href="#">New Graph Layout</a>
 			</li>
 			<li class="nav-item active">
-				<a class="nav-link" href="#" onclick="main.printOptions();">Graph Options</a>
+				<a id="graph-options-link" class="nav-link" href="#">Graph Options</a>
 			</li>
 		</ul>
 		<ul class="navbar-nav mr-sm-2">
 			<li class="nav-item active">
-				<a class="nav-link" href="#" onclick="main.printHelp();">Help</a>
+				<a id="print-help-link" class="nav-link" href="#">Help</a>
 			</li>
 		</ul>
 	</div>
@@ -117,20 +116,19 @@
 				<div class="card-body">
 					<h4>Example Graphs</h4>
 					<nav class="nav flex-lg-column flex-row">
-						<a class="nav-link" href="#" onclick="main.setData(predefined.Petersen(), false, true, true);">
+						<a id="load-petersen-link" class="nav-link" href="#">
 							Load Petersen Graph
 						</a>
-						<a class="nav-link" href="#"
-						   onclick="main.setData(predefined.Konigsberg(), false, true, true);">
+						<a id="load-konigsberg-link" class="nav-link" href="#">
 							Load Königsberg Bridges Graph
 						</a>
-						<a class="nav-link" href="#" onclick="predefined.Complete();">
+						<a id="load-complete-link" class="nav-link" href="#">
 							Load Complete Graph
 						</a>
-						<a class="nav-link" href="#" onclick="predefined.Hypercube();">
+						<a id="load-hypercube-link" class="nav-link" href="#">
 							Load Hypercube Graph
 						</a>
-						<a class="nav-link" href="#" onclick="predefined.Custom();">
+						<a id="load-custom-link" class="nav-link" href="#">
 							Make Custom Graph
 						</a>
 					</nav>
