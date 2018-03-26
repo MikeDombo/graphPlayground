@@ -24,43 +24,43 @@
 	<!-- Tracking Codes -->
 	<script src="https://www.google-analytics.com/analytics.js" async defer></script>
 	<script>
-		window.ga = function () {
-			ga.q.push(arguments);
-		};
-		ga.q = [];
-		ga.l = +new Date;
-		ga('create', 'UA-4436865-12', 'auto');
-		ga('send', 'pageview');
+        window.ga = function () {
+            ga.q.push(arguments);
+        };
+        ga.q = [];
+        ga.l = +new Date;
+        ga('create', 'UA-4436865-12', 'auto');
+        ga('send', 'pageview');
 	</script>
 	<script>
-		(function () {
-			var
-				t, i, e, n = window, o = document, a = arguments, s = "script",
-				r = ["config", "track", "identify", "visit", "push", "call", "trackForm", "trackClick"],
-				c = function () {
-					var t, i = this;
-					for(i._e = [], t = 0; r.length > t; t++){
-						(function (t) {
-							i[t] = function () {
-								return i._e.push([t].concat(Array.prototype.slice.call(arguments, 0))), i;
-							};
-						})(r[t]);
-					}
-				};
-			for(n._w = n._w || {}, t = 0; a.length > t; t++){
-				n._w[a[t]] = n[a[t]] = n[a[t]] || new c;
-			}
-			i = o.createElement(s), i.async = 1, i.src = "https://static.woopra.com/js/w.js", e = o.getElementsByTagName(s)[0], e.parentNode.insertBefore(i, e);
-		})("woopra");
+        (function () {
+            var
+                t, i, e, n = window, o = document, a = arguments, s = "script",
+                r = ["config", "track", "identify", "visit", "push", "call", "trackForm", "trackClick"],
+                c = function () {
+                    var t, i = this;
+                    for (i._e = [], t = 0; r.length > t; t++) {
+                        (function (t) {
+                            i[t] = function () {
+                                return i._e.push([t].concat(Array.prototype.slice.call(arguments, 0))), i;
+                            };
+                        })(r[t]);
+                    }
+                };
+            for (n._w = n._w || {}, t = 0; a.length > t; t++) {
+                n._w[a[t]] = n[a[t]] = n[a[t]] || new c;
+            }
+            i = o.createElement(s), i.async = 1, i.src = "https://static.woopra.com/js/w.js", e = o.getElementsByTagName(s)[0], e.parentNode.insertBefore(i, e);
+        })("woopra");
 
-		woopra.config({
-			domain: 'mikedombo.github.io'
-		});
-		woopra.track();
+        woopra.config({
+            domain: 'mikedombo.github.io'
+        });
+        woopra.track();
 	</script>
 	<script src="https://cdn.ravenjs.com/3.23.3/raven.min.js" crossorigin="anonymous"></script>
 	<script>
-		Raven.config('https://355bd6aa42eb41b99a31fffc8cced0ba@sentry.io/487861').install();
+        Raven.config('https://355bd6aa42eb41b99a31fffc8cced0ba@sentry.io/487861').install();
 	</script>
 </head>
 <body>
@@ -85,7 +85,7 @@
 					File
 				</a>
 				<div class="dropdown-menu" aria-labelledby="fileDropdown">
-					<a id="import-file-link" class="dropdown-item" href="#" >Import File</a>
+					<a id="import-file-link" class="dropdown-item" href="#">Import File</a>
 					<a id="import-text-link" class="dropdown-item" href="#">Import Text</a>
 					<a id="export-file-link" class="dropdown-item" href="#">Export To File</a>
 					<a id="export-text-link" class="dropdown-item" href="#">Export To Text</a>
@@ -178,7 +178,7 @@
 	</div>
 </div>
 
-<script src = "bundle.js"></script>
+<script src="bundle.js"></script>
 
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
       integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">

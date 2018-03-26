@@ -1,7 +1,7 @@
 "use strict";
 
 import 'bootstrap';
-import vis from 'vis';
+import {Network} from 'vis/index-network';
 import main from './main';
 import predefined from './predefinedGraphs';
 import settings from './settings';
@@ -9,7 +9,7 @@ import UI from './UIInteractions';
 
 window.main = main;
 window.predefined = predefined;
-window.network = new vis.Network(main.container, {}, main.visOptions);
+window.network = new Network(main.container, {}, main.visOptions);
 window.settings = settings;
 window.ui = UI;
 

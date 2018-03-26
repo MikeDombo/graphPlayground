@@ -1,7 +1,7 @@
 "use strict";
 
 import $ from 'jquery';
-import vis from 'vis';
+import {DataSet} from 'vis/index-network';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
 
@@ -251,7 +251,7 @@ let self = {
             });
         }
 
-        return {nodes: new vis.DataSet(d.nodes), edges: new vis.DataSet(d.edges)};
+        return {nodes: new DataSet(d.nodes), edges: new DataSet(d.edges)};
     },
 
     setLocations: (locations, graph = self.graph) => {
