@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 const outputPath = path.resolve(__dirname, 'dist');
 
@@ -38,6 +39,8 @@ module.exports = {
     },
     devtool: "source-map",
     plugins: [
+        // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
+        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
         new CopyWebpackPlugin([
             {
                 from: '*.png'
@@ -52,5 +55,16 @@ module.exports = {
                 from: './manifest.json'
             }
         ])
-    ]
+    ],
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: "vendors",
+                    chunks: "all"
+                }
+            }
+        }
+    }
 };
