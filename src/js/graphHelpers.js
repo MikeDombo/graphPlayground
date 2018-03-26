@@ -1,7 +1,5 @@
 "use strict";
 
-import help from "./genericHelpers";
-
 export default {
     findVertexDegreesDirectional: (adjacencyMatrix) => {
         // Adjacency stores IDs of edges TO
@@ -23,7 +21,7 @@ export default {
             });
         });
 
-        return help.deepFreeze(degrees);
+        return degrees;
     },
 
     interpolateNodesFromEdges: (edges) => {
@@ -33,6 +31,6 @@ export default {
             nodes[v.to] = {id: v.to, label: "" + v.to};
         });
 
-        return help.deepFreeze(nodes);
+        return nodes;
     },
 };
