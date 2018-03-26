@@ -13,13 +13,13 @@ let self = {
         {
             name: "Chromatic Number", upToDate: false, type: "property",
             applyFunc: () => {
-                window.main.makeAndPrintGraphColoring();
+                window.ui.makeAndPrintGraphColoring();
             }
         },
         {
             name: "graphColoring", upToDate: false, type: "state",
             applyFunc: () => {
-                window.main.makeAndPrintGraphColoring();
+                window.ui.makeAndPrintGraphColoring();
             }
         },
         {name: "vertices", upToDate: true, always: true, type: "property"},
@@ -27,37 +27,37 @@ let self = {
         {
             name: "eulerian", upToDate: false, type: "property",
             applyFunc: () => {
-                window.main.makeAndPrintEulerian();
+                window.ui.makeAndPrintEulerian();
             }
         },
         {
             name: "Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.main.makeAndPrintConnectedComponents();
+                window.ui.makeAndPrintConnectedComponents();
             }
         },
         {
             name: "connectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.main.makeAndPrintConnectedComponents();
+                window.ui.makeAndPrintConnectedComponents();
             }
         },
         {
             name: "Strongly Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.main.makeAndPrintStronglyConnectedComponents();
+                window.ui.makeAndPrintStronglyConnectedComponents();
             }
         },
         {
             name: "stronglyConnectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.main.makeAndPrintStronglyConnectedComponents();
+                window.ui.makeAndPrintStronglyConnectedComponents();
             }
         },
         {
             name: "cyclic", upToDate: false, type: "property",
             applyFunc: () => {
-                window.main.makeAndPrintIsCyclic();
+                window.ui.makeAndPrintIsCyclic();
             }
         },
     ],

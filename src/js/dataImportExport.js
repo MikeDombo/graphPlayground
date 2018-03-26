@@ -103,18 +103,19 @@ let self = {
             [{
                 type: "button",
                 initialValue: "Export to JSON",
+                onclick: () => {self.exportToFile("json");},
                 extraAttrs: {
-                    class: "btn btn-sm btn-primary m-1",
-                    onclick: "main.dataImpExp.exportToFile(\"json\")"
+                    class: "btn btn-sm btn-primary m-1"
+
                 },
                 clickDismiss: true
             },
                 {
                     type: "button",
                     initialValue: "Export to DIMACS",
+                    onclick: () => {self.exportToFile("dimacs");},
                     extraAttrs: {
-                        class: "btn btn-sm btn-primary",
-                        onclick: "main.dataImpExp.exportToFile(\"dimacs\")"
+                        class: "btn btn-sm btn-primary"
                     },
                     clickDismiss: true
                 }
@@ -126,18 +127,18 @@ let self = {
             [{
                 type: "button",
                 initialValue: "Export to JSON",
+                onclick: () => {self.exportToText("json");},
                 extraAttrs: {
                     class: "btn btn-sm btn-primary m-1",
-                    onclick: "main.dataImpExp.exportToText(\"json\")"
                 },
                 clickDismiss: false
             },
                 {
                     type: "button",
                     initialValue: "Export to DIMACS",
+                    onclick: () => {self.exportToText("dimacs");},
                     extraAttrs: {
                         class: "btn btn-sm btn-primary",
-                        onclick: "main.dataImpExp.exportToText(\"dimacs\")"
                     },
                     clickDismiss: false
                 },

@@ -5,11 +5,13 @@ import vis from 'vis';
 import main from './main';
 import predefined from './predefinedGraphs';
 import settings from './settings';
+import UI from './UIInteractions';
 
 window.main = main;
 window.predefined = predefined;
 window.network = new vis.Network(main.container, {}, main.visOptions);
 window.settings = settings;
+window.ui = UI;
 
 main.addNetworkListeners(window.network);
 
@@ -40,3 +42,5 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+window.ui.registerListeners();

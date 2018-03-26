@@ -5,68 +5,6 @@ import graphH from './graphHelpers';
 import SpanningTree from './SpanningTree';
 
 let self = {
-    algorithms: genericH.deepFreeze([
-        {name: "Graph Coloring", directional: false, applyFunc: "main.makeAndPrintGraphColoring();", display: true},
-        {
-            name: "Connected Components",
-            directional: false,
-            applyFunc: "main.makeAndPrintConnectedComponents();",
-            display: true
-        },
-        {
-            name: "Strongly Connected Components",
-            directional: true,
-            display: true,
-            applyFunc: "main.makeAndPrintStronglyConnectedComponents();"
-        },
-        {
-            name: "Breadth-First Shortest Path",
-            directional: false,
-            applyFunc: "main.makeAndPrintBFS();",
-            display: true
-        },
-        {
-            name: "Dijkstra Shortest Path",
-            applyFunc: "main.makeAndPrintDijkstra();",
-            display: true
-        },
-        {
-            name: "Bellman-Ford Shortest Path",
-            weighted: true,
-            directional: true,
-            applyFunc: "main.makeAndPrintBFSP();",
-            display: true
-        },
-        {
-            name: "Ford-Fulkerson",
-            weighted: true,
-            directional: true,
-            applyFunc: "main.makeAndPrintFFMCMF();",
-            display: true
-        },
-        {
-            name: "Kruskal Minimum Spanning Tree",
-            weighted: true,
-            directional: false,
-            applyFunc: "main.makeAndPrintKruskal();",
-            display: true
-        },
-        {
-            name: "Cyclic",
-            applyFunc: "main.makeAndPrintIsCyclic();",
-            directional: true,
-            display: true
-        },
-        {
-            name: "Topological Sort",
-            applyFunc: "main.makeAndTopologicalSort();",
-            directional: true,
-            display: true
-        },
-        {name: "Eulerian", directional: false, display: false, applyFunc: null},
-        {name: "Eulerian", directional: true, display: true, applyFunc: "main.makeAndPrintDirectionalEulerian();"},
-    ]),
-
     // Welsh-Powell Algorithm
     colorNetwork: (graphState = window.main.graphState) => {
         let G = graphState.graph;
