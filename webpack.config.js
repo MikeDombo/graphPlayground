@@ -1,6 +1,5 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const outputPath = path.resolve(__dirname, 'dist');
 
@@ -14,7 +13,6 @@ module.exports = {
 		path: outputPath
 	},
 	plugins: [
-		new CleanWebpackPlugin(outputPath),
 		new CopyWebpackPlugin([
 			{
 				from: '*.png'
