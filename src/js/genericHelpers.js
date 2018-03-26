@@ -111,11 +111,11 @@ let self = {
             let basicMap = {class: "form-control", id: id, value: formRow.initialValue};
 
             if ("extraAttrs" in formRow) {
-                for (let attrname in formRow.extraAttrs) {
-                    if ({}.hasOwnProperty.call(formRow.extraAttrs, attrname)) {
+                Object.keys(formRow.extraAttrs).forEach((attrname) => {
+                    if (typeof formRow.extraAttrs[attrname] !== "function") {
                         basicMap[attrname] = formRow.extraAttrs[attrname];
                     }
-                }
+                });
             }
 
             let validFunc = () => true;
@@ -145,39 +145,6 @@ let self = {
             if (formRow.type === "html") {
                 f.append($(formRow.initialValue));
             }
-            else if (formRow.type === "button") {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                if ("clickDismiss" in formRow && formRow.clickDismiss === true) {
-                    basicMap.class += " btn-dismiss";
-                }
-                f.append($("<button>", basicMap).text(formRow.initialValue));
-            }
-            else if (formRow.type === "numeric") {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                basicMap.type = "number";
-                f.append($("<input>", basicMap).on("blur validate", (e) => {
-                    generalValidator(e, parseFloat);
-                }));
-            }
-            else if (formRow.type === "text") {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                basicMap.type = "text";
-                f.append($("<input>", basicMap).on("blur validate", generalValidator));
-            }
-            else if (formRow.type === "file") {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                basicMap.type = "file";
-                basicMap.class = "form-control-file form-control";
-                f.append($("<input>", basicMap).on("blur validate", generalValidator));
-            }
-            else if (formRow.type === "textarea") {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                let $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
-                if ("onclick" in formRow) {
-                    $b.on("click", formRow.onclick);
-                }
-                f.append($b);
-            }
             else if (formRow.type === "checkbox") {
                 basicMap.type = "checkbox";
                 basicMap.class = "form-check-input";
@@ -192,18 +159,53 @@ let self = {
                     )
                 );
             }
-            else if (formRow.type === "select") {
+            else{
                 f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
-                let $options = $("<select>", basicMap);
-                formRow.optionText.forEach((oText, oIndex) => {
-                    if (oIndex < formRow.optionValues.length) {
-                        $options.append($("<option>", {value: formRow.optionValues[oIndex]}).text(oText));
+
+                if (formRow.type === "button") {
+                    if ("clickDismiss" in formRow && formRow.clickDismiss === true) {
+                        basicMap.class += " btn-dismiss";
                     }
-                    else {
-                        $options.append($("<option>").text(oText));
+                    let $b = $("<button>", basicMap).text(formRow.initialValue);
+                    if ("onclick" in formRow && typeof formRow.onclick === "function") {
+                        $b.on("click", formRow.onclick);
                     }
-                });
-                f.append($options.on("blur validate", generalValidator));
+                    f.append($b);
+                }
+                else if (formRow.type === "numeric") {
+                    basicMap.type = "number";
+                    f.append($("<input>", basicMap).on("blur validate", (e) => {
+                        generalValidator(e, parseFloat);
+                    }));
+                }
+                else if (formRow.type === "text") {
+                    basicMap.type = "text";
+                    f.append($("<input>", basicMap).on("blur validate", generalValidator));
+                }
+                else if (formRow.type === "file") {
+                    basicMap.type = "file";
+                    basicMap.class = "form-control-file form-control";
+                    f.append($("<input>", basicMap).on("blur validate", generalValidator));
+                }
+                else if (formRow.type === "textarea") {
+                    let $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
+                    if ("onclick" in formRow) {
+                        $b.on("click", formRow.onclick);
+                    }
+                    f.append($b);
+                }
+                else if (formRow.type === "select") {
+                    let $options = $("<select>", basicMap);
+                    formRow.optionText.forEach((oText, oIndex) => {
+                        if (oIndex < formRow.optionValues.length) {
+                            $options.append($("<option>", {value: formRow.optionValues[oIndex]}).text(oText));
+                        }
+                        else {
+                            $options.append($("<option>").text(oText));
+                        }
+                    });
+                    f.append($options.on("blur validate", generalValidator));
+                }
             }
         });
 
