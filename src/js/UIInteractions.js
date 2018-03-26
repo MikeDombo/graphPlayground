@@ -5,6 +5,84 @@ import help from "./genericHelpers";
 import $ from "jquery";
 import importExport from './dataImportExport';
 
+
+const makeAndPrintShortestPath = (title, fn, weighted) => {
+    help.showFormModal(($modal, values) => {
+            $modal.modal("hide");
+
+            let source = window.main.graphState.nodeLabelToID(values[0]);
+            let sink = window.main.graphState.nodeLabelToID(values[1]);
+
+            let a = fn(source, sink);
+            if (a === false) {
+                return;
+            }
+
+            let p = "<h3>" + title + "</h3><hr>No path exists from "
+                + help.htmlEncode(source) + " to " + help.htmlEncode(sink);
+
+            if (a.pathExists) {
+                p = title + " From " + window.main.graphState.nodeIDToLabel(source) + " to ";
+                p += window.main.graphState.nodeIDToLabel(sink) + ": " + a.distance;
+                if (weighted) {
+                    p += "\nWith weighted cost: " + a.cost;
+                }
+                p += "\n\nUsing Path: ";
+
+                p = help.htmlEncode(p);
+                a.path.forEach((v) => {
+                    p += help.htmlEncode(window.main.graphState.nodeIDToLabel(v)) + " &rarr; ";
+                });
+                p = p.slice(0, -8);
+                p = "<h3>" + title + "</h3><hr>" + p;
+            }
+
+            help.printout(p);
+        },
+        title, "Go", [
+            {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
+            {label: "End Node", type: "text", validationFunc: window.main.nodeLabelIDValidator}
+        ]);
+};
+
+const makeAndPrintComponents = (stronglyConnected) => {
+    let a = null;
+    let cc = "Connected Components";
+    let componentKey = "connectedComponents";
+
+    if (stronglyConnected) {
+        if (!settings.getOption("direction")) {
+            return;
+        }
+        cc = "Strongly " + cc;
+        componentKey = "stronglyConnectedComponents";
+        a = gAlgo.stronglyConnectedComponents();
+    }
+    else {
+        if (settings.getOption("direction")) {
+            return;
+        }
+        a = gAlgo.connectedComponents();
+    }
+
+    window.main.graphState.graphProperties[cc] = a.count;
+    window.main.graphState.setUpToDate(true, [cc, componentKey]);
+    window.main.graphState.state[componentKey] = a.components;
+
+    let components = help.flatten(a.components);
+    let p = "Number of " + cc + ": " + a.count;
+    p += "\n\n";
+
+    components.forEach((v, i) => {
+        p += "Vertex " + window.main.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
+    });
+
+    p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
+    p = "<h3>" + cc + "</h3><hr>" + help.htmlEncode(p);
+
+    help.printout(p);
+};
+
 export default class UIInteractions {
     static getAlgorithms () {
         return [
@@ -192,28 +270,7 @@ export default class UIInteractions {
     }
 
     static makeAndPrintConnectedComponents () {
-        if (settings.getOption("direction")) {
-            return;
-        }
-        let a = gAlgo.connectedComponents();
-
-        window.main.graphState.graphProperties["Connected Components"] = a.count;
-        window.main.graphState.setUpToDate(true, ["Connected Components", "connectedComponents"]);
-        window.main.graphState.state.connectedComponents = a.components;
-
-        let components = help.flatten(a.components);
-        let p = "Number of Connected Components: " + a.count;
-        p += "\n\n";
-
-        components.forEach((v, i) => {
-            p += "Vertex " + window.main.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
-        });
-
-        p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
-
-        p = "<h3>Connected Components</h3><hr>" + help.htmlEncode(p);
-
-        help.printout(p);
+        makeAndPrintComponents(false);
     }
 
     static makeAndPrintDirectionalEulerian () {
@@ -236,136 +293,19 @@ export default class UIInteractions {
     }
 
     static makeAndPrintStronglyConnectedComponents () {
-        if (!settings.getOption("direction")) {
-            return;
-        }
-        let a = gAlgo.stronglyConnectedComponents();
-
-        window.main.graphState.graphProperties["Strongly Connected Components"] = a.count;
-        window.main.graphState.setUpToDate(true, ["Strongly Connected Components", "stronglyConnectedComponents"]);
-        window.main.graphState.state.stronglyConnectedComponents = a.components;
-
-        let components = help.flatten(a.components);
-        let p = "Number of Strongly Connected Components: " + a.count;
-        p += "\n\n";
-
-        components.forEach((v, i) => {
-            p += "Vertex " + window.main.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
-        });
-
-        p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
-
-        p = "<h3>Strongly Connected Components</h3><hr>" + help.htmlEncode(p);
-
-        help.printout(p);
+        makeAndPrintComponents(true);
     }
 
     static makeAndPrintBFS () {
-        help.showFormModal(($modal, values) => {
-                $modal.modal("hide");
-
-                let source = window.main.graphState.nodeLabelToID(values[0]);
-                let sink = window.main.graphState.nodeLabelToID(values[1]);
-
-                let a = gAlgo.breadthFirstSearch(source, sink);
-
-                let p = "<h3>Breadth-First Shortest Path</h3><hr>No path exists from "
-                    + help.htmlEncode(source) + " to " + help.htmlEncode(sink);
-
-                if (a.pathExists) {
-                    p = "Breadth-First Shortest Path From " + window.main.graphState.nodeIDToLabel(source) + " to ";
-                    p += window.main.graphState.nodeIDToLabel(sink) + ": " + a.distance;
-                    p += "\n\nUsing Path: ";
-
-                    p = help.htmlEncode(p);
-                    a.path.forEach((v) => {
-                        p += help.htmlEncode(window.main.graphState.nodeIDToLabel(v)) + " &rarr; ";
-                    });
-                    p = p.slice(0, -8);
-                    p = "<h3>Breadth-First Shortest Path</h3><hr>" + p;
-                }
-
-                help.printout(p);
-            },
-            "Breadth-First Shortest Path", "Go", [
-                {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
-                {label: "End Node", type: "text", validationFunc: window.main.nodeLabelIDValidator}
-            ]);
+        makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch);
     }
 
     static makeAndPrintDijkstra () {
-        help.showFormModal(($modal, values) => {
-                $modal.modal("hide");
-
-                let source = window.main.graphState.nodeLabelToID(values[0]);
-                let sink = window.main.graphState.nodeLabelToID(values[1]);
-
-                let a = gAlgo.dijkstraSearch(source, sink);
-                if (a === false) {
-                    return;
-                }
-
-                let p = "<h3>Dijkstra Shortest Path</h3><hr>No path exists from "
-                    + help.htmlEncode(window.main.graphState.nodeIDToLabel(source))
-                    + " to " + help.htmlEncode(window.main.graphState.nodeIDToLabel(sink));
-
-                if (a.pathExists) {
-                    p = "Dijkstra Shortest Path Total Distance From "
-                        + window.main.graphState.nodeIDToLabel(source) + " to "
-                        + window.main.graphState.nodeIDToLabel(sink) + ": " + a.distance;
-                    p += "\nWith weighted cost: " + a.cost;
-                    p += "\n\nUsing Path: ";
-                    p = help.htmlEncode(p);
-                    a.path.forEach((v) => {
-                        p += help.htmlEncode(window.main.graphState.nodeIDToLabel(v)) + " &rarr; ";
-                    });
-                    p = p.slice(0, -8);
-                    p = "<h3>Dijkstra Shortest Path</h3><hr>" + p;
-                }
-
-                help.printout(p);
-            },
-            "Dijkstra Shortest Path", "Go", [
-                {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
-                {label: "End Node", type: "text", validationFunc: window.main.nodeLabelIDValidator}
-            ]);
+        makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch, true);
     }
 
     static makeAndPrintBFSP () {
-        help.showFormModal(($modal, values) => {
-                $modal.modal("hide");
-
-                let source = window.main.graphState.nodeLabelToID(values[0]);
-                let sink = window.main.graphState.nodeLabelToID(values[1]);
-
-                let a = gAlgo.bellmanFord(source, sink);
-                if (a === false) {
-                    return;
-                }
-
-                let p = "<h3>Bellman-Ford Shortest Path</h3><hr>No path exists from "
-                    + help.htmlEncode(window.main.graphState.nodeIDToLabel(source))
-                    + " to " + help.htmlEncode(window.main.graphState.nodeIDToLabel(sink));
-
-                if (a.pathExists) {
-                    p = "Bellman-Ford Shortest Path Total Distance From " + window.main.graphState.nodeIDToLabel(source)
-                        + " to " + window.main.graphState.nodeIDToLabel(sink) + ": " + a.distance;
-                    p += "\nWith weighted cost: " + a.cost;
-                    p += "\n\nUsing Path: ";
-                    p = help.htmlEncode(p);
-                    a.path.forEach((v) => {
-                        p += help.htmlEncode(window.main.graphState.nodeIDToLabel(v)) + " &rarr; ";
-                    });
-                    p = p.slice(0, -8);
-                    p = "<h3>Bellman-Ford Shortest Path</h3><hr>" + p;
-                }
-
-                help.printout(p);
-            },
-            "Bellman-Ford Shortest Path", "Go", [
-                {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
-                {label: "End Node", type: "text", validationFunc: window.main.nodeLabelIDValidator}
-            ]);
+        makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord, true);
     }
 
     static makeAndPrintFFMCMF () {
