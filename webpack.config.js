@@ -7,7 +7,7 @@ const outputPath = path.resolve(__dirname, 'dist');
 let webpackOptions = {
     entry: {
         bundle: './src/js/app.js',
-        pwaPacked: './src/pwaServiceWorker.js'
+        pwaPacked: './src/js/pwaServiceWorker.js'
     },
     output: {
         filename: '[name].js',
@@ -55,6 +55,11 @@ let webpackOptions = {
         // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
         new CopyWebpackPlugin([
+            {
+                from: './src/fonts/*',
+                to: outputPath+'/fonts/',
+                flatten: true
+            },
             {
                 from: '*.png'
             },

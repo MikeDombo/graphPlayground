@@ -207,7 +207,7 @@ let self = {
 
         graphState.backHistory.push(self.getStateForSaving());
         graphState.forwardHistory = [];
-        $(".fa-undo").parent().parent().addClass("active");
+        $(".icon-undo").parent().parent().addClass("active");
     },
 
     getStateForSaving: () => {
@@ -291,16 +291,16 @@ let self = {
 
         graphState.makeAndPrintProperties();
         if (undo && !firstLoad) {
-            $(".fa-repeat").parent().parent().addClass("active");
+            $(".icon-redo").parent().parent().addClass("active");
             if (graphState.backHistory.length === 0) {
-                $(".fa-undo").parent().parent().removeClass("active");
+                $(".icon-undo").parent().parent().removeClass("active");
             }
             graphState.forwardHistory.push(currentState);
         }
         else if (!undo && !firstLoad) {
-            $(".fa-undo").parent().parent().addClass("active");
+            $(".icon-undo").parent().parent().addClass("active");
             if (graphState.forwardHistory.length === 0) {
-                $(".fa-repeat").parent().parent().removeClass("active");
+                $(".icon-redo").parent().parent().removeClass("active");
             }
             graphState.backHistory.push(currentState);
         }
