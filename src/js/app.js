@@ -1,6 +1,7 @@
 "use strict";
 
 import 'bootstrap';
+import Raven from 'raven-js';
 import {Network} from 'vis/index-network';
 import main from './main';
 import predefined from './predefinedGraphs';
@@ -12,6 +13,10 @@ window.predefined = predefined;
 window.network = new Network(main.container, {}, main.visOptions);
 window.settings = settings;
 window.ui = UI;
+
+// Initialize Sentry.io error logging
+Raven.config('https://355bd6aa42eb41b99a31fffc8cced0ba@sentry.io/487861').install();
+window.Raven = Raven;
 
 main.addNetworkListeners(window.network);
 
