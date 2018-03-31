@@ -15,7 +15,8 @@ window.settings = settings;
 window.ui = UI;
 
 // Initialize Sentry.io error logging
-Raven.config('https://355bd6aa42eb41b99a31fffc8cced0ba@sentry.io/487861').install();
+Raven.config('https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2').install();
+
 window.Raven = Raven;
 
 main.addNetworkListeners(window.network);

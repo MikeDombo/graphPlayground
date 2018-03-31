@@ -57,7 +57,7 @@ let webpackOptions = {
         new CopyWebpackPlugin([
             {
                 from: './src/fonts/*',
-                to: outputPath+'/fonts/',
+                to: outputPath + '/fonts/',
                 flatten: true
             },
             {
@@ -88,7 +88,7 @@ let webpackOptions = {
 };
 
 module.exports = (env) => {
-    if(process.env.npm_lifecycle_script.toString().includes("development")) {
+    if (process.env.npm_lifecycle_script.toString().includes("development")) {
         webpackOptions.watch = true;
         webpackOptions.plugins.push(new webpack.NamedModulesPlugin());
     }
