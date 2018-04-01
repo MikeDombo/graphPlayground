@@ -207,8 +207,22 @@
 	</div>
 </div>
 
-<script src="vendors.js" defer></script>
-<script src="bundle.js" defer></script>
+<script src="vendors-15d4b96bb30ebc331bd4.min.js" defer></script>
+<script src="bundle-15d4b96bb30ebc331bd4.min.js" defer></script>
+
+<script type="text/javascript" defer>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register("pwaPacked-15d4b96bb30ebc331bd4.min.js").then(function
+	            (registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }).catch(function (err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+</script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-network.min.css"
       integrity="sha256-tTIVWrgsLDcekkoaiqePYP86joMAiyp4KqEswPMmTfQ=" crossorigin="anonymous" />

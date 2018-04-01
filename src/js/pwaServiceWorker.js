@@ -1,20 +1,17 @@
 let dataCacheName = 'graphs-v1';
 
 let filesToCache = [
-	'index.html',
-	'bundle.js',
+	'index.html'
 ];
 
-self.addEventListener('install', function (event) {
+self.addEventListener('install', (event) => {
 	event.waitUntil(
-		caches.open(dataCacheName).then(function (cache) {
-			return cache.addAll(filesToCache);
-		})
+		caches.open(dataCacheName).then((cache) => cache.addAll(filesToCache))
 	);
 });
 
 // Get files from network first (cache if not cached already), then the cache
-self.addEventListener('fetch', function (event) {
+self.addEventListener('fetch', (event) => {
 	event.respondWith(
 		fetch(event.request)
 			.then(response => {

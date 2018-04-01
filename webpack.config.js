@@ -1,6 +1,8 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const outputPath = path.resolve(__dirname, 'dist');
 
@@ -10,8 +12,9 @@ let webpackOptions = {
         pwaPacked: './src/js/pwaServiceWorker.js'
     },
     output: {
-        filename: '[name].js',
-        path: outputPath
+        filename: '[name]-[hash].min.js',
+        path: outputPath,
+        publicPath: ''
     },
     watch: false,
     watchOptions: {
@@ -32,7 +35,7 @@ let webpackOptions = {
                             presets: [
                                 ['env', {
                                     targets: {
-                                        browsers: ["last 2 versions", "safari >= 9"]
+                                        browsers: ["last 2 versions", "safari >= 9", "ie >= 9"]
                                     },
                                     "useBuiltIns": true
                                 }]
@@ -52,6 +55,11 @@ let webpackOptions = {
     },
     devtool: "source-map",
     plugins: [
+        new CleanWebpackPlugin([outputPath + "/*-*.min.js*", outputPath + "/*-*.min.*.js*"]),
+        new HtmlWebpackPlugin({
+            template: 'index.html',
+            inject: false,
+        }),
         // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
         new CopyWebpackPlugin([
@@ -65,9 +73,6 @@ let webpackOptions = {
             },
             {
                 from: '*.ico'
-            },
-            {
-                from: './index.html'
             },
             {
                 from: './manifest.json'
