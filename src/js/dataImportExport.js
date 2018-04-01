@@ -176,8 +176,7 @@ let self = {
     },
 
     getDataAsJSON: () => {
-        let d = window.main.graphState.getGraphData();
-        d = window.main.graphState.getGraphData(window.main.graphState.dataSetToGraph(d.nodes, d.edges, d.directed, d.weighted));
+        let d = window.main.graphState.getGraphData(window.main.graphState.graph);
         let nodeKeys = ["id", "label", "color", "x", "y"];
         let edgeKeys = ["from", "to", "weight"];
         d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys);

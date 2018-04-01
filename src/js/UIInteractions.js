@@ -215,14 +215,14 @@ export default class UIInteractions {
                 if (settings.getOption("direction") !== vals[1]) {
                     settings.changeOption("direction", vals[1]);
                     let G = window.main.graphState.graph;
-                    G = vals[1] ? G.convertToDirected(true) : G.getGraphAsUndirected();
+                    G = vals[1] ? G.asDirected(true) : G.asUndirected();
                     // Clear node coloring because graph color doesn't apply to directed graphs
                     window.main.setData(window.main.graphState.getGraphData(G, true));
                 }
                 if (settings.getOption("weights") !== vals[2]) {
                     settings.changeOption("weights", vals[2]);
                     let G = window.main.graphState.graph;
-                    G = vals[2] ? G.convertToWeighted() : G.convertToUnWeighted();
+                    G = vals[2] ? G.asWeighted() : G.asUnweighted();
                     window.main.setData(window.main.graphState.getGraphData(G));
                 }
             },

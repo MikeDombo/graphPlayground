@@ -13,83 +13,149 @@ const filterNodeExtraAttr = (data) => {
                  }, {});
 };
 
+const genericEdgesToImmutEdges = (edges, nodeMap = {}) => {
+    if(edges === null){
+        return false;
+    }
+
+    let newEdges = new List();
+
+    if(typeof edges === 'object') {
+        edges.forEach((edge) => {
+            let weight = 0;
+            let from = 0;
+            let to = 0;
+
+            if ("weight" in edge) {
+                weight = parseFloat(edge.weight);
+            }
+            if ("from" in edge) {
+                from = nodeMap[edge.from];
+            }
+            if ("to" in edge) {
+                to = nodeMap[edge.to];
+            }
+
+            newEdges = newEdges.push(new EdgeImmut(from, to, weight));
+        });
+    }
+    else{
+        return false;
+    }
+
+    return newEdges;
+};
+
+const genericNodesToImmutNodes = (nodes) => {
+    if(nodes === null){
+       return false;
+    }
+
+    let newNodes = new List();
+    let nodeMap = {};
+
+    if(typeof nodes === 'object'){
+        let nodeNum = 0;
+        nodes.forEach((n) => {
+            let id = nodeNum++;
+            let label = null;
+            let extraAttrs = null;
+
+            if ("label" in n) {
+                label = n.label;
+            }
+            if ("id" in n){
+                nodeMap[n.id] = id;
+                if ("label" in n && n.label === n.id.toString()) {
+                    label = id.toString();
+                }
+            }
+            else {
+                nodeMap[id] = id;
+            }
+            if ("attributes" in n) {
+                extraAttrs = filterNodeExtraAttr(n.attributes);
+            }
+            else {
+                extraAttrs = filterNodeExtraAttr(n);
+            }
+
+            newNodes = newNodes.set(id, new NodeImmut(id, label, extraAttrs));
+        });
+    }
+    else if (typeof nodes === "number") {
+        // Create the nodes
+        for (let i = 0; i < Math.floor(nodes); i++) {
+            newNodes = newNodes.set(i, new NodeImmut(i));
+            nodeMap[i] = i;
+        }
+    }
+    else{
+        return false;
+    }
+
+    return {nodes: Object.freeze(newNodes), map: nodeMap};
+};
+
 export default class GraphImmut {
     constructor (nodes, edges = null, directed = false, weighted = false) {
-        this.nodes = new List();
-        this.edges = new List();
-        this.numEdges = 0;
         this.directed = Object.freeze(directed);
         this.weighted = Object.freeze(weighted);
+        let nodeMap = {};
 
-        if (typeof nodes === "number") {
-            this.numNodes = Object.freeze(nodes);
-            // Create the nodes
-            for (let i = 0; i < this.numNodes; i++) {
-                this.nodes = this.nodes.set(i, new NodeImmut(i));
-            }
+        // Make Nodes
+        if (typeof nodes === "number" || (typeof nodes === "object" && !(nodes instanceof List))) {
+            let n = genericNodesToImmutNodes(nodes);
+            this.nodes = n.nodes;
+            nodeMap = n.map;
         }
-        else {
-            let nodeNum = 0;
-            nodes.forEach((n) => {
-                let id = nodeNum++;
-                let label = null;
-                let extraAttrs = null;
-
-                if (n instanceof NodeImmut) {
-                    label = n.getLabel();
-                    extraAttrs = n.getAllAttributes();
-                }
-                else {
-                    if ("label" in n) {
-                        label = n.label;
-                    }
-                    if ("attributes" in n) {
-                        extraAttrs = filterNodeExtraAttr(n.attributes);
-                    }
-                    else {
-                        extraAttrs = filterNodeExtraAttr(n);
-                    }
-                }
-
-                this.nodes = this.nodes.set(id, new NodeImmut(id, label, extraAttrs));
-            });
-
-            this.numNodes = Object.freeze(nodeNum);
+        else if(nodes instanceof List){
+            this.nodes = nodes;
         }
+        else{
+            throw new Error("Illegal type of 'node' input to GraphImmut constructor");
+        }
+        this.nodes = Object.freeze(this.nodes);
+        this.numNodes = Object.freeze(this.nodes.size);
 
         // If we are given edges, add them to the graph
-        if (edges !== null) {
-            this.numEdges = edges instanceof List ? edges.size : edges.length;
-
-            edges.forEach((edge) => {
-                if (edge instanceof EdgeImmut) {
-                    this.edges = this.edges.push(edge);
-                }
-                else {
-                    let weight = 0;
-                    let from = 0;
-                    let to = 0;
-
-                    if ("weight" in edge && this.weighted) {
-                        weight = parseFloat(edge.weight);
-                    }
-                    if ("from" in edge) {
-                        from = edge.from;
-                    }
-                    if ("to" in edge) {
-                        to = edge.to;
-                    }
-
-                    this.edges = this.edges.push(new EdgeImmut(from, to, weight));
-                }
-            });
+        if (typeof edges === "object" && !(edges instanceof List)) {
+            this.edges = genericEdgesToImmutEdges(edges, nodeMap);
         }
-
-        this.numEdges = Object.freeze(this.numEdges);
+        else if(edges instanceof List){
+            this.edges = edges;
+        }
+        else{
+            this.edges = new List();
+        }
+        this.edges = Object.freeze(this.edges);
+        this.numEdges = Object.freeze(this.edges.size);
 
         if (new.target === GraphImmut) {
             Object.freeze(this);
         }
+    }
+
+    alignNodeIDs (alignTo = 0){
+        let nodeMap = {};
+        let nodeCount = alignTo;
+        let newNodes = new List();
+        this.nodes.forEach((v) => {
+            let label = v.getLabel();
+            if (v.getLabel() === v.getID().toString()) {
+                label = nodeCount.toString();
+            }
+
+            newNodes = newNodes.set(nodeCount, new NodeImmut(nodeCount, label, v.getAllAttributes()));
+            nodeMap[v.getID()] = nodeCount++;
+        });
+
+        let newEdges = new List();
+        this.edges.forEach((v) => {
+            newEdges = newEdges.push(new EdgeImmut(nodeMap[v.getFrom()], nodeMap[v.getTo()], v.getWeight()));
+        });
+
+        return new GraphImmut(newNodes, newEdges, this.directed, this.weighted);
     }
 
     getNode (id, rich = false) {
@@ -247,6 +313,14 @@ export default class GraphImmut {
         }).toArray();
     }
 
+    getAllNodesAsImmutableList () {
+        return this.nodes;
+    }
+
+    getAllEdgesAsImmutableList () {
+        return this.edges;
+    }
+
     getAllEdges (rich = false) {
         if (rich) {
             return this.edges.toArray();
@@ -278,19 +352,19 @@ export default class GraphImmut {
         return degrees;
     }
 
-    convertToWeighted () {
+    asWeighted () {
         return new GraphImmut(this.nodes, this.edges.map((edge) => {
             return edge.editEdge(1);
         }), this.directed, true);
     }
 
-    convertToUnWeighted () {
+    asUnweighted () {
         return new GraphImmut(this.nodes, this.edges.map((edge) => {
             return edge.editEdge(1);
         }), this.directed, false);
     }
 
-    convertToDirected (doubleEdges = false) {
+    asDirected (doubleEdges = false) {
         if (!doubleEdges) {
             return new GraphImmut(this.nodes, this.edges, true, this.weighted);
         }
@@ -303,7 +377,7 @@ export default class GraphImmut {
         return new GraphImmut(this.nodes, newEdges, true, this.weighted);
     }
 
-    getGraphAsUndirected () {
+    asUndirected () {
         let newEdges = [];
         let addedEdges = {};
 
@@ -321,6 +395,25 @@ export default class GraphImmut {
         });
 
         return new GraphImmut(this.nodes, newEdges, false, this.weighted);
+    }
+
+    asChangedDirectedWeighted (directed, weighted) {
+        let G = this;
+        if(directed && !this.directed){
+            G = this.asDirected();
+        }
+        else if (!directed && this.directed){
+            G = this.asUndirected();
+        }
+
+        if(weighted && !this.weighted){
+            G = this.asWeighted();
+        }
+        else if(!weighted && this.weighted){
+            G = this.asUnweighted();
+        }
+
+        return G;
     }
 
     getNodeAdjacency (id) {

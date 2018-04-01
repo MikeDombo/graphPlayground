@@ -16,7 +16,7 @@ let self = {
             callback(null);
             $modal.modal("hide");
             vals = parseFloat(vals[0]);
-            graphState.editEdge(data.from.id, data.to.id, vals, parseFloat(data.label));
+            self.graphState.editEdge(data.from.id, data.to.id, vals, parseFloat(data.label));
         }, "Edit Edge", "Save", [
             {
                 type: "numeric",
@@ -73,7 +73,7 @@ let self = {
                     if (typeof callback === "function") {
                         callback(null);
                     }
-                    graphState.addEdge(data.from, data.to);
+                    self.graphState.addEdge(data.from, data.to);
                 };
                 if (data.from === data.to) {
                     if (confirm("Do you want to connect the node to itself?")) {
@@ -99,14 +99,14 @@ let self = {
                         weight = parseFloat(window.network.body.data.edges._data[v].label);
                     }
 
-                    graphState.deleteEdge(window.network.body.edges[v].fromId,
+                    self.graphState.deleteEdge(window.network.body.edges[v].fromId,
                         window.network.body.edges[v].toId, weight);
                 });
             },
             deleteNode: function (data, callback) {
                 callback(null);
                 data.nodes.forEach((v) => {
-                    graphState.deleteNode(v);
+                    self.graphState.deleteNode(v);
                 });
             },
         },
@@ -123,15 +123,15 @@ let self = {
         callback(null);
 
         if (operation === "add") {
-            graphState.addNode(data);
+            self.graphState.addNode(data);
         }
         else if (operation === "editNode") {
-            graphState.editNode(data.id, data.label);
+            self.graphState.editNode(data.id, data.label);
         }
     },
 
     nodeLabelIDValidator: (v) => {
-        if (graphState.nodeLabelToID(v) > -1) {
+        if (self.graphState.nodeLabelToID(v) > -1) {
             return true;
         }
         return "Invalid Label or ID";
@@ -141,15 +141,15 @@ let self = {
         if (settings.getOption("direction")) {
             return;
         }
-        let graphColors = graphState.getProperty("graphColoring", true);
-        let chromaticNumber = graphState.getProperty("Chromatic Number", true);
+        let graphColors = self.graphState.getProperty("graphColoring", true);
+        let chromaticNumber = self.graphState.getProperty("Chromatic Number", true);
 
         let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-        let G = graphState.graph;
+        let G = self.graphState.graph;
         G.getAllNodes().forEach((v) => {
             G = G.editNode(v.id, {color: colors[graphColors[v.id]]});
         });
-        self.setData(graphState.getGraphData(G), false, false);
+        self.setData(self.graphState.getGraphData(G), false, false);
     },
 
     setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
@@ -174,13 +174,12 @@ let self = {
         let directional = settings.getOption("direction");
         let weighted = settings.getOption("weights");
 
-        let g = graphState.dataSetToGraph(data.nodes, data.edges, directional, weighted);
-        graphState.graph = g;
+        let g = new GraphImmut(data.nodes, data.edges, directional, weighted);
+        self.graphState.graph = g;
 
         // Set a new random seed so that the layout will be different
         self.randomizeNetworkLayoutSeed(window.network);
-
-        window.network.setData(graphState.getGraphAsDataSet(g));
+        window.network.setData(self.graphState.getGraphAsDataSet(g));
         self.graphState.graph = self.graphState.setLocations(window.network.getPositions());
 
         window.network.disableEditMode();
@@ -189,31 +188,31 @@ let self = {
         if (graphChanged) {
             window.ui.printGraphAlgorithms();
             help.printout("");
-            graphState.setUpToDate();
-            graphState.makeAndPrintProperties(recalcProps);
+            self.graphState.setUpToDate();
+            self.graphState.makeAndPrintProperties(recalcProps);
         }
 
         self.saveStateLocalStorage();
     },
 
     saveState: () => {
-        if (graphState.graph === null) {
+        if (self.graphState.graph === null) {
             return;
         }
 
-        if (graphState.backHistory.length >= graphState.maxHistory) {
-            graphState.backHistory.shift();
+        if (self.graphState.backHistory.length >= self.graphState.maxHistory) {
+            self.graphState.backHistory.shift();
         }
 
-        graphState.backHistory.push(self.getStateForSaving());
-        graphState.forwardHistory = [];
+        self.graphState.backHistory.push(self.getStateForSaving());
+        self.graphState.forwardHistory = [];
         $(".icon-undo").parent().parent().addClass("active");
     },
 
     getStateForSaving: () => {
         let state = {};
-        Object.keys(graphState).forEach((k) => {
-            let v = graphState[k];
+        Object.keys(self.graphState).forEach((k) => {
+            let v = self.graphState[k];
             if (typeof v !== "function") {
                 if (typeof v !== "object") {
                     state[k] = v;
@@ -233,13 +232,13 @@ let self = {
     },
 
     undo: () => {
-        if (graphState.backHistory.length > 0) {
+        if (self.graphState.backHistory.length > 0) {
             self.applyState(true);
         }
     },
 
     redo: () => {
-        if (graphState.forwardHistory.length > 0) {
+        if (self.graphState.forwardHistory.length > 0) {
             self.applyState(false);
         }
     },
@@ -250,10 +249,10 @@ let self = {
 
         if (!firstLoad) {
             if (undo) {
-                newState = graphState.backHistory.pop();
+                newState = self.graphState.backHistory.pop();
             }
             else {
-                newState = graphState.forwardHistory.pop();
+                newState = self.graphState.forwardHistory.pop();
             }
         }
 
@@ -262,10 +261,9 @@ let self = {
         settings.changeOption("direction", newState.graph.isDirected());
         settings.changeOption("weights", newState.graph.isWeighted());
 
-        let g = graphState.getGraphAsDataSet(newState.graph);
-        graphState.graph = graphState.dataSetToGraph(g.nodes, g.edges, newState.graph.isDirected(), newState.graph.isWeighted());
+        self.graphState.graph = newState.graph;
 
-        window.network.setData(g);
+        window.network.setData(self.graphState.getGraphAsDataSet(self.graphState.graph));
         window.network.disableEditMode();
         window.network.enableEditMode();
 
@@ -275,34 +273,34 @@ let self = {
         Object.keys(newState).forEach((k) => {
             let v = newState[k];
             if (typeof v !== "object") {
-                graphState[k] = v;
+                self.graphState[k] = v;
             }
             else if (!k.toLowerCase().includes("history") && k.toLowerCase() !== "graph") {
                 if (k.toLowerCase() === "uptodate") {
-                    Object.keys(graphState[k]).forEach((oldKey) => {
-                        graphState[k][oldKey].upToDate = v[oldKey].upToDate;
+                    Object.keys(self.graphState[k]).forEach((oldKey) => {
+                        self.graphState[k][oldKey].upToDate = v[oldKey].upToDate;
                     });
                 }
                 else {
-                    graphState[k] = $.extend(true, graphState[k], v);
+                    self.graphState[k] = $.extend(true, self.graphState[k], v);
                 }
             }
         });
 
-        graphState.makeAndPrintProperties();
+        self.graphState.makeAndPrintProperties();
         if (undo && !firstLoad) {
             $(".icon-redo").parent().parent().addClass("active");
-            if (graphState.backHistory.length === 0) {
+            if (self.graphState.backHistory.length === 0) {
                 $(".icon-undo").parent().parent().removeClass("active");
             }
-            graphState.forwardHistory.push(currentState);
+            self.graphState.forwardHistory.push(currentState);
         }
         else if (!undo && !firstLoad) {
             $(".icon-undo").parent().parent().addClass("active");
-            if (graphState.forwardHistory.length === 0) {
+            if (self.graphState.forwardHistory.length === 0) {
                 $(".icon-redo").parent().parent().removeClass("active");
             }
-            graphState.backHistory.push(currentState);
+            self.graphState.backHistory.push(currentState);
         }
 
         self.saveStateLocalStorage();
@@ -316,8 +314,8 @@ let self = {
 
     shuffleNetworkLayout: () => {
         self.setData({
-            nodes: graphState.graph.getAllNodes(),
-            edges: graphState.graph.getAllEdges()
+            nodes: self.graphState.graph.getAllNodes(),
+            edges: self.graphState.graph.getAllEdges()
         }, false, false, true);
     },
 

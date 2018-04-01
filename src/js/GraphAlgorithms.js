@@ -185,10 +185,10 @@ let self = {
         let G = graphState.graph;
 
         if (!G.isDirected()) {
-            G = G.convertToDirected(true);
+            G = G.asDirected(true);
         }
         if (!G.isWeighted()) {
-            G = G.convertToWeighted();
+            G = G.asWeighted();
         }
 
         let nonNegative = G.getAllEdges(true).find((edge) => {

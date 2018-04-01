@@ -255,12 +255,18 @@ let self = {
     },
 
     setLocations: (locations, graph = self.graph) => {
+        let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
             let v = locations[i];
-            graph = graph.editNode(i, {x: v.x, y: v.y});
+            let node = newNodes.get(i);
+            // Only change when there is actually a new position
+            if (node.getAttribute("x") !== v.x || node.getAttribute("y") !== v.y) {
+                // Batch up all changes that we'll be making
+                newNodes = newNodes.set(i, node.editNode(node.getLabel(), {x: v.x, y: v.y}));
+            }
         });
 
-        return graph;
+        return new GraphImmut(newNodes, graph.getAllEdgesAsImmutableList(), graph.isDirected(), graph.isWeighted());
     },
 
     getGraphData: (graph = self.graph, clearColors = false) => {
@@ -270,37 +276,7 @@ let self = {
             directed: graph.isDirected(),
             weighted: graph.isWeighted()
         };
-    },
-
-    // return graph object built from input nodes and edges
-    dataSetToGraph: (nodes, edges, directional = false, weighted = false) => {
-        let d = self.alignData(0, nodes, edges);
-        return new GraphImmut(d.nodes, d.edges, directional, weighted);
-    },
-
-    // Align ID's of nodes to a start value (typically 0)
-    alignData: (start, nodes, edges) => {
-        let nodeMap = {};
-        let nodeCount = start;
-        let newNodes = [];
-        nodes.forEach((v) => {
-            let label = v.label;
-            if (v.label === v.id.toString()) {
-                label = nodeCount.toString();
-            }
-            let thisNode = {id: nodeCount, label: label, color: v.color, x: v.x, y: v.y};
-            newNodes.push(thisNode);
-            nodeMap[v.id] = nodeCount++;
-        });
-
-        let newEdges = [];
-        edges.forEach((v) => {
-            let thisEdge = {from: nodeMap[v.from], to: nodeMap[v.to], label: v.label, weight: v.weight};
-            newEdges.push(thisEdge);
-        });
-
-        return help.deepFreeze({nodes: newNodes, edges: newEdges});
-    },
+    }
 };
 
 export default self;
