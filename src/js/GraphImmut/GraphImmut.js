@@ -378,7 +378,7 @@ export default class GraphImmut {
     }
 
     asUndirected () {
-        let newEdges = [];
+        let newEdges = List();
         let addedEdges = {};
 
         this.edges.forEach((edge) => {
@@ -390,7 +390,7 @@ export default class GraphImmut {
             }
             if (!(from + "_" + to in addedEdges)) {
                 addedEdges[from + "_" + to] = null;
-                newEdges.push(new EdgeImmut(from, to, edge.getWeight()));
+                newEdges = newEdges.push(new EdgeImmut(from, to, edge.getWeight()));
             }
         });
 
