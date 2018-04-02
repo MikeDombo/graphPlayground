@@ -1,9 +1,7 @@
-import gAlgo from "./GraphAlgorithms";
 import gHelp from "./graphHelpers";
 import settings from "./settings";
 import help from "./genericHelpers";
 import $ from "jquery";
-import importExport from './dataImportExport';
 
 
 const makeAndPrintShortestPath = (title, fn, weighted) => {
@@ -45,10 +43,12 @@ const makeAndPrintShortestPath = (title, fn, weighted) => {
         ]);
 };
 
-const makeAndPrintComponents = (stronglyConnected) => {
+const makeAndPrintComponents = async (stronglyConnected) => {
     let a = null;
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
+    let gg = await import("./GraphAlgorithms");
+    const gAlgo = gg.default;
 
     if (stronglyConnected) {
         if (!settings.getOption("direction")) {
@@ -191,10 +191,22 @@ export default class UIInteractions {
                 window.main.graphState.makeAndPrintProperties(true);
             });
         makeSimpleClickListener("#new-graph-layout-link", window.main.shuffleNetworkLayout);
-        makeSimpleClickListener("#import-file-link", importExport.makeImportFileModal);
-        makeSimpleClickListener("#import-text-link", importExport.makeImportTextModal);
-        makeSimpleClickListener("#export-file-link", importExport.makeExportFileModal);
-        makeSimpleClickListener("#export-text-link", importExport.makeExportTextModal);
+        makeSimpleClickListener("#import-file-link", async () => {
+            let imp = await import("./dataImportExport");
+            imp.default.makeImportFileModal();
+        });
+        makeSimpleClickListener("#import-text-link", async () => {
+            let imp = await import("./dataImportExport");
+            imp.default.makeImportTextModal();
+        });
+        makeSimpleClickListener("#export-file-link", async () => {
+            let imp = await import("./dataImportExport");
+            imp.default.makeExportFileModal();
+        });
+        makeSimpleClickListener("#export-text-link", async () => {
+            let imp = await import("./dataImportExport");
+            imp.default.makeExportTextModal();
+        });
     }
 
     static printHelp () {
@@ -233,7 +245,7 @@ export default class UIInteractions {
             ], null);
     }
 
-    static makeAndPrintGraphColoring () {
+    static async makeAndPrintGraphColoring () {
         if (settings.getOption("direction")) {
             return;
         }
@@ -244,6 +256,8 @@ export default class UIInteractions {
             colors: window.main.graphState.state.graphColoring
         };
         if (!(a.chromaticNumber !== null && window.main.graphState.getProperty("graphColoring") !== null)) {
+            let gg = await import("./GraphAlgorithms");
+            const gAlgo = gg.default;
             a = gAlgo.colorNetwork();
         }
 
@@ -273,22 +287,26 @@ export default class UIInteractions {
         makeAndPrintComponents(false);
     }
 
-    static makeAndPrintDirectionalEulerian () {
+    static async makeAndPrintDirectionalEulerian () {
         if (!settings.getOption("direction")) {
             return;
         }
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(window.main.graphState.graph.getFullAdjacency()));
         window.main.graphState.setUpToDate(true, ["eulerian"]);
         window.main.graphState.graphProperties.eulerian = t;
     }
 
-    static makeAndPrintEulerian () {
+    static async makeAndPrintEulerian () {
         if (settings.getOption("direction")) {
             UIInteractions.makeAndPrintDirectionalEulerian();
             return;
         }
 
         window.main.graphState.setUpToDate(true, ["eulerian"]);
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         window.main.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(window.main.graphState.graph.getAllOutDegrees());
     }
 
@@ -296,15 +314,21 @@ export default class UIInteractions {
         makeAndPrintComponents(true);
     }
 
-    static makeAndPrintBFS () {
+    static async makeAndPrintBFS () {
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch);
     }
 
-    static makeAndPrintDijkstra () {
+    static async makeAndPrintDijkstra () {
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch, true);
     }
 
-    static makeAndPrintBFSP () {
+    static async makeAndPrintBFSP () {
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord, true);
     }
 
@@ -312,12 +336,13 @@ export default class UIInteractions {
         if (!settings.getOption("direction") || !settings.getOption("weights")) {
             return;
         }
-        help.showFormModal(($modal, values) => {
+        help.showFormModal(async ($modal, values) => {
                 $modal.modal("hide");
 
                 let source = window.main.graphState.nodeLabelToID(values[0]);
                 let sink = window.main.graphState.nodeLabelToID(values[1]);
-
+                let gg = await import("./GraphAlgorithms");
+                const gAlgo = gg.default;
                 let a = gAlgo.fordFulkerson(source, sink);
 
                 let p = "<h3>Ford-Fulkerson</h3><hr>No path exists from "
@@ -348,10 +373,12 @@ export default class UIInteractions {
             ]);
     }
 
-    static makeAndPrintKruskal () {
+    static async makeAndPrintKruskal () {
         if (settings.getOption("direction") || !settings.getOption("weights")) {
             return;
         }
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
 
         let a = gAlgo.kruskal();
 
@@ -367,19 +394,22 @@ export default class UIInteractions {
         help.printout(p);
     }
 
-    static makeAndPrintIsCyclic () {
+    static async makeAndPrintIsCyclic () {
         if (!settings.getOption("direction")) {
             return;
         }
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         window.main.graphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
         window.main.graphState.setUpToDate(true, ["cyclic"]);
     }
 
-    static makeAndPrintTopologicalSort () {
+    static async makeAndPrintTopologicalSort () {
         if (!settings.getOption("direction")) {
             return;
         }
-
+        let gg = await import("./GraphAlgorithms");
+        const gAlgo = gg.default;
         let a = gAlgo.topologicalSort();
 
         if (a === true) {

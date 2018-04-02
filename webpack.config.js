@@ -13,38 +13,13 @@ let webpackOptions = {
     },
     output: {
         filename: '[name]-[hash].min.js',
+        chunkFilename: '[name]-[chunkhash].min.js',
         path: outputPath,
         publicPath: ''
     },
     watch: false,
     watchOptions: {
         ignored: /node_modules/,
-    },
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: [
-                    {
-                        loader: 'cache-loader'
-                    },
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                                ['env', {
-                                    targets: {
-                                        browsers: ["last 2 versions", "safari >= 9", "ie >= 9"]
-                                    },
-                                    "useBuiltIns": true
-                                }]
-                            ]
-                        }
-                    }
-                ]
-            }
-        ]
     },
     stats: {
         colors: true
@@ -85,14 +60,15 @@ let webpackOptions = {
                 commons: {
                     test: /[\\/]node_modules[\\/]/,
                     name: "vendors",
-                    chunks: "all"
+                    chunks: "all",
+                    reuseExistingChunk: true
                 }
             }
         }
     }
 };
 
-module.exports = (env) => {
+module.exports = () => {
     if (process.env.npm_lifecycle_script.toString().includes("development")) {
         webpackOptions.watch = true;
         webpackOptions.plugins.push(new webpack.NamedModulesPlugin());

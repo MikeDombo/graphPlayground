@@ -4,8 +4,10 @@
 		"comma-dangle": 0,
 		"no-console": 0
 	},
+	"parser": "babel-eslint",
 	"parserOptions": {
-		"sourceType": "module"
+		"sourceType": "module",
+		"ecmaVersion": 8
 	},
 	"env" : {
 		"jquery" : true,
