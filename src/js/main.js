@@ -2,7 +2,6 @@
 
 import $ from 'jquery';
 import help from './genericHelpers';
-import settings from './settings';
 import randomColor from 'randomcolor';
 import graphState from './graphState';
 import GraphImmut from "./GraphImmut/GraphImmut";
@@ -138,7 +137,7 @@ let self = {
     },
 
     applyColors: () => {
-        if (settings.getOption("direction")) {
+        if (window.settings.getOption("direction")) {
             return;
         }
         let graphColors = self.graphState.getProperty("graphColoring", true);
@@ -166,13 +165,13 @@ let self = {
         }
 
         if ("directed" in data) {
-            settings.changeOption("direction", data.directed);
+            window.settings.changeOption("direction", data.directed);
         }
         if ("weighted" in data) {
-            settings.changeOption("weights", data.weighted);
+            window.settings.changeOption("weights", data.weighted);
         }
-        let directional = settings.getOption("direction");
-        let weighted = settings.getOption("weights");
+        let directional = window.settings.getOption("direction");
+        let weighted = window.settings.getOption("weights");
 
         let g = new GraphImmut(data.nodes, data.edges, directional, weighted);
         self.graphState.graph = g;
@@ -258,8 +257,8 @@ let self = {
 
         newState.graph = new GraphImmut(newState.graph.nodes, newState.graph.edges, newState.graph.directed, newState.graph.weighted);
 
-        settings.changeOption("direction", newState.graph.isDirected());
-        settings.changeOption("weights", newState.graph.isWeighted());
+        window.settings.changeOption("direction", newState.graph.isDirected());
+        window.settings.changeOption("weights", newState.graph.isWeighted());
 
         self.graphState.graph = newState.graph;
 
@@ -307,7 +306,7 @@ let self = {
     },
 
     saveStateLocalStorage: () => {
-        if (settings.checkForLocalStorage()) {
+        if (window.settings.checkForLocalStorage()) {
             localStorage.setItem("graphPlayground.lastState", JSON.stringify(self.getStateForSaving()));
         }
     },
@@ -328,7 +327,7 @@ let self = {
     addNetworkListeners: (network) => {
         // Enable edit node/edge when double clicking
         network.on("doubleClick", (p) => {
-            if (settings.getOption("weights") && "edges" in p && p.edges.length === 1) {
+            if (window.settings.getOption("weights") && "edges" in p && p.edges.length === 1) {
                 network.editEdgeMode();
             }
             if ("nodes" in p && p.nodes.length === 1) {

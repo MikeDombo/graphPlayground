@@ -1,5 +1,4 @@
 import gHelp from "./graphHelpers";
-import settings from "./settings";
 import help from "./genericHelpers";
 import $ from "jquery";
 
@@ -51,7 +50,7 @@ const makeAndPrintComponents = async (stronglyConnected) => {
     const gAlgo = gg.default;
 
     if (stronglyConnected) {
-        if (!settings.getOption("direction")) {
+        if (!window.settings.getOption("direction")) {
             return;
         }
         cc = "Strongly " + cc;
@@ -59,7 +58,7 @@ const makeAndPrintComponents = async (stronglyConnected) => {
         a = gAlgo.stronglyConnectedComponents();
     }
     else {
-        if (settings.getOption("direction")) {
+        if (window.settings.getOption("direction")) {
             return;
         }
         a = gAlgo.connectedComponents();
@@ -230,32 +229,32 @@ export default class UIInteractions {
         help.showFormModal(
             ($modal, vals) => {
                 $modal.modal("hide");
-                if (settings.getOption("nodePhysics") !== vals[0]) {
-                    settings.changeOption("nodePhysics", vals[0]); // Physics
+                if (window.settings.getOption("nodePhysics") !== vals[0]) {
+                    window.settings.changeOption("nodePhysics", vals[0]); // Physics
                 }
-                if (settings.getOption("direction") !== vals[1]) {
-                    settings.changeOption("direction", vals[1]);
+                if (window.settings.getOption("direction") !== vals[1]) {
+                    window.settings.changeOption("direction", vals[1]);
                     let G = window.main.graphState.graph;
                     G = vals[1] ? G.asDirected(true) : G.asUndirected();
                     // Clear node coloring because graph color doesn't apply to directed graphs
                     window.main.setData(window.main.graphState.getGraphData(G, true));
                 }
-                if (settings.getOption("weights") !== vals[2]) {
-                    settings.changeOption("weights", vals[2]);
+                if (window.settings.getOption("weights") !== vals[2]) {
+                    window.settings.changeOption("weights", vals[2]);
                     let G = window.main.graphState.graph;
                     G = vals[2] ? G.asWeighted() : G.asUnweighted();
                     window.main.setData(window.main.graphState.getGraphData(G));
                 }
             },
             "Options", "Save", [
-                {label: "Graph Physics", initialValue: settings.getOption("nodePhysics"), type: "checkbox"},
-                {label: "Directed Graph", initialValue: settings.getOption("direction"), type: "checkbox"},
-                {label: "Weighted Graph", initialValue: settings.getOption("weights"), type: "checkbox"}
+                {label: "Graph Physics", initialValue: window.settings.getOption("nodePhysics"), type: "checkbox"},
+                {label: "Directed Graph", initialValue: window.settings.getOption("direction"), type: "checkbox"},
+                {label: "Weighted Graph", initialValue: window.settings.getOption("weights"), type: "checkbox"}
             ], null);
     }
 
     static async makeAndPrintGraphColoring () {
-        if (settings.getOption("direction")) {
+        if (window.settings.getOption("direction")) {
             return;
         }
 
@@ -297,7 +296,7 @@ export default class UIInteractions {
     }
 
     static async makeAndPrintDirectionalEulerian () {
-        if (!settings.getOption("direction")) {
+        if (!window.settings.getOption("direction")) {
             return;
         }
         let gg = await import("./GraphAlgorithms");
@@ -308,7 +307,7 @@ export default class UIInteractions {
     }
 
     static async makeAndPrintEulerian () {
-        if (settings.getOption("direction")) {
+        if (window.settings.getOption("direction")) {
             UIInteractions.makeAndPrintDirectionalEulerian();
             return;
         }
@@ -342,7 +341,7 @@ export default class UIInteractions {
     }
 
     static makeAndPrintFFMCMF () {
-        if (!settings.getOption("direction") || !settings.getOption("weights")) {
+        if (!window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
         help.showFormModal(async ($modal, values) => {
@@ -383,7 +382,7 @@ export default class UIInteractions {
     }
 
     static async makeAndPrintKruskal () {
-        if (settings.getOption("direction") || !settings.getOption("weights")) {
+        if (window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
         let gg = await import("./GraphAlgorithms");
@@ -404,7 +403,7 @@ export default class UIInteractions {
     }
 
     static async makeAndPrintIsCyclic () {
-        if (!settings.getOption("direction")) {
+        if (!window.settings.getOption("direction")) {
             return;
         }
         let gg = await import("./GraphAlgorithms");
@@ -414,7 +413,7 @@ export default class UIInteractions {
     }
 
     static async makeAndPrintTopologicalSort () {
-        if (!settings.getOption("direction")) {
+        if (!window.settings.getOption("direction")) {
             return;
         }
         let gg = await import("./GraphAlgorithms");
@@ -446,8 +445,8 @@ export default class UIInteractions {
     static printGraphAlgorithms () {
         let $div = $("#algorithms-pane");
         $div.empty();
-        let directional = settings.getOption("direction");
-        let weighted = settings.getOption("weights");
+        let directional = window.settings.getOption("direction");
+        let weighted = window.settings.getOption("weights");
 
         const addAlgoToPane = (alg) => {
             $div.append($("<a>", {class: "nav-link", href: "#"})
