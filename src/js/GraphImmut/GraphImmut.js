@@ -119,7 +119,7 @@ export default class GraphImmut {
         this.numNodes = Object.freeze(this.nodes.size);
 
         // If we are given edges, add them to the graph
-        if (typeof edges === "object" && !(edges instanceof List)) {
+        if (edges !== null && typeof edges === "object" && !(edges instanceof List)) {
             this.edges = genericEdgesToImmutEdges(edges, nodeMap);
         }
         else if(edges instanceof List){
