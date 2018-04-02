@@ -173,17 +173,26 @@ export default class UIInteractions {
 
         makeSimpleClickListener("#print-help-link", UIInteractions.printHelp);
         makeSimpleClickListener("#graph-options-link", UIInteractions.printOptions);
-        makeSimpleClickListener("#load-petersen-link",
-            () => {
-                window.main.setData(window.predefined.Petersen(), false, true, true);
-            });
-        makeSimpleClickListener("#load-konigsberg-link",
-            () => {
-                window.main.setData(window.predefined.Konigsberg(), false, true, true);
-            });
-        makeSimpleClickListener("#load-complete-link", window.predefined.Complete);
-        makeSimpleClickListener("#load-hypercube-link", window.predefined.Hypercube);
-        makeSimpleClickListener("#load-custom-link", window.predefined.Custom);
+        makeSimpleClickListener("#load-petersen-link", async () => {
+            let predefined = await import('./predefinedGraphs');
+            window.main.setData(predefined.default.Petersen(), false, true, true);
+        });
+        makeSimpleClickListener("#load-konigsberg-link", async () => {
+            let predefined = await import('./predefinedGraphs');
+            window.main.setData(predefined.default.Konigsberg(), false, true, true);
+        });
+        makeSimpleClickListener("#load-complete-link", async () => {
+            let predefined = await import('./predefinedGraphs');
+            predefined.default.Complete();
+        });
+        makeSimpleClickListener("#load-hypercube-link", async () => {
+            let predefined = await import('./predefinedGraphs');
+            predefined.default.Hypercube();
+        });
+        makeSimpleClickListener("#load-custom-link", async () => {
+            let predefined = await import('./predefinedGraphs');
+            predefined.default.Custom();
+        });
         makeSimpleClickListener("#undo-link", window.main.undo);
         makeSimpleClickListener("#redo-link", window.main.redo);
         makeSimpleClickListener("#calculate-all-properties-link",

@@ -4,12 +4,10 @@ import 'bootstrap';
 import Raven from 'raven-js';
 import {Network} from 'vis/index-network';
 import main from './main';
-import predefined from './predefinedGraphs';
 import settings from './settings';
 import UI from './UIInteractions';
 
 window.main = main;
-window.predefined = predefined;
 window.network = new Network(main.container, {}, main.visOptions);
 window.settings = settings;
 window.ui = UI;
@@ -35,7 +33,10 @@ if (settings.checkForLocalStorage()) {
     }
 }
 if (loadDefault) {
-    main.setData(predefined.Petersen(), false, true, true);
+    (async () => {
+        let predefined = await import("./predefinedGraphs");
+        main.setData(predefined.default.Petersen(), false, true, true);
+    })();
 }
 
 window.ui.registerListeners();
