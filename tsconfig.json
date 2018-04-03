@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"noImplicitAny": false,
 		"module": "esnext",
-		"target": "es6",
-		"allowJs": true,
+		"target": "es5",
+		"allowJs": false,
 		"sourceMap": true,
 		//"declaration": true,
 		//"emitDeclarationOnly": true,

@@ -3,50 +3,52 @@
 import * as $ from 'jquery';
 import help from './genericHelpers';
 import randomColor from 'randomcolor';
-import graphState from './graphState';
+import GraphState from './graphState';
 import GraphImmut from "./GraphImmut/GraphImmut";
+import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 
-export interface mainI {
-    graphState;
+export interface MainI {
+    graphState: GraphState;
     container: HTMLElement;
-    visWeightEdgeEdit: (data, callback) => void;
+    visWeightEdgeEdit: (data: any, callback: Function) => void;
     visOptions: {
         interaction: { hover: boolean };
         manipulation: {
-            addNode: (data, callback) => void;
-            editNode: (data, callback) => void;
-            addEdge: (data, callback?: any) => undefined | void;
-            editEdge: (data, callback) => void;
-            deleteEdge: (data, callback?: any) => void;
-            deleteNode: (data, callback) => void
+            addNode: (data: any, callback: Function) => void;
+            editNode: (data: any, callback: Function) => void;
+            addEdge: (data: any, callback?: Function) => undefined | void;
+            editEdge: (data: any, callback: Function) => void;
+            deleteEdge: (data: any, callback?: Function) => void;
+            deleteNode: (data: any, callback: Function) => void
         }
     };
-    cancelEdit: (callback) => void;
-    saveData: (data, callback, operation, label) => void;
-    nodeLabelIDValidator: (v) => (boolean | string);
+    cancelEdit: (callback: Function) => void;
+    saveData: (data: any, callback: Function, operation: string, label: string) => void;
+    nodeLabelIDValidator: (v: string) => (boolean | string);
     applyColors: () => undefined | void;
-    setData: (data, recalcProps?: boolean, graphChanged?: boolean, rearrangeGraph?: boolean) => void;
-    saveState: () => undefined|void;
+    setData: (data: GraphPlain, recalcProps?: boolean, graphChanged?: boolean, rearrangeGraph?: boolean) => void;
+    saveState: () => undefined | void;
     getStateForSaving: () => {};
     undo: () => void;
     redo: () => void;
     applyState: (undo?: boolean, newState?: any) => void;
     saveStateLocalStorage: () => void;
     shuffleNetworkLayout: () => void;
-    randomizeNetworkLayoutSeed: (network) => void;
-    addNetworkListeners: (network) => void
+    randomizeNetworkLayoutSeed: (network: any) => void;
+    addNetworkListeners: (network: any) => void
 }
 
-let self: mainI = {
-    graphState: graphState,
+const self: MainI = {
+    graphState: GraphState,
     container: document.getElementById('network'),
     // Function used to overwrite the edge edit functionality when weights are active
     visWeightEdgeEdit: (data, callback) => {
         help.showFormModal(($modal, vals) => {
             callback(null);
             $modal.modal("hide");
-            vals = parseFloat(vals[0]);
-            self.graphState.editEdge(data.from.id, data.to.id, vals, parseFloat(data.label));
+            const value = parseFloat(vals[0]);
+            GraphState.editEdge(data.from.id, data.to.id, value, parseFloat(data.label));
         }, "Edit Edge", "Save", [
             {
                 type: "numeric",
@@ -58,18 +60,18 @@ let self: mainI = {
     visOptions: {
         interaction: {hover: true},
         manipulation: {
-            addNode: function (data, callback): void {
-                let $popup = help.makeFormModal("Add Node", "Save", [
+            addNode: (data, callback) => {
+                const $popup = help.makeFormModal("Add Node", "Save", [
                     {
                         type: "html",
-                        initialValue: "<p>Node ID: " + self.graphState.getProperty("vertices") + "</p>"
+                        initialValue: `<p>Node ID: ${GraphState.getPropertyImm("vertices")}</p>`
                     },
-                    {type: "text", label: "Label", initialValue: self.graphState.getProperty("vertices")}
+                    {type: "text", label: "Label", initialValue: GraphState.getPropertyImm("vertices")}
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");
-                    self.saveData(data, callback, "add", $popup.find("input").first().val());
+                    self.saveData(data, callback, "add", $popup.find("input").first().val() as string);
                 }).on("click", ".btn-cancel", () => {
                     $popup.modal("hide");
                     self.cancelEdit(callback);
@@ -78,18 +80,18 @@ let self: mainI = {
                     self.cancelEdit(callback);
                 }).modal("show");
             },
-            editNode: function (data, callback): void {
-                let $popup = help.makeFormModal("Edit Node", "Save", [
+            editNode: (data, callback) => {
+                const $popup = help.makeFormModal("Edit Node", "Save", [
                     {
                         type: "html",
-                        initialValue: "<p>Node ID: " + data.id + "</p>"
+                        initialValue: `<p>Node ID: ${data.id}</p>`
                     },
                     {type: "text", label: "Label", initialValue: data.label}
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");
-                    self.saveData(data, callback, "editNode", $popup.find("input").first().val());
+                    self.saveData(data, callback, "editNode", $popup.find("input").first().val() as string);
                 }).on("click", ".btn-cancel", () => {
                     $popup.modal("hide");
                     self.cancelEdit(callback);
@@ -98,12 +100,12 @@ let self: mainI = {
                     self.cancelEdit(callback);
                 }).modal("show");
             },
-            addEdge: function (data, callback?: any): undefined | void {
-                let apply = function () {
+            addEdge: (data, callback?: any) => {
+                const apply = () => {
                     if (typeof callback === "function") {
                         callback(null);
                     }
-                    self.graphState.addEdge(data.from, data.to);
+                    GraphState.addEdge(data.from, data.to);
                 };
                 if (data.from === data.to) {
                     if (confirm("Do you want to connect the node to itself?")) {
@@ -114,29 +116,29 @@ let self: mainI = {
 
                 apply();
             },
-            editEdge: function (data, callback) {
+            editEdge: (data, callback) => {
                 callback(null);
                 self.visOptions.manipulation.deleteEdge({edges: [data.id]});
                 self.visOptions.manipulation.addEdge(data);
             },
-            deleteEdge: function (data, callback?: any) {
+            deleteEdge: (data, callback?: any) => {
                 if (typeof callback === "function") {
                     callback(null);
                 }
-                data.edges.forEach((v) => {
+                data.edges.forEach((v: any) => {
                     let weight = null;
-                    if (typeof (<any> window.network).body.data.edges._data[v].label !== "undefined") {
-                        weight = parseFloat((<any> window.network).body.data.edges._data[v].label);
+                    if (typeof (window.network as any).body.data.edges._data[v].label !== "undefined") {
+                        weight = parseFloat((window.network as any).body.data.edges._data[v].label);
                     }
 
-                    self.graphState.deleteEdge((<any> window.network).body.edges[v].fromId,
-                        (<any> window.network).body.edges[v].toId, weight);
+                    GraphState.deleteEdge((window.network as any).body.edges[v].fromId,
+                        (window.network as any).body.edges[v].toId, weight);
                 });
             },
-            deleteNode: function (data, callback) {
+            deleteNode: (data, callback) => {
                 callback(null);
-                data.nodes.forEach((v) => {
-                    self.graphState.deleteNode(v);
+                data.nodes.forEach((v: number) => {
+                    GraphState.deleteNode(v);
                 });
             },
         },
@@ -153,36 +155,36 @@ let self: mainI = {
         callback(null);
 
         if (operation === "add") {
-            self.graphState.addNode(data);
+            GraphState.addNode(data);
         }
         else if (operation === "editNode") {
-            self.graphState.editNode(data.id, data.label);
+            GraphState.editNode(data.id, data.label);
         }
     },
 
-    nodeLabelIDValidator: (v) => {
-        if (self.graphState.nodeLabelToID(v) > -1) {
+    nodeLabelIDValidator: (v: string) => {
+        if (GraphState.nodeLabelToID(v) > -1) {
             return true;
         }
         return "Invalid Label or ID";
     },
 
-    applyColors: (): void | undefined => {
+    applyColors: async () => {
         if (window.settings.getOption("direction")) {
             return;
         }
-        let graphColors = self.graphState.getProperty("graphColoring", true);
-        let chromaticNumber = self.graphState.getProperty("Chromatic Number", true);
+        const graphColors = await GraphState.getProperty("graphColoring", true);
+        const chromaticNumber = await GraphState.getProperty("Chromatic Number", true);
 
-        let colors = randomColor({count: chromaticNumber, luminosity: "light"});
-        let G = self.graphState.graph;
-        G.getAllNodes().forEach((v) => {
+        const colors = randomColor({count: chromaticNumber, luminosity: "light"});
+        let G = GraphState.graph;
+        (G.getAllNodes() as NodeImmutPlain[]).forEach((v) => {
             G = G.editNode(v.id, {color: colors[graphColors[v.id]]});
         });
-        self.setData(self.graphState.getGraphData(G), false, false);
+        self.setData(GraphState.getGraphData(G), false, false);
     },
 
-    setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
+    setData: (data: GraphPlain, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
         // Store existing positions in the data if we're supposed to keep the layout
         if (rearrangeGraph) {
             data.nodes.forEach((v) => {
@@ -201,16 +203,16 @@ let self: mainI = {
         if ("weighted" in data) {
             window.settings.changeOption("weights", data.weighted);
         }
-        let directional = window.settings.getOption("direction");
-        let weighted = window.settings.getOption("weights");
+        const directional = window.settings.getOption("direction") as boolean;
+        const weighted = window.settings.getOption("weights") as boolean;
 
-        let g = new GraphImmut(data.nodes, data.edges, directional, weighted);
-        self.graphState.graph = g;
+        const g = new GraphImmut(data.nodes, data.edges, directional, weighted);
+        GraphState.graph = g;
 
         // Set a new random seed so that the layout will be different
         self.randomizeNetworkLayoutSeed(window.network);
-        window.network.setData(self.graphState.getGraphAsDataSet(g));
-        self.graphState.graph = self.graphState.setLocations(window.network.getPositions());
+        window.network.setData(GraphState.getGraphAsDataSet(g));
+        GraphState.graph = GraphState.setLocations(window.network.getPositions());
 
         window.network.disableEditMode();
         window.network.enableEditMode();
@@ -218,31 +220,31 @@ let self: mainI = {
         if (graphChanged) {
             window.ui.printGraphAlgorithms();
             help.printout("");
-            self.graphState.setUpToDate();
-            self.graphState.makeAndPrintProperties(recalcProps);
+            GraphState.setUpToDate();
+            GraphState.makeAndPrintProperties(recalcProps);
         }
 
         self.saveStateLocalStorage();
     },
 
-    saveState: ():void|undefined => {
-        if (self.graphState.graph === null) {
+    saveState: (): void | undefined => {
+        if (GraphState.graph === null) {
             return;
         }
 
-        if (self.graphState.backHistory.length >= self.graphState.maxHistory) {
-            self.graphState.backHistory.shift();
+        if (GraphState.backHistory.length >= GraphState.maxHistory) {
+            GraphState.backHistory.shift();
         }
 
-        self.graphState.backHistory.push(self.getStateForSaving());
-        self.graphState.forwardHistory = [];
+        GraphState.backHistory.push(self.getStateForSaving());
+        GraphState.forwardHistory = [];
         $(".icon-undo").parent().parent().addClass("active");
     },
 
     getStateForSaving: () => {
-        let state = {};
-        Object.keys(self.graphState).forEach((k) => {
-            let v = self.graphState[k];
+        const state: any = {};
+        Object.keys(GraphState).forEach((k: string) => {
+            const v: any = (GraphState as any)[k];
             if (typeof v !== "function") {
                 if (typeof v !== "object") {
                     state[k] = v;
@@ -262,27 +264,27 @@ let self: mainI = {
     },
 
     undo: () => {
-        if (self.graphState.backHistory.length > 0) {
+        if (GraphState.backHistory.length > 0) {
             self.applyState(true);
         }
     },
 
     redo: () => {
-        if (self.graphState.forwardHistory.length > 0) {
+        if (GraphState.forwardHistory.length > 0) {
             self.applyState(false);
         }
     },
 
-    applyState: (undo = true, newState = null) => {
-        let firstLoad = newState !== null;
-        let currentState = self.getStateForSaving();
+    applyState: (undo = true, newState: any = null) => {
+        const firstLoad = newState !== null;
+        const currentState = self.getStateForSaving();
 
         if (!firstLoad) {
             if (undo) {
-                newState = self.graphState.backHistory.pop();
+                newState = GraphState.backHistory.pop();
             }
             else {
-                newState = self.graphState.forwardHistory.pop();
+                newState = GraphState.forwardHistory.pop();
             }
         }
 
@@ -291,46 +293,46 @@ let self: mainI = {
         window.settings.changeOption("direction", newState.graph.isDirected());
         window.settings.changeOption("weights", newState.graph.isWeighted());
 
-        self.graphState.graph = newState.graph;
+        GraphState.graph = newState.graph;
 
-        window.network.setData(self.graphState.getGraphAsDataSet(self.graphState.graph));
+        window.network.setData(GraphState.getGraphAsDataSet(GraphState.graph));
         window.network.disableEditMode();
         window.network.enableEditMode();
 
         window.ui.printGraphAlgorithms();
         help.printout("");
 
-        Object.keys(newState).forEach((k) => {
-            let v = newState[k];
+        Object.keys(newState).forEach((k: string) => {
+            const v = newState[k];
             if (typeof v !== "object") {
-                self.graphState[k] = v;
+                (GraphState as any)[k] = v;
             }
             else if (!k.toLowerCase().includes("history") && k.toLowerCase() !== "graph") {
                 if (k.toLowerCase() === "uptodate") {
-                    Object.keys(self.graphState[k]).forEach((oldKey) => {
-                        self.graphState[k][oldKey].upToDate = v[oldKey].upToDate;
+                    Object.keys((GraphState as any)[k]).forEach((oldKey) => {
+                        (GraphState as any)[k][oldKey].upToDate = v[oldKey].upToDate;
                     });
                 }
                 else {
-                    self.graphState[k] = $.extend(true, self.graphState[k], v);
+                    (GraphState as any)[k] = $.extend(true, (GraphState as any)[k], v);
                 }
             }
         });
 
-        self.graphState.makeAndPrintProperties();
+        GraphState.makeAndPrintProperties();
         if (undo && !firstLoad) {
             $(".icon-redo").parent().parent().addClass("active");
-            if (self.graphState.backHistory.length === 0) {
+            if (GraphState.backHistory.length === 0) {
                 $(".icon-undo").parent().parent().removeClass("active");
             }
-            self.graphState.forwardHistory.push(currentState);
+            GraphState.forwardHistory.push(currentState);
         }
         else if (!undo && !firstLoad) {
             $(".icon-undo").parent().parent().addClass("active");
-            if (self.graphState.forwardHistory.length === 0) {
+            if (GraphState.forwardHistory.length === 0) {
                 $(".icon-redo").parent().parent().removeClass("active");
             }
-            self.graphState.backHistory.push(currentState);
+            GraphState.backHistory.push(currentState);
         }
 
         self.saveStateLocalStorage();
@@ -344,13 +346,13 @@ let self: mainI = {
 
     shuffleNetworkLayout: () => {
         self.setData({
-            nodes: self.graphState.graph.getAllNodes(),
-            edges: self.graphState.graph.getAllEdges()
+            nodes: GraphState.graph.getAllNodes() as NodeImmutPlain[],
+            edges: GraphState.graph.getAllEdges() as EdgeImmutPlain[]
         }, false, false, true);
     },
 
     randomizeNetworkLayoutSeed: (network) => {
-        let r = Math.round(Math.random() * 1000000);
+        const r = Math.round(Math.random() * 1000000);
         network.layoutEngine.randomSeed = r;
         network.layoutEngine.initialRandomSeed = r;
     },
@@ -368,12 +370,12 @@ let self: mainI = {
 
         // Save locations of nodes after dragging
         network.on("dragEnd", () => {
-            self.graphState.graph = self.graphState.setLocations(network.getPositions());
+            GraphState.graph = GraphState.setLocations(network.getPositions());
             self.saveStateLocalStorage(); // Save the new locations as part of the state
         });
 
         // Delete nodes/edges when hit "Delete"
-        let lastNetworkClickEvent = null;
+        let lastNetworkClickEvent: any = null;
         network.on('click', (event) => {
             lastNetworkClickEvent = event;
         });
@@ -393,11 +395,11 @@ let self: mainI = {
         });
 
         // Undo/Redo keyboard commands
-        $(document).keydown((e) => {
-            if ((e.which === 89 && e.ctrlKey) || (e.which === 90 && e.ctrlKey && e.shiftKey)) {
+        $(document).on("keydown", (e) => {
+            if ((e.key.toLowerCase() === 'y' && e.ctrlKey) || (e.key.toLowerCase() === 'z' && e.ctrlKey && e.shiftKey)) {
                 self.redo();
             }
-            else if (e.which === 90 && e.ctrlKey) {
+            else if (e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 self.undo();
             }
         });

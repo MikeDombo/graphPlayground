@@ -1,8 +1,8 @@
 "use strict";
 
-import { List } from 'immutable';
-import { default as NodeImmut, NodeImmutPlain} from './NodeImmut';
-import { default as EdgeImmut, EdgeImmutPlain } from './EdgeImmut';
+import {List} from 'immutable';
+import {default as NodeImmut, NodeImmutPlain} from './NodeImmut';
+import {default as EdgeImmut, EdgeImmutPlain} from './EdgeImmut';
 
 interface NodeMapping {
     [key: number]: number
@@ -56,7 +56,7 @@ const genericNodesToImmutNodes = (nodes: any): boolean | { nodes: Readonly<List<
     }
 
     let newNodes: List<NodeImmut> = List();
-    let nodeMap: NodeMapping = {};
+    const nodeMap: NodeMapping = {};
 
     if (typeof nodes === "number") {
         // Create the nodes
@@ -68,7 +68,7 @@ const genericNodesToImmutNodes = (nodes: any): boolean | { nodes: Readonly<List<
     else if (typeof nodes === 'object') {
         let nodeNum = 0;
         nodes.forEach((n: any) => {
-            let id = nodeNum++;
+            const id = nodeNum++;
             let label = null;
             let extraAttrs = null;
 
@@ -109,14 +109,16 @@ export default class GraphImmut {
     private readonly edges: Readonly<List<EdgeImmut>>;
     private readonly numEdges: Readonly<number>;
 
-    constructor(nodes: number | List<NodeImmut>, edges: null | List<EdgeImmut> | EdgeImmutPlain[] = null, directed = false, weighted = false) {
+    constructor(nodes: number | List<NodeImmut> | NodeImmutPlain[],
+                edges: null | List<EdgeImmut> | EdgeImmutPlain[] = null,
+                directed = false, weighted = false) {
         this.directed = Object.freeze(directed);
         this.weighted = Object.freeze(weighted);
         let nodeMap = {};
 
         // Make Nodes
         if (typeof nodes === "number" || (typeof nodes === "object" && !(nodes instanceof List))) {
-            let n = genericNodesToImmutNodes(nodes);
+            const n = genericNodesToImmutNodes(nodes);
             if (typeof n !== "object") {
                 throw new Error("Unable to parse node input!");
             }
@@ -124,7 +126,7 @@ export default class GraphImmut {
             nodeMap = n.map;
         }
         else if (nodes instanceof List) {
-            this.nodes = nodes;
+            this.nodes = nodes as List<NodeImmut>;
         }
         else {
             throw new Error("Illegal type of 'node' input to GraphImmut constructor");
@@ -134,14 +136,14 @@ export default class GraphImmut {
 
         // If we are given edges, add them to the graph
         if (edges !== null && typeof edges === "object" && !(edges instanceof List)) {
-            let e = genericEdgesToImmutEdges(edges, nodeMap);
+            const e = genericEdgesToImmutEdges(edges, nodeMap);
             if (typeof e !== "object") {
                 throw new Error("Unable to parse Edge input");
             }
             this.edges = e;
         }
         else if (edges instanceof List) {
-            this.edges = <List<EdgeImmut>> edges;
+            this.edges = edges as List<EdgeImmut>;
         }
         else {
             this.edges = List();
@@ -155,7 +157,7 @@ export default class GraphImmut {
     }
 
     alignNodeIDs(alignTo = 0): GraphImmut {
-        let nodeMap: NodeMapping = {};
+        const nodeMap: NodeMapping = {};
         let nodeCount = alignTo;
         let newNodes: List<NodeImmut> = List();
         this.nodes.forEach((v) => {
@@ -176,8 +178,8 @@ export default class GraphImmut {
         return new GraphImmut(newNodes, newEdges, this.directed, this.weighted);
     }
 
-    getNode(id: number, rich = false):NodeImmut|NodeImmutPlain|boolean {
-        if(id >= this.numNodes){
+    getNode(id: number, rich = false): NodeImmut | NodeImmutPlain | boolean {
+        if (id >= this.numNodes) {
             return false;
         }
         if (rich) {
@@ -191,12 +193,12 @@ export default class GraphImmut {
             data = {};
         }
 
-        let id = this.numNodes;
+        const id = this.numNodes;
         if (!("label" in data)) {
             data.label = id.toString();
         }
 
-        let extraAttrs = filterNodeExtraAttr(data);
+        const extraAttrs = filterNodeExtraAttr(data);
 
         return new GraphImmut(this.nodes.set(id, new NodeImmut(id, data.label, extraAttrs)),
             this.edges, this.directed, this.weighted);
@@ -207,11 +209,11 @@ export default class GraphImmut {
             return false;
         }
 
-        let extraAttrs = filterNodeExtraAttr(data);
+        const extraAttrs = filterNodeExtraAttr(data);
         if (!("label" in data)) {
-            data.label = (<NodeImmut>this.getNode(id, true)).getLabel();
+            data.label = (this.getNode(id, true) as NodeImmut).getLabel();
         }
-        return new GraphImmut(this.nodes.set(id, (<NodeImmut>this.getNode(id, true)).editNode(data.label, extraAttrs)),
+        return new GraphImmut(this.nodes.set(id, (this.getNode(id, true) as NodeImmut).editNode(data.label, extraAttrs)),
             this.edges, this.directed, this.weighted);
     }
 
@@ -221,11 +223,11 @@ export default class GraphImmut {
             return false;
         }
 
-        let nodeMap: NodeMapping = {}; // Map for old IDs to new ones since we're deleting an entry
+        const nodeMap: NodeMapping = {}; // Map for old IDs to new ones since we're deleting an entry
 
         // Remove it from the node list
         let nodeCount = 0;
-        let newNodes: List<NodeImmut> = <List<NodeImmut>> this.nodes
+        const newNodes: List<NodeImmut> = this.nodes
             .filter((n) => {
                 if (n.getID() === id) {
                     nodeMap[n.getID()] = -1;
@@ -243,16 +245,16 @@ export default class GraphImmut {
                 }
 
                 return new NodeImmut(nodeMap[node.getID()], label, node.getAllAttributes());
-            });
+            }) as List<NodeImmut>;
 
         // Remap edges
-        let newEdges: Immutable.List<EdgeImmut> = <List<EdgeImmut>> this.edges
+        const newEdges: List<EdgeImmut> = this.edges
             .filter((edge) => {
                 return !(edge.getFrom() === id || edge.getTo() === id);
             })
             .map((edge) => {
                 return new EdgeImmut(nodeMap[edge.getFrom()], nodeMap[edge.getTo()], edge.getWeight());
-            });
+            }) as List<EdgeImmut>;
 
         return new GraphImmut(newNodes, newEdges, this.directed, this.weighted);
     }
@@ -262,17 +264,17 @@ export default class GraphImmut {
             weight = 1; // Ensure that edge weights are 1 if this is an unweighted graph
         }
 
-        let newEdges = this.edges.push(new EdgeImmut(from, to, parseFloat(weight)));
+        const newEdges = this.edges.push(new EdgeImmut(from, to, parseFloat(weight)));
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
 
-    deleteEdge(from: number, to: number, weight: any = null, deleteAll: boolean = true): GraphImmut {
+    deleteEdge(from: number, to: number, weight: any = null, deleteAll = true): GraphImmut {
         if (weight !== null) {
             weight = parseFloat(weight);
         }
 
         let foundOneEdge = false;
-        let newEdges: List<EdgeImmut> = <List<EdgeImmut>> this.edges.filter((edge) => {
+        const newEdges: List<EdgeImmut> = this.edges.filter((edge) => {
             // If we're not deleting everything and we have found one edge, then do not filter anymore
             if (foundOneEdge && !deleteAll) {
                 return true;
@@ -293,7 +295,7 @@ export default class GraphImmut {
             }
 
             return true;
-        });
+        }) as List<EdgeImmut>;
 
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
@@ -360,7 +362,7 @@ export default class GraphImmut {
     }
 
     getAllOutDegrees(): number[] {
-        let degrees: number[] = [];
+        const degrees: number[] = [];
         this.edges.forEach((edge) => {
             if (edge.getFrom() in degrees) {
                 degrees[edge.getFrom()]++;
@@ -374,15 +376,15 @@ export default class GraphImmut {
     }
 
     asWeighted(): GraphImmut {
-        return new GraphImmut(this.nodes, <List<EdgeImmut>> this.edges.map((edge) => {
+        return new GraphImmut(this.nodes, this.edges.map((edge) => {
             return edge.editEdge(1);
-        }), this.directed, true);
+        }) as List<EdgeImmut>, this.directed, true);
     }
 
     asUnweighted(): GraphImmut {
-        return new GraphImmut(this.nodes, <List<EdgeImmut>> this.edges.map((edge) => {
+        return new GraphImmut(this.nodes, this.edges.map((edge) => {
             return edge.editEdge(1);
-        }), this.directed, false);
+        }) as List<EdgeImmut>, this.directed, false);
     }
 
     asDirected(doubleEdges = false): GraphImmut {
@@ -400,7 +402,7 @@ export default class GraphImmut {
 
     asUndirected(): GraphImmut {
         let newEdges: List<EdgeImmut> = List();
-        let addedEdges: { [key: string]: null } = {};
+        const addedEdges: { [key: string]: null } = {};
 
         this.edges.forEach((edge) => {
             let from = edge.getFrom();
@@ -409,8 +411,8 @@ export default class GraphImmut {
                 from = to;
                 to = edge.getFrom();
             }
-            if (!(from + "_" + to in addedEdges)) {
-                addedEdges[from + "_" + to] = null;
+            if (!(`${from}_${to}` in addedEdges)) {
+                addedEdges[`${from}_${to}`] = null;
                 newEdges = newEdges.push(new EdgeImmut(from, to, edge.getWeight()));
             }
         });
@@ -438,7 +440,7 @@ export default class GraphImmut {
     }
 
     getNodeAdjacency(id: number): number[] {
-        let adj: number[] = [];
+        const adj: number[] = [];
         this.edges.forEach((edge) => {
             if (edge.getFrom() === id) {
                 adj.push(edge.getTo());
@@ -452,7 +454,7 @@ export default class GraphImmut {
     }
 
     getFullAdjacency(): number[][] {
-        let adj: number[][] = [];
+        const adj: number[][] = [];
         this.nodes.forEach((n) => {
             adj[n.getID()] = this.getNodeAdjacency(n.getID());
         });
@@ -465,7 +467,7 @@ export default class GraphImmut {
     }
 
     getEdgesBetween(id1: number, id2: number): EdgeImmut[] {
-        let edgeList: EdgeImmut[] = [];
+        const edgeList: EdgeImmut[] = [];
         this.edges.forEach((edge) => {
             if (!this.directed && edge.getFrom() === id2 && edge.getTo() === id1) {
                 edgeList.push(edge);
@@ -491,29 +493,29 @@ export default class GraphImmut {
     }
 
     // Take a multigraph and reduce all multiple edges to a single edge, weighted using the reducer
-    reduceMultiGraph(reducer: Function, initialValue: any): GraphImmut {
+    reduceMultiGraph(reducer: Function, initialValue?: any): GraphImmut {
         if (typeof initialValue === "undefined") {
             initialValue = 0;
         }
 
-        let multiEdges: EdgeImmutPlain[] = [];
+        const multiEdges: EdgeImmutPlain[] = [];
         this.nodes.forEach((node) => {
             // If we have duplicates
-            let adj = this.getNodeAdjacency(node.getID());
-            let uniques = new Set(adj);
+            const adj = this.getNodeAdjacency(node.getID());
+            const uniques = new Set(adj);
             if (uniques.size < adj.length) {
                 uniques.forEach((to) => {
-                    let newWeight = this.getEdgesBetween(node.getID(), to).reduce((acc, edge) => {
+                    const newWeight = this.getEdgesBetween(node.getID(), to).reduce((acc, edge) => {
                         return reducer(acc, edge.getWeight());
                     }, initialValue);
 
-                    multiEdges.push({from: node.getID(), to: to, weight: parseFloat(newWeight)});
+                    multiEdges.push({from: node.getID(), to, weight: parseFloat(newWeight)});
                 });
             }
         });
 
         // Remove all multigraph edges and replace them with single new edges
-        let newEdges = <List<EdgeImmut>> this.edges.filter((edge) => {
+        let newEdges = this.edges.filter((edge) => {
             let keep = true;
             multiEdges.forEach((duplicateEdge) => {
                 if (edge.getFrom() === duplicateEdge.from && edge.getTo() === duplicateEdge.to) {
@@ -522,7 +524,7 @@ export default class GraphImmut {
             });
 
             return keep;
-        });
+        }) as List<EdgeImmut>;
         multiEdges.forEach((edge) => {
             newEdges = newEdges.push(new EdgeImmut(edge.from, edge.to, edge.weight));
         });

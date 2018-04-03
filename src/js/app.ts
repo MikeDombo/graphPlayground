@@ -2,16 +2,16 @@
 
 import 'bootstrap';
 import * as Raven from 'raven-js';
-import { Network } from 'vis/index-network';
-import { default as main, mainI } from './main';
-import { default as settings, settingsI } from './settings';
-import { default as UI, UIInteractionsI }from './UIInteractions';
+import {Network} from 'vis/index-network';
+import {default as main, MainI} from './main';
+import {default as settings, SettingsI} from './settings';
+import {default as UI, UIInteractionsI} from './UIInteractions';
 
 declare global {
     interface Window {
-        main: mainI;
+        main: MainI;
         network: Network;
-        settings: settingsI;
+        settings: SettingsI;
         ui: UIInteractionsI,
         Raven: Raven.RavenStatic
     }
@@ -32,7 +32,7 @@ settings.loadSettings();
 
 let loadDefault = true;
 if (settings.checkForLocalStorage()) {
-    let s:any = localStorage.getItem("graphPlayground.lastState");
+    let s: any = localStorage.getItem("graphPlayground.lastState");
     if (s !== null) {
         s = JSON.parse(s);
         if ("graph" in s && "nodes" in s.graph) {
@@ -43,8 +43,8 @@ if (settings.checkForLocalStorage()) {
 }
 if (loadDefault) {
     (async () => {
-        let predefined = await import("./predefinedGraphs");
-        main.setData(predefined.default.Petersen(), false, true, true);
+        const predefined = (await import("./predefinedGraphs")).default;
+        main.setData(predefined.Petersen(), false, true, true);
     })();
 }
 

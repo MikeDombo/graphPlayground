@@ -3,40 +3,41 @@
 import gHelp from './graphHelpers';
 import help from './genericHelpers';
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 
 const petersenEdges = help.deepFreeze([
-    {from: 1, to: 2},
-    {from: 2, to: 3},
-    {from: 3, to: 4},
-    {from: 4, to: 5},
-    {from: 5, to: 1},
+    {from: 1, to: 2, weight: 1},
+    {from: 2, to: 3, weight: 1},
+    {from: 3, to: 4, weight: 1},
+    {from: 4, to: 5, weight: 1},
+    {from: 5, to: 1, weight: 1},
 
-    {from: 6, to: 8},
-    {from: 7, to: 9},
-    {from: 7, to: 10},
-    {from: 8, to: 10},
-    {from: 9, to: 6},
+    {from: 6, to: 8, weight: 1},
+    {from: 7, to: 9, weight: 1},
+    {from: 7, to: 10, weight: 1},
+    {from: 8, to: 10, weight: 1},
+    {from: 9, to: 6, weight: 1},
 
-    {from: 1, to: 6},
-    {from: 2, to: 7},
-    {from: 3, to: 8},
-    {from: 4, to: 9},
-    {from: 5, to: 10}
-]);
+    {from: 1, to: 6, weight: 1},
+    {from: 2, to: 7, weight: 1},
+    {from: 3, to: 8, weight: 1},
+    {from: 4, to: 9, weight: 1},
+    {from: 5, to: 10, weight: 1}
+]) as EdgeImmutPlain[];
 
 const konigsbergEdges = help.deepFreeze([
-    {from: 1, to: 2},
-    {from: 2, to: 3},
-    {from: 2, to: 4},
-    {from: 3, to: 4},
-    {from: 3, to: 4},
-    {from: 4, to: 1},
-    {from: 4, to: 1},
-]);
+    {from: 1, to: 2, weight: 1},
+    {from: 2, to: 3, weight: 1},
+    {from: 2, to: 4, weight: 1},
+    {from: 3, to: 4, weight: 1},
+    {from: 3, to: 4, weight: 1},
+    {from: 4, to: 1, weight: 1},
+    {from: 4, to: 1, weight: 1},
+]) as EdgeImmutPlain[];
 
 const completeGraph = (V: number): Readonly<GraphPlain> => {
-    let edges = [];
-    let nodes = [];
+    const edges = [];
+    const nodes = [];
 
     for (let i = 0; i < V; i++) {
         nodes.push({id: i, label: i.toString()});
@@ -45,29 +46,30 @@ const completeGraph = (V: number): Readonly<GraphPlain> => {
         }
     }
 
-    return <Readonly<GraphPlain>> help.deepFreeze({nodes: nodes, edges: edges, directed: false, weighted: false});
+    return help.deepFreeze({nodes, edges, directed: false, weighted: false} as GraphPlain);
 };
 
 const hypercubeGraph = (D: number): Readonly<GraphPlain> => {
-    let edges = [];
-    let nodes = [];
+    const edges: EdgeImmutPlain[] = [];
+    const nodes: NodeImmutPlain[] = [];
 
-    let numNodes = Math.pow(2, D);
+    const numNodes = Math.pow(2, D);
 
-    let pad = (str, max) => {
+    const pad = (str: string, max: number): string => {
         return str.length < max ? pad("0" + str, max) : str;
     };
 
     const generateDifferByOne = (input: number, numBits: number) => {
-        let inputBits = pad((input).toString(2), numBits).split("").reverse();
-        let allDiffer = [];
+        const inputBits = pad((input).toString(2), numBits).split("").reverse();
+        const allDiffer = [];
 
         // 1 bit difference from input, increasing order, none less than input
         for (let b = 0; b < numBits; b++) {
             if (inputBits[b] === "0") {
-                let newNum = inputBits.slice();
+                const newNum = inputBits.slice();
                 newNum[b] = "1";
-                allDiffer.push(parseInt(newNum.reverse().join(""), 2));
+                newNum.reverse();
+                allDiffer.push(parseInt(newNum.join(""), 2));
             }
         }
 
@@ -77,26 +79,26 @@ const hypercubeGraph = (D: number): Readonly<GraphPlain> => {
     for (let i = 0; i < numNodes; i++) {
         nodes.push({id: i, label: pad(i.toString(2), D)});
         generateDifferByOne(i, D).forEach((j) => {
-            edges.push({from: i, to: j});
+            edges.push({from: i, to: j, weight: 1});
         });
     }
 
-    return <Readonly<GraphPlain>> help.deepFreeze({nodes: nodes, edges: edges, directed: false, weighted: false});
+    return help.deepFreeze({nodes, edges, directed: false, weighted: false} as GraphPlain);
 };
 
-const newCustomGraph = (V: number, directed: boolean = false, weighted: boolean = false): Readonly<GraphPlain> => {
-    let nodes = [];
+const newCustomGraph = (V: number, directed = false, weighted = false): Readonly<GraphPlain> => {
+    const nodes = [];
     for (let i = 0; i < V; i++) {
         nodes.push({id: i, label: i.toString()});
     }
 
-    return <Readonly<GraphPlain>> help.deepFreeze({nodes: nodes, edges: [], directed: directed, weighted: weighted});
+    return help.deepFreeze({nodes, edges: [], directed, weighted} as GraphPlain);
 };
 
-export interface predefinedGraphsI {
+export interface PredefinedGraphsI {
     graphNames: string[];
-    Petersen: () => GraphPlain;
-    Konigsberg: () => GraphPlain;
+    Petersen: () => Readonly<GraphPlain>;
+    Konigsberg: () => Readonly<GraphPlain>;
     Complete: () => void;
     Hypercube: () => void;
     Custom: () => void
@@ -106,13 +108,13 @@ const self = {
     graphNames: help.deepFreeze(["Petersen", "Konigsberg", "Complete", "Hypercube"]),
     Petersen: () => (help.deepFreeze({
         edges: petersenEdges,
-        nodes: gHelp.interpolateNodesFromEdges(<EdgeImmutPlain[]> petersenEdges),
+        nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
         directed: false,
         weighted: false,
     })),
     Konigsberg: () => (help.deepFreeze({
         edges: konigsbergEdges,
-        nodes: gHelp.interpolateNodesFromEdges(<EdgeImmutPlain[]> konigsbergEdges),
+        nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
         directed: false,
         weighted: false,
     })),

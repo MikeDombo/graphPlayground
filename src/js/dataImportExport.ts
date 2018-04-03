@@ -3,12 +3,17 @@
 import * as $ from 'jquery';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
+import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import GraphState from "./graphState";
 
-let self = {
+const exportedTextSelector = "#exportedText";
+
+const self = {
     importByString: (string: string, format: string): void => {
         if (format.toLowerCase() === "json") {
             try {
-                let n = JSON.parse(string);
+                const n = JSON.parse(string);
                 if ("nodes" in n && "edges" in n) {
                     window.network.setData({}); // Clear out the existing network in order to import the proper
                     // locations
@@ -20,16 +25,15 @@ let self = {
                 }
             }
             catch (err) {
-                help.showSimpleModal("JSON Parse Error", "<p>There was an error parsing your input as JSON.</p>"
-                    + "<pre>" + err + "</pre>");
+                help.showSimpleModal("JSON Parse Error", `<p>There was an error parsing your input as JSON.</p><pre>${err}</pre>`);
             }
         }
         else if (format.toLowerCase() === "dimacs") {
-            let lines = string.split(/\r?\n/);
-            let graph = null;
+            const lines = string.split(/\r?\n/);
+            let graph: GraphImmut = null;
             let error = false;
             lines.forEach((l) => {
-                let vals = l.split(/\s+/);
+                const vals = l.split(/\s+/);
                 if (vals[0].toLowerCase() === "p") {
                     if (vals[1].toLowerCase() !== "edge") {
                         help.showSimpleModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +
@@ -50,7 +54,7 @@ let self = {
             }
 
             if (!error) {
-                let d = window.main.graphState.getGraphData(graph);
+                const d: GraphPlain = GraphState.getGraphData(graph);
                 d.nodes.forEach((v) => {
                     v.label = v.id.toString();
                 });
@@ -76,10 +80,10 @@ let self = {
         help.showFormModal(($modal, values) => {
                 $modal.modal("hide");
 
-                let files = values[0];
+                const files = values[0];
                 if (files.length === 1) {
-                    let file = files[0];
-                    let reader = new FileReader();
+                    const file = files[0];
+                    const reader = new FileReader();
                     reader.onload = function (event: any) {
                         self.importByString(event.target.result, help.getFileExtension(file.name));
                     };
@@ -89,7 +93,7 @@ let self = {
             }, "Import Graph From File", "Import",
             [{
                 type: "file", label: "Upload File", validationFunc: (val, $files) => {
-                    let files = (<any> $files.get(0)).files;
+                    const files = ($files.get(0) as any).files;
                     if (files.length >= 1) {
                         return true;
                     }
@@ -98,7 +102,7 @@ let self = {
             }]);
     },
 
-    makeExportFileModal: () => {
+    makeExportFileModal: (): void => {
         help.showFormModal(null, "Export Graph To File", null,
             [{
                 type: "button",
@@ -126,7 +130,7 @@ let self = {
             ], null, false);
     },
 
-    makeExportTextModal: () => {
+    makeExportTextModal: (): void => {
         help.showFormModal(null, "Export Graph To Text", null,
             [{
                 type: "button",
@@ -156,7 +160,7 @@ let self = {
                         " min-height:400px; white-space:nowrap; margin-top: 1rem;"
                     },
                     onclick: () => {
-                        $("#exportedText").select();
+                        $(exportedTextSelector).trigger("select");
                         document.execCommand("copy");
                     }, id: "exportedText"
                 }
@@ -165,7 +169,7 @@ let self = {
             }, false);
     },
 
-    exportToFile: (format) => {
+    exportToFile: (format: string): void => {
         if (format.toLowerCase() === "json") {
             self.downloadFile("graph.json", self.getDataAsJSON());
         }
@@ -174,42 +178,42 @@ let self = {
         }
     },
 
-    exportToText: (format) => {
+    exportToText: (format: string): void => {
         if (format.toLowerCase() === "json") {
-            $("#exportedText").text(JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2));
+            $(exportedTextSelector).text(JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2));
         }
         else if (format.toLowerCase() === "dimacs") {
-            $("#exportedText").text(self.getDataAsDIMACS());
+            $(exportedTextSelector).text(self.getDataAsDIMACS());
         }
     },
 
-    getDataAsJSON: () => {
-        let d = window.main.graphState.getGraphData(window.main.graphState.graph);
-        let nodeKeys = ["id", "label", "color", "x", "y"];
-        let edgeKeys = ["from", "to", "weight"];
-        d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys);
-        d.edges = help.keepOnlyKeys(d.edges, edgeKeys);
+    getDataAsJSON: (): string => {
+        const d = GraphState.getGraphData(GraphState.graph);
+        const nodeKeys = ["id", "label", "color", "x", "y"];
+        const edgeKeys = ["from", "to", "weight"];
+        d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys) as NodeImmutPlain[];
+        d.edges = help.keepOnlyKeys(d.edges, edgeKeys) as EdgeImmutPlain[];
 
         return JSON.stringify(d);
     },
 
-    getDataAsDIMACS: () => {
+    getDataAsDIMACS: (): string => {
         // If I add direction, DIMACS cannot be used, it only works for undirected graphs
-        let g = window.main.graphState.getGraphData();
-        let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground --" +
-            " https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
+        const g = GraphState.getGraphData();
+        let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground " +
+            "-- https://md100play.github.io/graphPlayground -- https://mikedombrowski.com";
 
-        let adj = window.main.graphState.graph.getFullAdjacency();
-        adj = adj.filter((v) => {
+        let adj = GraphState.graph.getFullAdjacency();
+        adj = adj.filter((v: number[]) => {
             return v.length !== 0;
         });
 
-        let nodes = [];
-        adj.forEach((v, i) => {
+        const nodes: number[] = [];
+        adj.forEach((v: number[], i: number) => {
             if (nodes.indexOf(i + 1) === -1) {
                 nodes.push(i + 1);
             }
-            v.forEach((n) => {
+            v.forEach((n: number) => {
                 if (nodes.indexOf(n + 1) === -1) {
                     nodes.push(n + 1);
                 }
@@ -218,29 +222,29 @@ let self = {
 
         let edgeCount = 0;
         let edgeText = "";
-        g.edges.forEach((v) => {
-            edgeText += "e " + (v.from + 1) + " " + (v.to + 1) + "\n";
+        g.edges.forEach((v: EdgeImmutPlain) => {
+            edgeText += `e ${v.from + 1} ${v.to + 1}`;
             edgeCount++;
         });
         edgeText = edgeText.trim();
 
-        text += "p edge " + nodes.length + " " + edgeCount + "\n";
+        text += `p edge ${nodes.length} ${edgeCount}`;
         return text + edgeText;
     },
 
-    downloadFile: (filename, text) => {
-        let blob = new Blob([text], {type: 'text/plain'});
+    downloadFile: (filename: string, text: string): void => {
+        const blob = new Blob([text], {type: 'text/plain'});
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveBlob(blob, filename);
         }
         else {
-            let a = window.document.createElement('a');
+            const a = window.document.createElement('a');
             a.href = window.URL.createObjectURL(blob);
             a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(<any> blob);
+            window.URL.revokeObjectURL(blob as any);
         }
     },
 };

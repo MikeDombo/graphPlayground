@@ -1,7 +1,7 @@
 "use strict";
 
 export default class SpanningTree {
-    private id: number[];
+    private readonly id: number[];
 
     constructor(V: number) {
         this.id = [];
@@ -11,8 +11,8 @@ export default class SpanningTree {
     }
 
     union(v: number, w: number) {
-        let q = this.root(v);
-        let p = this.root(w);
+        const q = this.root(v);
+        const p = this.root(w);
 
         if (p !== q) {
             this.id[p] = q;

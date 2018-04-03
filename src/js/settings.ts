@@ -1,28 +1,38 @@
 "use strict";
+import GraphState from './graphState';
 
-export interface settingsI {
-    defaults: { nodePhysics: boolean; direction: boolean; weights: boolean };
-    current: {};
+interface SettingsList {
+    nodePhysics: boolean;
+    direction: boolean;
+    weights: boolean;
+
+    [index: string]: boolean
+}
+
+export interface SettingsI {
+    defaults: SettingsList;
+    current: any;
     checkForLocalStorage: () => (boolean);
     saveSettings: () => void;
     loadSettings: () => void;
     setAll: () => void;
-    changeOption: (option, value) => void;
-    getOption: (option) => (any);
+    changeOption: (option: string, value: string | boolean) => void;
+    getOption: (option: string) => string | boolean;
     resetToDefault: () => void
 }
 
-let self = {
+const self: SettingsI = {
     defaults: {
         nodePhysics: true,
         direction: false,
         weights: false
-    },
-    current: {},
+    } as SettingsList,
+
+    current: {} as any,
 
     checkForLocalStorage: () => {
         try {
-            let x = '__storage_test__';
+            const x = '__storage_test__';
             localStorage.setItem(x, x);
             localStorage.removeItem(x);
             return true;
@@ -49,8 +59,8 @@ let self = {
     },
 
     setAll: () => {
-        window.network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
-        window.network.setOptions({edges: {arrows: {to: <boolean> self.getOption("direction")}}});
+        window.network.setOptions({nodes: {physics: self.getOption("nodePhysics") as boolean}});
+        window.network.setOptions({edges: {arrows: {to: self.getOption("direction") as boolean}}});
         if (self.getOption("weights")) {
             window.network.setOptions({
                 manipulation: {
@@ -65,27 +75,27 @@ let self = {
         }
     },
 
-    changeOption: (option, value) => {
+    changeOption: (option: string, value: string | boolean): void => {
         self.current[option] = value;
         self.saveSettings();
         self.setAll();
     },
 
-    getOption: (option) => {
+    getOption: (option: string): string | boolean => {
         if (option in self.current) {
             return self.current[option];
         }
         return self.defaults[option];
     },
 
-    resetToDefault: () => {
+    resetToDefault: (): void => {
         self.current = {};
         self.saveSettings();
         self.setAll();
 
         // Reset graph to just a plain graph. Not sure if this should actually happen or not.
-        let G = window.main.graphState.graph.asChangedDirectedWeighted(self.defaults.direction, self.defaults.weights);
-        window.main.setData(window.main.graphState.getGraphData(G));
+        const G = GraphState.graph.asChangedDirectedWeighted(self.defaults.direction, self.defaults.weights);
+        window.main.setData(GraphState.getGraphData(G));
     }
 };
 

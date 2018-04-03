@@ -1,12 +1,12 @@
 "use strict";
 
-import { EdgeImmutPlain } from "./GraphImmut/EdgeImmut";
-import { NodeImmutPlain } from "./GraphImmut/NodeImmut";
+import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 
 export default {
-    findVertexDegreesDirectional: (adjacencyMatrix: Array<Array<number>>): Array<{in: number; out: number;}> => {
+    findVertexDegreesDirectional: (adjacencyMatrix: Array<Array<number>>): Array<{ in: number; out: number; }> => {
         // Adjacency stores IDs of edges TO
-        let degrees = [];
+        const degrees = [];
         adjacencyMatrix.forEach((v, i) => {
             if (i in degrees) {
                 degrees[i].out += v.length;
@@ -28,7 +28,7 @@ export default {
     },
 
     interpolateNodesFromEdges: (edges: EdgeImmutPlain[]): Array<NodeImmutPlain> => {
-        let nodes = [];
+        const nodes = [];
         edges.forEach((v) => {
             nodes[v.from] = {id: v.from, label: "" + v.from};
             nodes[v.to] = {id: v.to, label: "" + v.to};

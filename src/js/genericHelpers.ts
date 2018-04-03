@@ -1,52 +1,65 @@
 "use strict";
 
 import * as $ from 'jquery';
-import {DataSet} from "vis";
 
-declare interface modalFormRow {
+declare interface ModalFormRow {
     type: string;
     label?: string;
     initialValue?: any;
     id?: string | number;
     extraAttrs?: any;
-    validationFunc?: (value?: any, container?: JQuery<HTMLElement>) => boolean|string;
+    validationFunc?: (value?: any, container?: JQuery) => boolean | string;
     clickDismiss?: boolean;
     onclick?: (...args: any[]) => void;
     optionText?: any[];
     optionValues?: any[];
 }
 
-let self = {
-    deepFreeze: (o: any): Readonly<any> => {
+declare interface BasicMapType {
+    class: string;
+    id: string;
+    value: any,
+
+    [key: number]: any,
+
+    [key: string]: any
+}
+
+const defaultCancelCb = ($modal) => {
+    $modal.modal("hide");
+};
+
+const self = {
+    deepFreeze: <T>(o: T): Readonly<T> => {
         Object.freeze(o);
 
-        Object.getOwnPropertyNames(o).forEach(prop => {
-            if (o.hasOwnProperty(prop) && o[prop] !== null
-                && (typeof o[prop] === "object" || typeof o[prop] === "function")
-                && !Object.isFrozen(o[prop])) {
-                self.deepFreeze(o[prop]);
+        Object.getOwnPropertyNames(o).forEach((prop: string | number) => {
+            if (o.hasOwnProperty(prop) && (o as any)[prop] !== null
+                && (typeof (o as any)[prop] === "object" || typeof (o as any)[prop] === "function")
+                && !Object.isFrozen((o as any)[prop])) {
+                self.deepFreeze((o as any)[prop]);
             }
         });
 
         return o;
     },
 
-    sort: (arr: any[], compareFunction: (a: any, b: any) => number): any[] => {
+    sort: <T>(arr: T[], compareFunction: (a: any, b: any) => number): T[] => {
         return [...arr].sort(compareFunction);
     },
 
-    datasetToArray: (ds: DataSet<any>, key: string): Readonly<any> => {
-        let r = [];
+    datasetToArray: (ds: any, key: string): Readonly<any[]> => {
+        const r: any[] = [];
         ds.forEach((v) => {
             r.push(v[key]);
         });
         return self.deepFreeze(r);
     },
 
-    keepOnlyKeys: (arr: any[], keys: string[]): any => {
+    keepOnlyKeys: <T>(arr: T[], keys: string[]): Readonly<T[]> => {
         arr = arr.slice();
-        arr.forEach((v) => {
-            let k = Object.keys(v);
+        arr.forEach((v: any) => {
+            const k = Object.keys(v);
             k.forEach((key) => {
                 if (keys.indexOf(key) < 0) {
                     delete v[key];
@@ -73,8 +86,8 @@ let self = {
         $("#printout").html(text);
     },
 
-    flatten: (map: any): Readonly<any> => {
-        let r = [];
+    flatten: <T>(map: { [key: string]: T }): Readonly<T[]> => {
+        const r: T[] = [];
         Object.keys(map).forEach((i) => {
             r.push(map[i]);
         });
@@ -82,7 +95,7 @@ let self = {
     },
 
     rotate: (map: any): Readonly<any> => {
-        let r = {};
+        const r: any = {};
         Object.keys(map).forEach((i) => {
             if (map[i] in r) {
                 r[map[i]].push(i);
@@ -110,8 +123,8 @@ let self = {
         self.showFormModal(null, title, null, [{type: "html", initialValue: body}], null, false);
     },
 
-    makeFormModal: (title: string, successText: string, form: modalFormRow[], footer: boolean = true): JQuery<HTMLElement> => {
-        let f = $("<div>", {class: "modal-body form-group"});
+    makeFormModal: (title: string, successText: string, form: ModalFormRow[], footer = true): JQuery => {
+        const f = $("<div>", {class: "modal-body form-group"});
         form.forEach((formRow, i) => {
             if (!("initialValue" in formRow)) {
                 formRow.initialValue = "";
@@ -122,8 +135,7 @@ let self = {
                 id = formRow.id;
             }
 
-            let basicMap: { class: string; id: string; value: any, [key: number]: any, [key: string]: any } =
-                {class: "form-control", id: id, value: formRow.initialValue};
+            const basicMap: BasicMapType = {class: "form-control", id, value: formRow.initialValue};
 
             if ("extraAttrs" in formRow) {
                 Object.keys(formRow.extraAttrs).forEach((attrname) => {
@@ -133,18 +145,18 @@ let self = {
                 });
             }
 
-            let validFunc = (value?: any, container?: JQuery<HTMLElement>): string|boolean => true;
+            let validFunc = (value?: any, container?: JQuery): string | boolean => true;
             if ("validationFunc" in formRow) {
                 validFunc = formRow.validationFunc;
             }
 
-            let generalValidator = (event, valueMutator = null) => {
-                let $v = $(event.target);
+            const generalValidator = (event: any, valueMutator: (v: any) => any = null) => {
+                const $v = $(event.target);
                 let val = $v.val();
                 if (valueMutator !== null && typeof valueMutator === "function") {
                     val = valueMutator(val);
                 }
-                let valid = validFunc(val, $v);
+                const valid = validFunc(val, $v);
 
                 if (valid === true) {
                     $v.removeClass("is-invalid").next("#feedback-" + i).remove();
@@ -158,7 +170,7 @@ let self = {
             };
 
             if (formRow.type === "html") {
-                f.append($(<string> formRow.initialValue));
+                f.append($(formRow.initialValue));
             }
             else if (formRow.type === "checkbox") {
                 basicMap.type = "checkbox";
@@ -181,7 +193,7 @@ let self = {
                     if ("clickDismiss" in formRow && formRow.clickDismiss === true) {
                         basicMap.class += " btn-dismiss";
                     }
-                    let $b = $("<button>", basicMap).text(formRow.initialValue);
+                    const $b = $("<button>", basicMap).text(formRow.initialValue);
                     if ("onclick" in formRow && typeof formRow.onclick === "function") {
                         $b.on("click", formRow.onclick);
                     }
@@ -203,14 +215,14 @@ let self = {
                     f.append($("<input>", basicMap).on("blur validate", generalValidator));
                 }
                 else if (formRow.type === "textarea") {
-                    let $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
+                    const $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
                     if ("onclick" in formRow) {
                         $b.on("click", formRow.onclick);
                     }
                     f.append($b);
                 }
                 else if (formRow.type === "select") {
-                    let $options = $("<select>", basicMap);
+                    const $options = $("<select>", basicMap);
                     formRow.optionText.forEach((oText, oIndex) => {
                         if (oIndex < formRow.optionValues.length) {
                             $options.append($("<option>", {value: formRow.optionValues[oIndex]}).text(oText));
@@ -232,7 +244,7 @@ let self = {
             $footer = null;
         }
 
-        let $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
+        const $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
         $modal
             .append($("<div>", {class: "modal-dialog"})
                 .append($("<div>", {class: "modal-content"})
@@ -248,20 +260,20 @@ let self = {
             );
         $modal.find("input, textarea").off("keyup").on("keyup", (e) => {
             if (e.key === "Enter") {
-                $(".btn-success").last().click();
+                $(".btn-success").last().trigger("click");
             }
         });
         $modal.on("shown.bs.modal", () => {
-            $modal.find("input[type='text'], input[type='number'], textarea").first().focus();
+            $modal.find("input[type='text'], input[type='number'], textarea").first().trigger("focus");
         });
 
         return $modal;
     },
 
-    showFormModal: (successCb: Function, title: string, successText: string, form: modalFormRow[], cancelCb: Function = ($modal) => {
-        $modal.modal("hide");
-    }, footer = true): void => {
-        let $modal = self.makeFormModal(title, successText, form, footer);
+    showFormModal: (successCb: ($modal: JQuery, vals: any[]) => void,
+                    title: string, successText: string, form: ModalFormRow[],
+                    cancelCb: ($modal: JQuery) => void = defaultCancelCb, footer = true) => {
+        const $modal = self.makeFormModal(title, successText, form, footer);
 
         $modal.on("click", ".btn-cancel", () => {
             if (typeof cancelCb === "function") {
@@ -273,23 +285,23 @@ let self = {
         }).on("click", ".btn-dismiss", () => {
             $modal.modal("hide");
         }).on("click", ".btn-success", () => {
-            let vals = [];
+            const vals: any[] = [];
             let hasErrors = false;
 
             $modal.find("input, textarea, select").each((i, v) => {
-                let $v = $(v);
+                const $v = $(v);
 
-                if ((<any> $v).tagName === "SELECT") {
+                if (($v as any).tagName === "SELECT") {
                     vals.push($v.find(":selected").val());
                 }
                 else if ($v.attr("type") === "checkbox") {
                     vals.push($v.prop("checked"));
                 }
                 else if ($v.attr("type") === "file") {
-                    vals.push((<any>$v.get(0)).files);
+                    vals.push(($v.get(0) as any).files);
                 }
                 else if ($v.attr("type") === "number") {
-                    vals.push(parseFloat(<string> $v.val()));
+                    vals.push(parseFloat($v.val() as string));
                 }
                 else {
                     vals.push($v.val());

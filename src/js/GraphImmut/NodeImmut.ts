@@ -39,7 +39,7 @@ export default class NodeImmut {
     }
 
     toPlain(): NodeImmutPlain {
-        let toReturn: NodeImmutPlain = {id: this.id, label: this.label};
+        const toReturn: NodeImmutPlain = {id: this.id, label: this.label};
         Object.keys(this.attributes).forEach((key) => {
             if (!(key in toReturn)) {
                 toReturn[key] = this.attributes[key];
@@ -75,7 +75,7 @@ export default class NodeImmut {
         }
 
         // Merge existing and new attributes favoring the new
-        let attributes = Object.assign({}, this.attributes);
+        const attributes = Object.assign({}, this.attributes);
         Object.keys(extraAttrs).forEach((key) => {
             attributes[key] = extraAttrs[key];
         });

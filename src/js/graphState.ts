@@ -7,47 +7,29 @@ import GraphImmut from './GraphImmut/GraphImmut';
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 import NodeImmut, {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 
-export interface graphStateI {
-    backHistory: any[];
-    forwardHistory: any[];
-    maxHistory: number;
-    upToDate: ({ name: string; upToDate: boolean; type: string; applyFunc: () => void } | { name: string; upToDate: boolean; always: boolean; type: string })[];
-    state: { stronglyConnectedComponents: null; connectedComponents: null; graphColoring: null };
-    graph: GraphImmut;
-    graphProperties: { vertices: number; edges: number; eulerian: boolean; "Chromatic Number": null; "Connected Components": null; "Strongly Connected Components": null; cyclic: boolean };
-    setUpToDate: (value: boolean, listOptions?: string[]) => void;
-    getProperty: (property: string, updateIfNotUpdated?: boolean) => any;
-    makeAndPrintProperties: (recalcLong?: boolean) => void;
-    printGraphProperties: (properties: {}) => void;
-    addEdge: (from: number, to: number, weight?: number, graph?: GraphImmut) => void;
-    addNode: (data, graph?: GraphImmut) => void;
-    editNode: (id: number, label: string, graph?: GraphImmut) => void;
-    editEdge: (from: number, to: number, newWeight: number, oldWeight: number, graph?: GraphImmut) => void;
-    deleteEdge: (from: number, to: number, weight?: any, graph?: GraphImmut) => void;
-    deleteNode: (id: number, graph?: GraphImmut) => void;
-    clearColorFromNodes: (nodes: NodeImmutPlain[]) => NodeImmutPlain[];
-    nodeIDToLabel: (id: number, graph?: GraphImmut) => string;
-    nodeLabelToID: (label: string, graph?: GraphImmut) => number;
-    getGraphAsDataSet: (graph: GraphImmut) => { nodes: DataSet<any>; edges: DataSet<any> };
-    setLocations: (locations: any, graph?: GraphImmut) => GraphImmut;
-    getGraphData: (graph?: GraphImmut, clearColors?: boolean) => GraphPlain;
+declare interface GraphProperties {
+    name: string;
+    upToDate: boolean;
+    type: string;
+    always?: boolean;
+    applyFunc?: () => Promise<any>;
 }
 
-let self: graphStateI = {
-    backHistory: [],
-    forwardHistory: [],
-    maxHistory: 10,
-    upToDate: [
+export default class GraphState {
+    public static backHistory: any = [];
+    public static forwardHistory: any = [];
+    public static maxHistory = 10;
+    public static upToDate: GraphProperties[] = [
         {
             name: "Chromatic Number", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.makeAndPrintGraphColoring();
+                return window.ui.makeAndPrintGraphColoring();
             }
         },
         {
             name: "graphColoring", upToDate: false, type: "state",
             applyFunc: () => {
-                window.ui.makeAndPrintGraphColoring();
+                return window.ui.makeAndPrintGraphColoring();
             }
         },
         {name: "vertices", upToDate: true, always: true, type: "property"},
@@ -55,47 +37,47 @@ let self: graphStateI = {
         {
             name: "eulerian", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.makeAndPrintEulerian();
+                return window.ui.makeAndPrintEulerian();
             }
         },
         {
             name: "Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.makeAndPrintConnectedComponents();
+                return window.ui.makeAndPrintConnectedComponents();
             }
         },
         {
             name: "connectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.ui.makeAndPrintConnectedComponents();
+                return window.ui.makeAndPrintConnectedComponents();
             }
         },
         {
             name: "Strongly Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.makeAndPrintStronglyConnectedComponents();
+                return window.ui.makeAndPrintStronglyConnectedComponents();
             }
         },
         {
             name: "stronglyConnectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.ui.makeAndPrintStronglyConnectedComponents();
+                return window.ui.makeAndPrintStronglyConnectedComponents();
             }
         },
         {
             name: "cyclic", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.makeAndPrintIsCyclic();
+                return window.ui.makeAndPrintIsCyclic();
             }
         },
-    ],
-    state: {
+    ];
+    public static state = {
         stronglyConnectedComponents: null,
         connectedComponents: null,
         graphColoring: null,
-    },
-    graph: null,
-    graphProperties: {
+    };
+    public static graph: GraphImmut = null;
+    public static graphProperties = {
         vertices: 0,
         edges: 0,
         eulerian: false,
@@ -103,12 +85,12 @@ let self: graphStateI = {
         "Connected Components": null,
         "Strongly Connected Components": null,
         cyclic: false,
-    },
+    };
 
-    setUpToDate: (value = false, listOptions) => {
-        let all = listOptions === null || typeof listOptions === "undefined";
+    static setUpToDate(value = false, listOptions?: string[]) {
+        const all = listOptions === null || typeof listOptions === "undefined";
         let property = false;
-        self.upToDate.forEach((v) => {
+        GraphState.upToDate.forEach((v) => {
             if ((!("always" in v) || !v.always) && (all || listOptions.indexOf(v.name) > -1)) {
                 v.upToDate = value;
                 if (v.type === "property") {
@@ -117,123 +99,143 @@ let self: graphStateI = {
             }
         });
         if (property) {
-            self.makeAndPrintProperties();
+            GraphState.makeAndPrintProperties();
         }
-    },
+    }
 
-    getProperty: (property, updateIfNotUpdated = false) => {
-        let a = self.upToDate.find((v) => {
+    static async getProperty(property: string, updateIfNotUpdated = false): Promise<any> {
+        const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
         });
         if (!a.upToDate) {
             if ("applyFunc" in a && updateIfNotUpdated) {
-                a.applyFunc();
+                await a.applyFunc();
             }
             else {
-                return null;
+                return Promise.resolve(null);
             }
         }
         if (a.type === "state") {
-            return self.state[property];
+            return Promise.resolve(GraphState.state[property]);
         }
-        return self.graphProperties[property];
-    },
+        return Promise.resolve(GraphState.graphProperties[property]);
+    }
 
-    makeAndPrintProperties: (recalcLong = false) => {
-        let directional = window.settings.getOption("direction");
+    static getPropertyImm(property: string): any {
+        const a = GraphState.upToDate.find((v) => {
+            return ("name" in v && v.name === property);
+        });
+        if (!a.upToDate) {
+            return null;
+        }
+        if (a.type === "state") {
+            return GraphState.state[property];
+        }
+        return GraphState.graphProperties[property];
+    }
 
-        self.graphProperties.vertices = self.graph.getNumberOfNodes();
-        self.graphProperties.edges = self.graph.getNumberOfEdges();
+    static async makeAndPrintProperties(recalcLong = false) {
+        const directional = window.settings.getOption("direction");
+
+        GraphState.graphProperties.vertices = GraphState.graph.getNumberOfNodes();
+        GraphState.graphProperties.edges = GraphState.graph.getNumberOfEdges();
 
         if (!directional) {
-            self.getProperty("eulerian", true);
+            await GraphState.getProperty("eulerian", true);
         }
 
-        let p = Object.keys(self.graphProperties);
+        const p = Object.keys(GraphState.graphProperties);
         if (recalcLong) {
-            p.forEach((v) => {
-                self.getProperty(v, true);
+            p.forEach(async (v) => {
+                await GraphState.getProperty(v, true);
             });
         }
 
-        let printableProperties = {};
-        p.forEach((v) => {
-            printableProperties[v] = self.getProperty(v);
-        });
-        self.printGraphProperties(printableProperties);
-    },
+        const printableProperties: any = {};
+        await Promise.all(p.map(async (v) => {
+            printableProperties[v] = await GraphState.getProperty(v);
+        }));
 
-    printGraphProperties: (properties) => {
+        GraphState.printGraphProperties(printableProperties);
+    }
+
+    static printGraphProperties(properties: any) {
         let p = "";
         Object.keys(properties).forEach((k) => {
             if (properties[k] !== null) {
-                p += help.toTitleCase(k) + ": " + properties[k] + "\n";
+                p += `${help.toTitleCase(k)}: ${properties[k]}\n`;
             }
         });
         p = p.trim();
         p = help.htmlEncode(p);
-        $("#graphProps").html("<p class='nav-link'>" + p + "</p>");
-    },
+        $("#graphProps").html(`<p class='nav-link'>${p}</p>`);
+    }
 
-    addEdge: (from, to, weight = 0, graph = self.graph) => {
+    static addEdge(from, to, weight = 0, graph = GraphState.graph) {
         graph = graph.addEdge(from, to, weight);
-        window.main.setData({nodes: self.clearColorFromNodes(<NodeImmutPlain[]> graph.getAllNodes()), edges: graph.getAllEdges()});
-    },
+        window.main.setData({
+            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
+            edges: graph.getAllEdges() as EdgeImmutPlain[]
+        });
+    }
 
-    addNode: (data, graph = self.graph) => {
+    static addNode(data, graph = GraphState.graph) {
         graph = graph.addNode({label: data.label, x: data.x, y: data.y});
-        window.main.setData({nodes: self.clearColorFromNodes(<NodeImmutPlain[]> graph.getAllNodes()), edges: graph.getAllEdges()});
-    },
+        window.main.setData({
+            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
+            edges: graph.getAllEdges() as EdgeImmutPlain[]
+        });
+    }
 
-    editNode: (id, label, graph = self.graph) => {
-        graph = graph.editNode(id, {label: label});
-        window.main.setData(self.getGraphData(graph), false, false);
-    },
+    static editNode(id, label, graph = GraphState.graph) {
+        graph = graph.editNode(id, {label});
+        window.main.setData(GraphState.getGraphData(graph), false, false);
+    }
 
-    editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
-        let newGraph = graph.editEdge(from, to, newWeight, oldWeight);
+    static editEdge(from, to, newWeight, oldWeight, graph = GraphState.graph) {
+        const newGraph = graph.editEdge(from, to, newWeight, oldWeight);
         if (newGraph instanceof GraphImmut) {
-            window.main.setData(self.getGraphData(newGraph), false, false);
+            window.main.setData(GraphState.getGraphData(newGraph), false, false);
         }
-    },
+    }
 
-    deleteEdge: (from, to, weight = null, graph = self.graph) => {
+    static deleteEdge(from, to, weight = null, graph = GraphState.graph) {
         graph = graph.deleteEdge(from, to, weight, false);
         window.main.setData({
-            nodes: self.clearColorFromNodes(<NodeImmutPlain[]>graph.getAllNodes()),
-            edges: graph.getAllEdges()
+            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
+            edges: graph.getAllEdges() as EdgeImmutPlain[]
         });
-    },
+    }
 
-    deleteNode: (id, graph = self.graph) => {
-        let newGraph = graph.deleteNode(id);
+    static deleteNode(id, graph = GraphState.graph) {
+        const newGraph = graph.deleteNode(id);
         if (newGraph instanceof GraphImmut) {
             window.main.setData({
-                nodes: self.clearColorFromNodes(<NodeImmutPlain[]> newGraph.getAllNodes()),
-                edges: newGraph.getAllEdges()
+                nodes: GraphState.clearColorFromNodes(newGraph.getAllNodes() as NodeImmutPlain[]),
+                edges: newGraph.getAllEdges() as EdgeImmutPlain[]
             });
         }
-    },
+    }
 
-    clearColorFromNodes: (nodes: NodeImmutPlain[]) => {
+    static clearColorFromNodes(nodes: NodeImmutPlain[]) {
         nodes.forEach((v) => {
             v.color = null;
         });
         return nodes;
-    },
+    }
 
-    nodeIDToLabel: (id, graph = self.graph) => {
-        let n = <NodeImmut | boolean> graph.getNode(id, true);
+    static nodeIDToLabel(id, graph = GraphState.graph) {
+        const n = graph.getNode(id, true);
         if (n !== false && n !== null && n instanceof NodeImmut && n.getLabel().trim().length > 0) {
             return n.getLabel().trim();
         }
 
         return id.toString();
-    },
+    }
 
     // Preferentially search by ID, label, and case-insensitive label
-    nodeLabelToID: (label, graph = self.graph) => {
-        let n: NodeImmut[] = <NodeImmut[]> graph.getAllNodes(true);
+    static nodeLabelToID(label, graph = GraphState.graph) {
+        let n = graph.getAllNodes(true) as NodeImmut[];
         n = n.filter((node) => {
             return node.getLabel().toLowerCase() === label.toLowerCase() || node.getID().toString() === label;
         });
@@ -278,11 +280,11 @@ let self: graphStateI = {
         });
 
         return rID;
-    },
+    }
 
     // Return graph as a Vis compatible dataset
-    getGraphAsDataSet: (graph) => {
-        let d = self.getGraphData(graph);
+    static getGraphAsDataSet(graph) {
+        const d = GraphState.getGraphData(graph);
         if (graph.isWeighted()) {
             d.edges.forEach((e) => {
                 e.label = e.weight.toString();
@@ -290,13 +292,13 @@ let self: graphStateI = {
         }
 
         return {nodes: new DataSet(d.nodes), edges: new DataSet(d.edges)};
-    },
+    }
 
-    setLocations: (locations, graph = self.graph) => {
+    static setLocations(locations, graph = GraphState.graph) {
         let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
-            let v = locations[i];
-            let node = newNodes.get(parseInt(i));
+            const v = locations[i];
+            const node = newNodes.get(parseInt(i));
             // Only change when there is actually a new position
             if (node.getAttribute("x") !== v.x || node.getAttribute("y") !== v.y) {
                 // Batch up all changes that we'll be making
@@ -305,17 +307,15 @@ let self: graphStateI = {
         });
 
         return new GraphImmut(newNodes, graph.getAllEdgesAsImmutableList(), graph.isDirected(), graph.isWeighted());
-    },
+    }
 
-    getGraphData: (graph = self.graph, clearColors = false): GraphPlain => {
-        let nodes = <NodeImmutPlain[]> graph.getAllNodes();
+    static getGraphData(graph = GraphState.graph, clearColors = false): GraphPlain {
+        const nodes = graph.getAllNodes() as NodeImmutPlain[];
         return {
-            nodes: clearColors ? self.clearColorFromNodes(nodes) : nodes,
-            edges: <EdgeImmutPlain[]> graph.getAllEdges(),
+            nodes: clearColors ? GraphState.clearColorFromNodes(nodes) : nodes,
+            edges: graph.getAllEdges() as EdgeImmutPlain[],
             directed: graph.isDirected(),
             weighted: graph.isWeighted()
         };
     }
-};
-
-export default self;
+}

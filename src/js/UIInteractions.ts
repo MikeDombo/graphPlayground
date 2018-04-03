@@ -1,37 +1,92 @@
 import gHelp from "./graphHelpers";
 import help from "./genericHelpers";
 import * as $ from "jquery";
+import GraphState from './graphState';
+import GraphAlgorithms from "./GraphAlgorithms";
 
+interface ShortestPathResult {
+    pathExists: boolean;
+    cost?: number;
+    distance: number;
+    path: number[]
+}
 
-const makeAndPrintShortestPath = (title, fn, weighted) => {
+export interface AlgorithmI {
+    name: string;
+    directional?: boolean;
+    weighted?: boolean;
+    applyFunc: () => any;
+    display: boolean
+}
+
+export interface UIInteractionsI {
+    getAlgorithms(): AlgorithmI[];
+
+    registerListeners(): void;
+
+    printHelp(): void;
+
+    printOptions(): void;
+
+    makeAndPrintGraphColoring(): Promise<void>;
+
+    makeAndPrintConnectedComponents(): Promise<void>;
+
+    makeAndPrintDirectionalEulerian(): Promise<void>;
+
+    makeAndPrintEulerian(): Promise<void>;
+
+    makeAndPrintStronglyConnectedComponents(): Promise<void>;
+
+    makeAndPrintBFS(): Promise<void>;
+
+    makeAndPrintDijkstra(): Promise<void>;
+
+    makeAndPrintBFSP(): Promise<void>;
+
+    makeAndPrintFFMCMF(): void;
+
+    makeAndPrintKruskal(): Promise<void>;
+
+    makeAndPrintIsCyclic(): Promise<void>;
+
+    makeAndPrintTopologicalSort(): Promise<void>;
+
+    printGraphAlgorithms(): void;
+}
+
+const makeAndPrintShortestPath = (title: string,
+                                  fn: (a: number, b: number) => boolean | ShortestPathResult,
+                                  weighted: boolean): void => {
     help.showFormModal(($modal, values) => {
             $modal.modal("hide");
 
-            let source = window.main.graphState.nodeLabelToID(values[0]);
-            let sink = window.main.graphState.nodeLabelToID(values[1]);
+            const source = GraphState.nodeLabelToID(values[0]);
+            const sink = GraphState.nodeLabelToID(values[1]);
 
             let a = fn(source, sink);
             if (a === false) {
                 return;
             }
 
-            let p = "<h3>" + title + "</h3><hr>No path exists from "
-                + help.htmlEncode(source) + " to " + help.htmlEncode(sink);
+            a = a as ShortestPathResult;
+
+            let p = `<h3>${title}</h3><hr>No path exists from ${help.htmlEncode(source.toString())} to ${help.htmlEncode(sink.toString())}`;
 
             if (a.pathExists) {
-                p = title + " From " + window.main.graphState.nodeIDToLabel(source) + " to ";
-                p += window.main.graphState.nodeIDToLabel(sink) + ": " + a.distance;
+                p = `${title} From ${GraphState.nodeIDToLabel(source)} to `;
+                p += `${GraphState.nodeIDToLabel(sink)}: ${a.distance}`;
                 if (weighted) {
-                    p += "\nWith weighted cost: " + a.cost;
+                    p += `\nWith weighted cost: ${a.cost}`;
                 }
                 p += "\n\nUsing Path: ";
 
                 p = help.htmlEncode(p);
                 a.path.forEach((v) => {
-                    p += help.htmlEncode(window.main.graphState.nodeIDToLabel(v)) + " &rarr; ";
+                    p += `${help.htmlEncode(GraphState.nodeIDToLabel(v))} &rarr; `;
                 });
                 p = p.slice(0, -8);
-                p = "<h3>" + title + "</h3><hr>" + p;
+                p = `<h3>${title}</h3><hr>${p}`;
             }
 
             help.printout(p);
@@ -42,68 +97,54 @@ const makeAndPrintShortestPath = (title, fn, weighted) => {
         ]);
 };
 
-const makeAndPrintComponents = async (stronglyConnected) => {
+const callWithGraphAlgorithms = async (f: (gAlgo: GraphAlgorithms) => any): Promise<any> => {
+    const gAlgo = new ((await import("./GraphAlgorithms")).default)();
+    return f(gAlgo);
+};
+
+const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<any> => {
     let a = null;
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
-    let gg = await import("./GraphAlgorithms");
-    const gAlgo = gg.default;
 
+    const gAlgo = new ((await import("./GraphAlgorithms")).default)();
     if (stronglyConnected) {
         if (!window.settings.getOption("direction")) {
             return;
         }
         cc = "Strongly " + cc;
         componentKey = "stronglyConnectedComponents";
-        a = gAlgo.stronglyConnectedComponents();
+        a = await gAlgo.stronglyConnectedComponents();
     }
     else {
         if (window.settings.getOption("direction")) {
             return;
         }
-        a = gAlgo.connectedComponents();
+        a = await gAlgo.connectedComponents();
     }
 
-    window.main.graphState.graphProperties[cc] = a.count;
-    window.main.graphState.setUpToDate(true, [cc, componentKey]);
-    window.main.graphState.state[componentKey] = a.components;
+    GraphState.graphProperties[cc] = a.count;
+    GraphState.setUpToDate(true, [cc, componentKey]);
+    GraphState.state[componentKey] = a.components;
 
-    let components = help.flatten(a.components);
-    let p = "Number of " + cc + ": " + a.count;
+    const components = help.flatten(a.components);
+    let p = `Number of ${cc}: ${a.count}`;
     p += "\n\n";
 
     components.forEach((v, i) => {
-        p += "Vertex " + window.main.graphState.nodeIDToLabel(i) + " is in connected component #" + v + "\n";
+        p += `Vertex ${GraphState.nodeIDToLabel(i)} is in connected component #${v}\n`;
     });
 
-    p += "\n" + JSON.stringify(help.rotate(a.components), null, 4) + "\n\n";
-    p = "<h3>" + cc + "</h3><hr>" + help.htmlEncode(p);
+    p += `\n${JSON.stringify(help.rotate(a.components), null, 4)}\n\n`;
+    p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
 
     help.printout(p);
+
+    return Promise.resolve("hi");
 };
 
-export interface UIInteractionsI {
-    getAlgorithms():any;
-    registerListeners():void;
-    printHelp():void;
-    printOptions():void;
-    makeAndPrintGraphColoring():Promise<void>;
-    makeAndPrintConnectedComponents():void;
-    makeAndPrintDirectionalEulerian():Promise<void>;
-    makeAndPrintEulerian():Promise<void>;
-    makeAndPrintStronglyConnectedComponents():void;
-    makeAndPrintBFS():Promise<void>;
-    makeAndPrintDijkstra():Promise<void>;
-    makeAndPrintBFSP():Promise<void>;
-    makeAndPrintFFMCMF():void;
-    makeAndPrintKruskal():Promise<void>;
-    makeAndPrintIsCyclic():Promise<void>;
-    makeAndPrintTopologicalSort():Promise<void>;
-    printGraphAlgorithms():void;
-}
-
 export default class UIInteractions {
-    static getAlgorithms() {
+    static getAlgorithms(): AlgorithmI[] {
         return [
             {
                 name: "Graph Coloring",
@@ -179,11 +220,11 @@ export default class UIInteractions {
                 display: true,
                 applyFunc: UIInteractions.makeAndPrintDirectionalEulerian
             },
-        ];
+        ] as AlgorithmI[];
     }
 
     static registerListeners(): void {
-        const makeSimpleClickListener = (selector, fn) => {
+        const makeSimpleClickListener = (selector: string, fn: () => void) => {
             $(selector).on("click", (e) => {
                 e.preventDefault();
                 fn();
@@ -193,56 +234,54 @@ export default class UIInteractions {
         makeSimpleClickListener("#print-help-link", UIInteractions.printHelp);
         makeSimpleClickListener("#graph-options-link", UIInteractions.printOptions);
         makeSimpleClickListener("#load-petersen-link", async () => {
-            let predefined = await import('./predefinedGraphs');
-            window.main.setData(predefined.default.Petersen(), false, true, true);
+            const predefined = (await import('./predefinedGraphs')).default;
+            window.main.setData(predefined.Petersen(), false, true, true);
         });
         makeSimpleClickListener("#load-konigsberg-link", async () => {
-            let predefined = await import('./predefinedGraphs');
-            window.main.setData(predefined.default.Konigsberg(), false, true, true);
+            const predefined = (await import('./predefinedGraphs')).default;
+            window.main.setData(predefined.Konigsberg(), false, true, true);
         });
         makeSimpleClickListener("#load-complete-link", async () => {
-            let predefined = await import('./predefinedGraphs');
-            predefined.default.Complete();
+            const predefined = (await import('./predefinedGraphs')).default;
+            predefined.Complete();
         });
         makeSimpleClickListener("#load-hypercube-link", async () => {
-            let predefined = await import('./predefinedGraphs');
-            predefined.default.Hypercube();
+            const predefined = (await import('./predefinedGraphs')).default;
+            predefined.Hypercube();
         });
         makeSimpleClickListener("#load-custom-link", async () => {
-            let predefined = await import('./predefinedGraphs');
-            predefined.default.Custom();
+            const predefined = (await import('./predefinedGraphs')).default;
+            predefined.Custom();
         });
         makeSimpleClickListener("#undo-link", window.main.undo);
         makeSimpleClickListener("#redo-link", window.main.redo);
-        makeSimpleClickListener("#calculate-all-properties-link",
-            () => {
-                window.main.graphState.makeAndPrintProperties(true);
-            });
+        makeSimpleClickListener("#calculate-all-properties-link", async () => {
+            return GraphState.makeAndPrintProperties(true);
+        });
         makeSimpleClickListener("#new-graph-layout-link", window.main.shuffleNetworkLayout);
         makeSimpleClickListener("#import-file-link", async () => {
-            let imp = await import("./dataImportExport");
-            imp.default.makeImportFileModal();
+            const imp = (await import("./dataImportExport")).default;
+            imp.makeImportFileModal();
         });
         makeSimpleClickListener("#import-text-link", async () => {
-            let imp = await import("./dataImportExport");
-            imp.default.makeImportTextModal();
+            const imp = (await import("./dataImportExport")).default;
+            imp.makeImportTextModal();
         });
         makeSimpleClickListener("#export-file-link", async () => {
-            let imp = await import("./dataImportExport");
-            imp.default.makeExportFileModal();
+            const imp = (await import("./dataImportExport")).default;
+            imp.makeExportFileModal();
         });
         makeSimpleClickListener("#export-text-link", async () => {
-            let imp = await import("./dataImportExport");
-            imp.default.makeExportTextModal();
+            const imp = (await import("./dataImportExport")).default;
+            imp.makeExportTextModal();
         });
     }
 
     static printHelp(): void {
-        help.showSimpleModal("Help",
-            "<h4>For support see the <a href='https://github.com/MikeDombo/graphPlayground' " +
-            "target='_blank'>GitHub repository</a> for guides</h4>" +
-            "<h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues'" +
-            " target='_blank'>GitHub issues</a> to submit bugs or feature requests.</h4>");
+        help.showSimpleModal("Help", "<h4>For support see the <a href='https://github.com/MikeDombo/graphPlayground' " +
+            "target='_blank'>GitHub repository</a> for guides</h4> <h4>See " +
+            "<a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>GitHub issues</a>" +
+            " to submit bugs or feature requests.</h4>");
     }
 
     static printOptions(): void {
@@ -254,16 +293,16 @@ export default class UIInteractions {
                 }
                 if (window.settings.getOption("direction") !== vals[1]) {
                     window.settings.changeOption("direction", vals[1]);
-                    let G = window.main.graphState.graph;
+                    let G = GraphState.graph;
                     G = vals[1] ? G.asDirected(true) : G.asUndirected();
                     // Clear node coloring because graph color doesn't apply to directed graphs
-                    window.main.setData(window.main.graphState.getGraphData(G, true));
+                    window.main.setData(GraphState.getGraphData(G, true));
                 }
                 if (window.settings.getOption("weights") !== vals[2]) {
                     window.settings.changeOption("weights", vals[2]);
-                    let G = window.main.graphState.graph;
+                    let G = GraphState.graph;
                     G = vals[2] ? G.asWeighted() : G.asUnweighted();
-                    window.main.setData(window.main.graphState.getGraphData(G));
+                    window.main.setData(GraphState.getGraphData(G));
                 }
             },
             "Options", "Save", [
@@ -280,84 +319,83 @@ export default class UIInteractions {
 
         // Use cached responses when able
         let a = {
-            chromaticNumber: window.main.graphState.getProperty("Chromatic Number"),
-            colors: window.main.graphState.state.graphColoring
+            chromaticNumber: (await GraphState.getProperty("Chromatic Number")) as number,
+            colors: GraphState.state.graphColoring as {}
         };
-        if (!(a.chromaticNumber !== null && window.main.graphState.getProperty("graphColoring") !== null)) {
-            let gg = await import("./GraphAlgorithms");
-            const gAlgo = gg.default;
+        if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
+            const gAlgo = new ((await import("./GraphAlgorithms")).default)();
             a = gAlgo.colorNetwork();
         }
 
-        window.main.graphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
-        window.main.graphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
-        window.main.graphState.state.graphColoring = a.colors;
+        (GraphState.graphProperties["Chromatic Number"] as number) = a.chromaticNumber;
+        GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
+        (GraphState.state.graphColoring as {}) = a.colors;
 
-        let colors = help.flatten(a.colors);
-        let p = "Number of Vertices: " + colors.length;
-        p += "\nChromatic Number: " + a.chromaticNumber;
+        const colors = help.flatten(a.colors);
+        let p = `Number of Vertices: ${colors.length}`;
+        p += `\nChromatic Number: ${a.chromaticNumber}`;
         p += "\n\n";
 
         colors.forEach((v, i) => {
-            p += "Vertex " + window.main.graphState.nodeIDToLabel(i) + " gets color " + v + "\n";
+            p += `Vertex ${GraphState.nodeIDToLabel(i)} gets color ${v}\n`;
         });
 
-        p += "\n" + JSON.stringify(help.rotate(a.colors), null, 4) + "\n\n";
+        p += `\n${JSON.stringify(help.rotate(a.colors), null, 4)}\n\n`;
 
-        p = "<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>" + help.htmlEncode(p);
+        p = `<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>${help.htmlEncode(p)}`;
         p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
 
         help.printout(p);
         window.main.applyColors();
     }
 
-    static makeAndPrintConnectedComponents(): void {
-        makeAndPrintComponents(false);
+    static makeAndPrintConnectedComponents(): Promise<void> {
+        return makeAndPrintComponents(false);
     }
 
-    static async makeAndPrintDirectionalEulerian(): Promise<void> {
+    static makeAndPrintDirectionalEulerian(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        let t = gAlgo.directionalEulerian(gHelp.findVertexDegreesDirectional(window.main.graphState.graph.getFullAdjacency()));
-        window.main.graphState.setUpToDate(true, ["eulerian"]);
-        window.main.graphState.graphProperties.eulerian = t;
+        return callWithGraphAlgorithms(async (gAlgo) => {
+            GraphState.graphProperties.eulerian = await gAlgo.directionalEulerian(
+                gHelp.findVertexDegreesDirectional(
+                    GraphState.graph.getFullAdjacency()));
+            GraphState.setUpToDate(true, ["eulerian"]);
+        });
     }
 
-    static async makeAndPrintEulerian(): Promise<void> {
+    static makeAndPrintEulerian(): Promise<void> {
         if (window.settings.getOption("direction")) {
-            UIInteractions.makeAndPrintDirectionalEulerian();
-            return;
+            return UIInteractions.makeAndPrintDirectionalEulerian();
         }
 
-        window.main.graphState.setUpToDate(true, ["eulerian"]);
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        window.main.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(window.main.graphState.graph.getAllOutDegrees());
+        return callWithGraphAlgorithms(async (gAlgo) => {
+            GraphState.graphProperties.eulerian = await gAlgo.hasEulerianCircuit(GraphState.graph.getAllOutDegrees());
+            GraphState.setUpToDate(true, ["eulerian"]);
+        });
     }
 
-    static makeAndPrintStronglyConnectedComponents(): void {
-        makeAndPrintComponents(true);
+    static makeAndPrintStronglyConnectedComponents(): Promise<void> {
+        return makeAndPrintComponents(true);
     }
 
-    static async makeAndPrintBFS(): Promise<void> {
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch, false);
+    static makeAndPrintBFS(): Promise<void> {
+        return callWithGraphAlgorithms((gAlgo) => {
+            makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch as any, false);
+        });
     }
 
-    static async makeAndPrintDijkstra(): Promise<void> {
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch, true);
+    static makeAndPrintDijkstra(): Promise<void> {
+        return callWithGraphAlgorithms((gAlgo) => {
+            makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch as any, true);
+        });
     }
 
-    static async makeAndPrintBFSP(): Promise<void> {
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord, true);
+    static makeAndPrintBFSP(): Promise<void> {
+        return callWithGraphAlgorithms((gAlgo) => {
+            makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord as any, true);
+        });
     }
 
     static makeAndPrintFFMCMF(): void {
@@ -367,28 +405,24 @@ export default class UIInteractions {
         help.showFormModal(async ($modal, values) => {
                 $modal.modal("hide");
 
-                let source = window.main.graphState.nodeLabelToID(values[0]);
-                let sink = window.main.graphState.nodeLabelToID(values[1]);
-                let gg = await import("./GraphAlgorithms");
-                const gAlgo = gg.default;
+                const source = GraphState.nodeLabelToID(values[0]);
+                const sink = GraphState.nodeLabelToID(values[1]);
+                const gAlgo = new ((await import("./GraphAlgorithms")).default)();
                 let a = gAlgo.fordFulkerson(source, sink);
 
-                let p = "<h3>Ford-Fulkerson</h3><hr>No path exists from "
-                    + help.htmlEncode(window.main.graphState.nodeIDToLabel(source))
-                    + " to " + help.htmlEncode(window.main.graphState.nodeIDToLabel(sink));
+                let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from ${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;
 
                 if (a === false) {
                     help.printout(p);
                     return;
                 }
+                a = a as { maxFlow: number; flowPath: any[] };
 
-                p = "Ford-Fulkerson MaxFlow-MinCut Max Flow From " + window.main.graphState.nodeIDToLabel(source)
-                    + " to " + window.main.graphState.nodeIDToLabel(sink) + ": " + a.maxFlow;
+                p = `Ford-Fulkerson MaxFlow-MinCut Max Flow From ${GraphState.nodeIDToLabel(source)} to ${GraphState.nodeIDToLabel(sink)}: ${a.maxFlow}`;
                 p += "\n\nUsing Capacities:\n\n";
                 p = help.htmlEncode(p);
                 a.flowPath.forEach((v) => {
-                    p += window.main.graphState.nodeIDToLabel(v.from) + "&rarr;" + window.main.graphState.nodeIDToLabel(v.to)
-                        + " using " + v.flow + " of " + v.capacity + " \n";
+                    p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)} using ${v.flow} of ${v.capacity}\n`;
                 });
                 p = p.trim();
                 p = "<h3>Ford-Fulkerson MaxFlow-MinCut</h3><hr>" + p;
@@ -401,74 +435,71 @@ export default class UIInteractions {
             ]);
     }
 
-    static async makeAndPrintKruskal(): Promise<void> {
+    static makeAndPrintKruskal(): Promise<void> {
         if (window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
+        return callWithGraphAlgorithms((gAlgo) => {
+            const a = gAlgo.kruskal();
 
-        let a = gAlgo.kruskal();
+            let p = `Kruskal's Minimum Spanning Tree Total Weight: ${a.totalWeight}`;
+            p += "\n\nUsing Edges:\n\n";
+            p = help.htmlEncode(p);
+            a.mst.forEach((v) => {
+                p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)}\n`;
+            });
+            p = p.trim();
+            p = `<h3>Kruskal Minimum Spanning Tree</h3><hr>${p}`;
 
-        let p = "Kruskal's Minimum Spanning Tree Total Weight: " + a.totalWeight;
-        p += "\n\nUsing Edges:\n\n";
-        p = help.htmlEncode(p);
-        a.mst.forEach((v) => {
-            p += window.main.graphState.nodeIDToLabel(v.from) + "&rarr;" + window.main.graphState.nodeIDToLabel(v.to) + " \n";
+            help.printout(p);
         });
-        p = p.trim();
-        p = "<h3>Kruskal Minimum Spanning Tree</h3><hr>" + p;
-
-        help.printout(p);
     }
 
     static async makeAndPrintIsCyclic(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        window.main.graphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
-        window.main.graphState.setUpToDate(true, ["cyclic"]);
+        return callWithGraphAlgorithms((gAlgo) => {
+            GraphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
+            GraphState.setUpToDate(true, ["cyclic"]);
+        });
     }
 
-    static async makeAndPrintTopologicalSort(): Promise<void> {
+    static makeAndPrintTopologicalSort(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        let gg = await import("./GraphAlgorithms");
-        const gAlgo = gg.default;
-        let a = gAlgo.topologicalSort();
+        return callWithGraphAlgorithms((gAlgo) => {
+            const a = gAlgo.topologicalSort();
 
-        if (a === true) {
-            window.main.graphState.graphProperties.cyclic = true;
-            window.main.graphState.setUpToDate(true, ["cyclic"]);
+            if (a === true) {
+                GraphState.graphProperties.cyclic = true;
+                GraphState.setUpToDate(true, ["cyclic"]);
 
-            let p = "Topological sorting failed because the graph contains a cycle";
-            p = "<h3>Topological Sorting Failed</h3><hr>" + p;
+                help.printout("<h3>Topological Sorting Failed</h3><hr>Topological sorting failed because the graph contains a cycle");
+
+                return;
+            }
+
+            let p = "Topological Sorting:\n\n";
+            p = help.htmlEncode(p);
+            (a as any[]).forEach((v) => {
+                p += `${GraphState.nodeIDToLabel(v.id)}, `;
+            });
+            p = p.slice(0, -2);
+            p = `<h3>Topological Sorting</h3><hr>${p}`;
+
             help.printout(p);
-
-            return;
-        }
-
-        let p = "Topological Sorting:\n\n";
-        p = help.htmlEncode(p);
-        a.forEach((v) => {
-            p += window.main.graphState.nodeIDToLabel(v.id) + ", ";
         });
-        p = p.slice(0, -2);
-        p = "<h3>Topological Sorting</h3><hr>" + p;
-
-        help.printout(p);
     }
 
     static printGraphAlgorithms(): void {
-        let $div = $("#algorithms-pane");
+        const $div = $("#algorithms-pane");
         $div.empty();
-        let directional = window.settings.getOption("direction");
-        let weighted = window.settings.getOption("weights");
+        const directional = window.settings.getOption("direction");
+        const weighted = window.settings.getOption("weights");
 
-        const addAlgoToPane = (alg) => {
+        const addAlgoToPane = (alg: AlgorithmI) => {
             $div.append($("<a>", {class: "nav-link", href: "#"})
                 .text(alg.name).on("click", (e) => {
                     e.preventDefault();
@@ -476,7 +507,7 @@ export default class UIInteractions {
                 }));
         };
 
-        let a = UIInteractions.getAlgorithms();
+        const a = UIInteractions.getAlgorithms();
         a.forEach((alg) => {
             if (!alg.display) {
                 return;

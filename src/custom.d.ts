@@ -5,7 +5,7 @@ declare global {
     interface GraphPlain {
         edges: EdgeImmutPlain[];
         nodes: NodeImmutPlain[];
-        directed: boolean;
-        weighted: boolean
+        directed?: boolean;
+        weighted?: boolean
     }
 }
