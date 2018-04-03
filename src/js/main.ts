@@ -1,12 +1,43 @@
 "use strict";
 
-import $ from 'jquery';
+import * as $ from 'jquery';
 import help from './genericHelpers';
 import randomColor from 'randomcolor';
 import graphState from './graphState';
 import GraphImmut from "./GraphImmut/GraphImmut";
 
-let self = {
+export interface mainI {
+    graphState;
+    container: HTMLElement;
+    visWeightEdgeEdit: (data, callback) => void;
+    visOptions: {
+        interaction: { hover: boolean };
+        manipulation: {
+            addNode: (data, callback) => void;
+            editNode: (data, callback) => void;
+            addEdge: (data, callback?: any) => undefined | void;
+            editEdge: (data, callback) => void;
+            deleteEdge: (data, callback?: any) => void;
+            deleteNode: (data, callback) => void
+        }
+    };
+    cancelEdit: (callback) => void;
+    saveData: (data, callback, operation, label) => void;
+    nodeLabelIDValidator: (v) => (boolean | string);
+    applyColors: () => undefined | void;
+    setData: (data, recalcProps?: boolean, graphChanged?: boolean, rearrangeGraph?: boolean) => void;
+    saveState: () => undefined|void;
+    getStateForSaving: () => {};
+    undo: () => void;
+    redo: () => void;
+    applyState: (undo?: boolean, newState?: any) => void;
+    saveStateLocalStorage: () => void;
+    shuffleNetworkLayout: () => void;
+    randomizeNetworkLayoutSeed: (network) => void;
+    addNetworkListeners: (network) => void
+}
+
+let self: mainI = {
     graphState: graphState,
     container: document.getElementById('network'),
     // Function used to overwrite the edge edit functionality when weights are active
@@ -27,7 +58,7 @@ let self = {
     visOptions: {
         interaction: {hover: true},
         manipulation: {
-            addNode: function (data, callback) {
+            addNode: function (data, callback): void {
                 let $popup = help.makeFormModal("Add Node", "Save", [
                     {
                         type: "html",
@@ -47,7 +78,7 @@ let self = {
                     self.cancelEdit(callback);
                 }).modal("show");
             },
-            editNode: function (data, callback) {
+            editNode: function (data, callback): void {
                 let $popup = help.makeFormModal("Edit Node", "Save", [
                     {
                         type: "html",
@@ -67,7 +98,7 @@ let self = {
                     self.cancelEdit(callback);
                 }).modal("show");
             },
-            addEdge: function (data, callback) {
+            addEdge: function (data, callback?: any): undefined | void {
                 let apply = function () {
                     if (typeof callback === "function") {
                         callback(null);
@@ -88,18 +119,18 @@ let self = {
                 self.visOptions.manipulation.deleteEdge({edges: [data.id]});
                 self.visOptions.manipulation.addEdge(data);
             },
-            deleteEdge: function (data, callback) {
+            deleteEdge: function (data, callback?: any) {
                 if (typeof callback === "function") {
                     callback(null);
                 }
                 data.edges.forEach((v) => {
                     let weight = null;
-                    if (typeof window.network.body.data.edges._data[v].label !== "undefined") {
-                        weight = parseFloat(window.network.body.data.edges._data[v].label);
+                    if (typeof (<any> window.network).body.data.edges._data[v].label !== "undefined") {
+                        weight = parseFloat((<any> window.network).body.data.edges._data[v].label);
                     }
 
-                    self.graphState.deleteEdge(window.network.body.edges[v].fromId,
-                        window.network.body.edges[v].toId, weight);
+                    self.graphState.deleteEdge((<any> window.network).body.edges[v].fromId,
+                        (<any> window.network).body.edges[v].toId, weight);
                 });
             },
             deleteNode: function (data, callback) {
@@ -136,7 +167,7 @@ let self = {
         return "Invalid Label or ID";
     },
 
-    applyColors: () => {
+    applyColors: (): void | undefined => {
         if (window.settings.getOption("direction")) {
             return;
         }
@@ -194,7 +225,7 @@ let self = {
         self.saveStateLocalStorage();
     },
 
-    saveState: () => {
+    saveState: ():void|undefined => {
         if (self.graphState.graph === null) {
             return;
         }
@@ -350,7 +381,7 @@ let self = {
         // Delete key to delete node or edge
         $(document).on('keyup', (key) => {
             if (key.key === "Delete" && lastNetworkClickEvent !== null) {
-                if ($(self.container).has($(lastNetworkClickEvent.event.target)).length > 0) {
+                if ($(self.container).has(lastNetworkClickEvent.event.target).length > 0) {
                     if (("edges" in lastNetworkClickEvent && lastNetworkClickEvent.edges.length === 1)
                         || ("nodes" in lastNetworkClickEvent && lastNetworkClickEvent.nodes.length === 1)) {
                         if ($(':focus').parents(".modal").length === 0) {

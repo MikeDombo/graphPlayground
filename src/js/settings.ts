@@ -1,5 +1,17 @@
 "use strict";
 
+export interface settingsI {
+    defaults: { nodePhysics: boolean; direction: boolean; weights: boolean };
+    current: {};
+    checkForLocalStorage: () => (boolean);
+    saveSettings: () => void;
+    loadSettings: () => void;
+    setAll: () => void;
+    changeOption: (option, value) => void;
+    getOption: (option) => (any);
+    resetToDefault: () => void
+}
+
 let self = {
     defaults: {
         nodePhysics: true,
@@ -38,7 +50,7 @@ let self = {
 
     setAll: () => {
         window.network.setOptions({nodes: {physics: self.getOption("nodePhysics")}});
-        window.network.setOptions({edges: {arrows: {to: self.getOption("direction")}}});
+        window.network.setOptions({edges: {arrows: {to: <boolean> self.getOption("direction")}}});
         if (self.getOption("weights")) {
             window.network.setOptions({
                 manipulation: {

@@ -1,9 +1,23 @@
 "use strict";
 
-import $ from 'jquery';
+import * as $ from 'jquery';
+import {DataSet} from "vis";
+
+declare interface modalFormRow {
+    type: string;
+    label?: string;
+    initialValue?: any;
+    id?: string | number;
+    extraAttrs?: any;
+    validationFunc?: (value?: any, container?: JQuery<HTMLElement>) => boolean|string;
+    clickDismiss?: boolean;
+    onclick?: (...args: any[]) => void;
+    optionText?: any[];
+    optionValues?: any[];
+}
 
 let self = {
-    deepFreeze: (o) => {
+    deepFreeze: (o: any): Readonly<any> => {
         Object.freeze(o);
 
         Object.getOwnPropertyNames(o).forEach(prop => {
@@ -16,10 +30,12 @@ let self = {
 
         return o;
     },
-    sort: (arr, compareFunction) => {
+
+    sort: (arr: any[], compareFunction: (a: any, b: any) => number): any[] => {
         return [...arr].sort(compareFunction);
     },
-    datasetToArray: (ds, key) => {
+
+    datasetToArray: (ds: DataSet<any>, key: string): Readonly<any> => {
         let r = [];
         ds.forEach((v) => {
             r.push(v[key]);
@@ -27,7 +43,7 @@ let self = {
         return self.deepFreeze(r);
     },
 
-    keepOnlyKeys: (arr, keys) => {
+    keepOnlyKeys: (arr: any[], keys: string[]): any => {
         arr = arr.slice();
         arr.forEach((v) => {
             let k = Object.keys(v);
@@ -40,63 +56,61 @@ let self = {
         return self.deepFreeze(arr);
     },
 
-    getFileExtension: (filename) => {
+    getFileExtension: (filename: string): string => {
         return filename.split(".").splice(-1)[0];
     },
 
-    htmlEncode: (string) => {
+    htmlEncode: (string: string): string => {
         string = $("<div>").text(string).html();
         string = string.replace(/(?:\r\n|\r|\n)/g, '<br/>');
         return string;
     },
 
-    printout: (text, escape) => {
+    printout: (text: string, escape?: string): void => {
         if (escape) {
             text = this.htmlEncode(escape);
         }
         $("#printout").html(text);
     },
 
-    flatten: (map) => {
+    flatten: (map: any): Readonly<any> => {
         let r = [];
-        for (let i in map) {
-            if ({}.hasOwnProperty.call(map, i)) {
-                r.push(map[i]);
-            }
-        }
+        Object.keys(map).forEach((i) => {
+            r.push(map[i]);
+        });
         return self.deepFreeze(r);
     },
 
-    rotate: (map) => {
+    rotate: (map: any): Readonly<any> => {
         let r = {};
-        for (let i in map) {
+        Object.keys(map).forEach((i) => {
             if (map[i] in r) {
                 r[map[i]].push(i);
             }
             else {
                 r[map[i]] = [i];
             }
-        }
+        });
         return self.deepFreeze(r);
     },
 
-    max: (iterable) => {
+    max: (iterable: any[]): number => {
         return iterable.reduce((a, b) => {
             return Math.max(a, b);
         });
     },
 
-    toTitleCase: (str) => {
+    toTitleCase: (str: string): string => {
         return str.replace(/(?:^|\s)\w/g, (match) => {
             return match.toUpperCase();
         });
     },
 
-    showSimpleModal: (title, body) => {
+    showSimpleModal: (title: string, body: string): void => {
         self.showFormModal(null, title, null, [{type: "html", initialValue: body}], null, false);
     },
 
-    makeFormModal: (title, successText, form, footer = true) => {
+    makeFormModal: (title: string, successText: string, form: modalFormRow[], footer: boolean = true): JQuery<HTMLElement> => {
         let f = $("<div>", {class: "modal-body form-group"});
         form.forEach((formRow, i) => {
             if (!("initialValue" in formRow)) {
@@ -108,7 +122,8 @@ let self = {
                 id = formRow.id;
             }
 
-            let basicMap = {class: "form-control", id: id, value: formRow.initialValue};
+            let basicMap: { class: string; id: string; value: any, [key: number]: any, [key: string]: any } =
+                {class: "form-control", id: id, value: formRow.initialValue};
 
             if ("extraAttrs" in formRow) {
                 Object.keys(formRow.extraAttrs).forEach((attrname) => {
@@ -118,7 +133,7 @@ let self = {
                 });
             }
 
-            let validFunc = () => true;
+            let validFunc = (value?: any, container?: JQuery<HTMLElement>): string|boolean => true;
             if ("validationFunc" in formRow) {
                 validFunc = formRow.validationFunc;
             }
@@ -143,7 +158,7 @@ let self = {
             };
 
             if (formRow.type === "html") {
-                f.append($(formRow.initialValue));
+                f.append($(<string> formRow.initialValue));
             }
             else if (formRow.type === "checkbox") {
                 basicMap.type = "checkbox";
@@ -159,7 +174,7 @@ let self = {
                     )
                 );
             }
-            else{
+            else {
                 f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
 
                 if (formRow.type === "button") {
@@ -243,9 +258,9 @@ let self = {
         return $modal;
     },
 
-    showFormModal: (successCb, title, successText, form, cancelCb = ($modal) => {
+    showFormModal: (successCb: Function, title: string, successText: string, form: modalFormRow[], cancelCb: Function = ($modal) => {
         $modal.modal("hide");
-    }, footer = true) => {
+    }, footer = true): void => {
         let $modal = self.makeFormModal(title, successText, form, footer);
 
         $modal.on("click", ".btn-cancel", () => {
@@ -264,17 +279,17 @@ let self = {
             $modal.find("input, textarea, select").each((i, v) => {
                 let $v = $(v);
 
-                if ($v.tagName === "SELECT") {
+                if ((<any> $v).tagName === "SELECT") {
                     vals.push($v.find(":selected").val());
                 }
                 else if ($v.attr("type") === "checkbox") {
                     vals.push($v.prop("checked"));
                 }
                 else if ($v.attr("type") === "file") {
-                    vals.push($v.get(0).files);
+                    vals.push((<any>$v.get(0)).files);
                 }
                 else if ($v.attr("type") === "number") {
-                    vals.push(parseFloat($v.val()));
+                    vals.push(parseFloat(<string> $v.val()));
                 }
                 else {
                     vals.push($v.val());

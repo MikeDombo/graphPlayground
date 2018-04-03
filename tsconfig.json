@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"noImplicitAny": false,
+		"module": "esnext",
+		"target": "es6",
+		"allowJs": true,
+		"sourceMap": true,
+		//"declaration": true,
+		//"emitDeclarationOnly": true,
+		"lib": [
+			"dom",
+			"es7"
+		],
+		"baseUrl": ".",
+		"paths": {
+			"vis/index-network": [ "./node_modules/@types/vis/index.d.ts" ],
+			"raven-js": ["node_modules/raven-js/typescript/raven.d.ts"]
+		}
+	},
+	"include" : [
+		"./src/**/*.ts"
+	],
+	"files": [
+		"node_modules/immutable/dist/immutable.d.ts",
+		"node_modules/raven-js/typescript/raven.d.ts"
+	]
+}

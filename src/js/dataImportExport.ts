@@ -1,11 +1,11 @@
 "use strict";
 
-import $ from 'jquery';
+import * as $ from 'jquery';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
 
 let self = {
-    importByString: (string, format) => {
+    importByString: (string: string, format: string): void => {
         if (format.toLowerCase() === "json") {
             try {
                 let n = JSON.parse(string);
@@ -62,7 +62,7 @@ let self = {
         }
     },
 
-    makeImportTextModal: () => {
+    makeImportTextModal: (): void => {
         help.showFormModal(($modal, values) => {
                 $modal.modal("hide");
                 self.importByString(values[0], values[1]);
@@ -72,7 +72,7 @@ let self = {
             ]);
     },
 
-    makeImportFileModal: () => {
+    makeImportFileModal: (): void => {
         help.showFormModal(($modal, values) => {
                 $modal.modal("hide");
 
@@ -80,7 +80,7 @@ let self = {
                 if (files.length === 1) {
                     let file = files[0];
                     let reader = new FileReader();
-                    reader.onload = function (event) {
+                    reader.onload = function (event: any) {
                         self.importByString(event.target.result, help.getFileExtension(file.name));
                     };
 
@@ -89,7 +89,7 @@ let self = {
             }, "Import Graph From File", "Import",
             [{
                 type: "file", label: "Upload File", validationFunc: (val, $files) => {
-                    let files = $files.get(0).files;
+                    let files = (<any> $files.get(0)).files;
                     if (files.length >= 1) {
                         return true;
                     }
@@ -103,7 +103,9 @@ let self = {
             [{
                 type: "button",
                 initialValue: "Export to JSON",
-                onclick: () => {self.exportToFile("json");},
+                onclick: () => {
+                    self.exportToFile("json");
+                },
                 extraAttrs: {
                     class: "btn btn-sm btn-primary m-1"
 
@@ -113,7 +115,9 @@ let self = {
                 {
                     type: "button",
                     initialValue: "Export to DIMACS",
-                    onclick: () => {self.exportToFile("dimacs");},
+                    onclick: () => {
+                        self.exportToFile("dimacs");
+                    },
                     extraAttrs: {
                         class: "btn btn-sm btn-primary"
                     },
@@ -127,7 +131,9 @@ let self = {
             [{
                 type: "button",
                 initialValue: "Export to JSON",
-                onclick: () => {self.exportToText("json");},
+                onclick: () => {
+                    self.exportToText("json");
+                },
                 extraAttrs: {
                     class: "btn btn-sm btn-primary m-1",
                 },
@@ -136,7 +142,9 @@ let self = {
                 {
                     type: "button",
                     initialValue: "Export to DIMACS",
-                    onclick: () => {self.exportToText("dimacs");},
+                    onclick: () => {
+                        self.exportToText("dimacs");
+                    },
                     extraAttrs: {
                         class: "btn btn-sm btn-primary",
                     },
@@ -232,7 +240,7 @@ let self = {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(blob);
+            window.URL.revokeObjectURL(<any> blob);
         }
     },
 };

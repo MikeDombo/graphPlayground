@@ -1,6 +1,6 @@
 import gHelp from "./graphHelpers";
 import help from "./genericHelpers";
-import $ from "jquery";
+import * as $ from "jquery";
 
 
 const makeAndPrintShortestPath = (title, fn, weighted) => {
@@ -82,8 +82,28 @@ const makeAndPrintComponents = async (stronglyConnected) => {
     help.printout(p);
 };
 
+export interface UIInteractionsI {
+    getAlgorithms():any;
+    registerListeners():void;
+    printHelp():void;
+    printOptions():void;
+    makeAndPrintGraphColoring():Promise<void>;
+    makeAndPrintConnectedComponents():void;
+    makeAndPrintDirectionalEulerian():Promise<void>;
+    makeAndPrintEulerian():Promise<void>;
+    makeAndPrintStronglyConnectedComponents():void;
+    makeAndPrintBFS():Promise<void>;
+    makeAndPrintDijkstra():Promise<void>;
+    makeAndPrintBFSP():Promise<void>;
+    makeAndPrintFFMCMF():void;
+    makeAndPrintKruskal():Promise<void>;
+    makeAndPrintIsCyclic():Promise<void>;
+    makeAndPrintTopologicalSort():Promise<void>;
+    printGraphAlgorithms():void;
+}
+
 export default class UIInteractions {
-    static getAlgorithms () {
+    static getAlgorithms() {
         return [
             {
                 name: "Graph Coloring",
@@ -162,7 +182,7 @@ export default class UIInteractions {
         ];
     }
 
-    static registerListeners () {
+    static registerListeners(): void {
         const makeSimpleClickListener = (selector, fn) => {
             $(selector).on("click", (e) => {
                 e.preventDefault();
@@ -217,7 +237,7 @@ export default class UIInteractions {
         });
     }
 
-    static printHelp () {
+    static printHelp(): void {
         help.showSimpleModal("Help",
             "<h4>For support see the <a href='https://github.com/MikeDombo/graphPlayground' " +
             "target='_blank'>GitHub repository</a> for guides</h4>" +
@@ -225,7 +245,7 @@ export default class UIInteractions {
             " target='_blank'>GitHub issues</a> to submit bugs or feature requests.</h4>");
     }
 
-    static printOptions () {
+    static printOptions(): void {
         help.showFormModal(
             ($modal, vals) => {
                 $modal.modal("hide");
@@ -253,7 +273,7 @@ export default class UIInteractions {
             ], null);
     }
 
-    static async makeAndPrintGraphColoring () {
+    static async makeAndPrintGraphColoring(): Promise<void> {
         if (window.settings.getOption("direction")) {
             return;
         }
@@ -291,11 +311,11 @@ export default class UIInteractions {
         window.main.applyColors();
     }
 
-    static makeAndPrintConnectedComponents () {
+    static makeAndPrintConnectedComponents(): void {
         makeAndPrintComponents(false);
     }
 
-    static async makeAndPrintDirectionalEulerian () {
+    static async makeAndPrintDirectionalEulerian(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
@@ -306,7 +326,7 @@ export default class UIInteractions {
         window.main.graphState.graphProperties.eulerian = t;
     }
 
-    static async makeAndPrintEulerian () {
+    static async makeAndPrintEulerian(): Promise<void> {
         if (window.settings.getOption("direction")) {
             UIInteractions.makeAndPrintDirectionalEulerian();
             return;
@@ -318,29 +338,29 @@ export default class UIInteractions {
         window.main.graphState.graphProperties.eulerian = gAlgo.hasEulerianCircuit(window.main.graphState.graph.getAllOutDegrees());
     }
 
-    static makeAndPrintStronglyConnectedComponents () {
+    static makeAndPrintStronglyConnectedComponents(): void {
         makeAndPrintComponents(true);
     }
 
-    static async makeAndPrintBFS () {
+    static async makeAndPrintBFS(): Promise<void> {
         let gg = await import("./GraphAlgorithms");
         const gAlgo = gg.default;
-        makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch);
+        makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch, false);
     }
 
-    static async makeAndPrintDijkstra () {
+    static async makeAndPrintDijkstra(): Promise<void> {
         let gg = await import("./GraphAlgorithms");
         const gAlgo = gg.default;
         makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch, true);
     }
 
-    static async makeAndPrintBFSP () {
+    static async makeAndPrintBFSP(): Promise<void> {
         let gg = await import("./GraphAlgorithms");
         const gAlgo = gg.default;
         makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord, true);
     }
 
-    static makeAndPrintFFMCMF () {
+    static makeAndPrintFFMCMF(): void {
         if (!window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
@@ -381,7 +401,7 @@ export default class UIInteractions {
             ]);
     }
 
-    static async makeAndPrintKruskal () {
+    static async makeAndPrintKruskal(): Promise<void> {
         if (window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
@@ -402,7 +422,7 @@ export default class UIInteractions {
         help.printout(p);
     }
 
-    static async makeAndPrintIsCyclic () {
+    static async makeAndPrintIsCyclic(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
@@ -412,7 +432,7 @@ export default class UIInteractions {
         window.main.graphState.setUpToDate(true, ["cyclic"]);
     }
 
-    static async makeAndPrintTopologicalSort () {
+    static async makeAndPrintTopologicalSort(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
@@ -442,7 +462,7 @@ export default class UIInteractions {
         help.printout(p);
     }
 
-    static printGraphAlgorithms () {
+    static printGraphAlgorithms(): void {
         let $div = $("#algorithms-pane");
         $div.empty();
         let directional = window.settings.getOption("direction");

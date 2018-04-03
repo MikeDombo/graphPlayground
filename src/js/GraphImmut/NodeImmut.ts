@@ -1,9 +1,20 @@
 "use strict";
 
-export default class NodeImmut {
-    constructor (id, label = null, extraAttrs = null) {
-        this.id = id;
+export interface NodeImmutPlain {
+    id: Readonly<number>;
+    label: string;
 
+    [key: string]: any;
+
+    [key: number]: any
+}
+
+export default class NodeImmut {
+    private readonly id: Readonly<number>;
+    private readonly label: Readonly<string>;
+    private readonly attributes: any;
+
+    constructor(id: any, label: any = null, extraAttrs: null | any = null) {
         if (label === null) {
             this.label = id.toString();
         }
@@ -20,15 +31,15 @@ export default class NodeImmut {
 
         this.attributes = Object.freeze(this.attributes);
         this.label = Object.freeze(this.label);
-        this.id = Object.freeze(this.id);
+        this.id = Object.freeze(id);
 
         if (new.target === NodeImmut) {
             Object.freeze(this);
         }
     }
 
-    toPlain () {
-        let toReturn = {id: this.id, label: this.label};
+    toPlain(): NodeImmutPlain {
+        let toReturn: NodeImmutPlain = {id: this.id, label: this.label};
         Object.keys(this.attributes).forEach((key) => {
             if (!(key in toReturn)) {
                 toReturn[key] = this.attributes[key];
@@ -38,15 +49,15 @@ export default class NodeImmut {
         return toReturn;
     }
 
-    getID () {
+    getID(): Readonly<number> {
         return this.id;
     }
 
-    getLabel () {
+    getLabel(): Readonly<string> {
         return this.label;
     }
 
-    getAttribute (attribute) {
+    getAttribute(attribute: string | number): any {
         if (attribute in this.attributes) {
             return this.attributes[attribute];
         }
@@ -54,11 +65,11 @@ export default class NodeImmut {
         return null;
     }
 
-    getAllAttributes () {
+    getAllAttributes(): { [key: string]: any; [key: number]: any } {
         return this.attributes;
     }
 
-    editNode (label = null, extraAttrs = null) {
+    editNode(label: any = null, extraAttrs: any = null): NodeImmut {
         if (label === null) {
             label = this.getLabel();
         }

@@ -10,11 +10,11 @@ let self = {
         let G = graphState.graph;
 
         // Get node ID's only
-        let nodeArr = genericH.datasetToArray(G.getAllNodes(), "id");
+        let nodeArr = <Readonly<any[]>> genericH.datasetToArray(G.getAllNodes(), "id");
 
         // Put vertices in array in decreasing order of degree
         let degrees = G.getAllOutDegrees();
-        let vertexOrder = genericH.sort(nodeArr, (a, b) => {
+        let vertexOrder = genericH.sort(<any[]> nodeArr, (a, b) => {
             return degrees[a] < degrees[b] ? 1 : degrees[a] === degrees[b] ? 0 : -1;
         });
 
@@ -50,7 +50,7 @@ let self = {
             currentColor++;
         }
 
-        let chromaticNumber = genericH.max(genericH.flatten(colorIndex)) + 1;
+        let chromaticNumber = genericH.max(<any[]> genericH.flatten(colorIndex)) + 1;
         return {colors: colorIndex, chromaticNumber: chromaticNumber};
     },
 

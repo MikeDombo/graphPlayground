@@ -1,11 +1,39 @@
 "use strict";
 
-import $ from 'jquery';
+import * as $ from 'jquery';
 import {DataSet} from 'vis/index-network';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
+import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
+import NodeImmut, {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 
-let self = {
+export interface graphStateI {
+    backHistory: any[];
+    forwardHistory: any[];
+    maxHistory: number;
+    upToDate: ({ name: string; upToDate: boolean; type: string; applyFunc: () => void } | { name: string; upToDate: boolean; always: boolean; type: string })[];
+    state: { stronglyConnectedComponents: null; connectedComponents: null; graphColoring: null };
+    graph: GraphImmut;
+    graphProperties: { vertices: number; edges: number; eulerian: boolean; "Chromatic Number": null; "Connected Components": null; "Strongly Connected Components": null; cyclic: boolean };
+    setUpToDate: (value: boolean, listOptions?: string[]) => void;
+    getProperty: (property: string, updateIfNotUpdated?: boolean) => any;
+    makeAndPrintProperties: (recalcLong?: boolean) => void;
+    printGraphProperties: (properties: {}) => void;
+    addEdge: (from: number, to: number, weight?: number, graph?: GraphImmut) => void;
+    addNode: (data, graph?: GraphImmut) => void;
+    editNode: (id: number, label: string, graph?: GraphImmut) => void;
+    editEdge: (from: number, to: number, newWeight: number, oldWeight: number, graph?: GraphImmut) => void;
+    deleteEdge: (from: number, to: number, weight?: any, graph?: GraphImmut) => void;
+    deleteNode: (id: number, graph?: GraphImmut) => void;
+    clearColorFromNodes: (nodes: NodeImmutPlain[]) => NodeImmutPlain[];
+    nodeIDToLabel: (id: number, graph?: GraphImmut) => string;
+    nodeLabelToID: (label: string, graph?: GraphImmut) => number;
+    getGraphAsDataSet: (graph: GraphImmut) => { nodes: DataSet<any>; edges: DataSet<any> };
+    setLocations: (locations: any, graph?: GraphImmut) => GraphImmut;
+    getGraphData: (graph?: GraphImmut, clearColors?: boolean) => GraphPlain;
+}
+
+let self: graphStateI = {
     backHistory: [],
     forwardHistory: [],
     maxHistory: 10,
@@ -149,12 +177,12 @@ let self = {
 
     addEdge: (from, to, weight = 0, graph = self.graph) => {
         graph = graph.addEdge(from, to, weight);
-        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
+        window.main.setData({nodes: self.clearColorFromNodes(<NodeImmutPlain[]> graph.getAllNodes()), edges: graph.getAllEdges()});
     },
 
     addNode: (data, graph = self.graph) => {
         graph = graph.addNode({label: data.label, x: data.x, y: data.y});
-        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
+        window.main.setData({nodes: self.clearColorFromNodes(<NodeImmutPlain[]> graph.getAllNodes()), edges: graph.getAllEdges()});
     },
 
     editNode: (id, label, graph = self.graph) => {
@@ -163,21 +191,31 @@ let self = {
     },
 
     editEdge: (from, to, newWeight, oldWeight, graph = self.graph) => {
-        graph = graph.editEdge(from, to, newWeight, oldWeight);
-        window.main.setData(self.getGraphData(graph), false, false);
+        let newGraph = graph.editEdge(from, to, newWeight, oldWeight);
+        if (newGraph instanceof GraphImmut) {
+            window.main.setData(self.getGraphData(newGraph), false, false);
+        }
     },
 
     deleteEdge: (from, to, weight = null, graph = self.graph) => {
         graph = graph.deleteEdge(from, to, weight, false);
-        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
+        window.main.setData({
+            nodes: self.clearColorFromNodes(<NodeImmutPlain[]>graph.getAllNodes()),
+            edges: graph.getAllEdges()
+        });
     },
 
     deleteNode: (id, graph = self.graph) => {
-        graph = graph.deleteNode(id);
-        window.main.setData({nodes: self.clearColorFromNodes(graph.getAllNodes()), edges: graph.getAllEdges()});
+        let newGraph = graph.deleteNode(id);
+        if (newGraph instanceof GraphImmut) {
+            window.main.setData({
+                nodes: self.clearColorFromNodes(<NodeImmutPlain[]> newGraph.getAllNodes()),
+                edges: newGraph.getAllEdges()
+            });
+        }
     },
 
-    clearColorFromNodes: (nodes) => {
+    clearColorFromNodes: (nodes: NodeImmutPlain[]) => {
         nodes.forEach((v) => {
             v.color = null;
         });
@@ -185,8 +223,8 @@ let self = {
     },
 
     nodeIDToLabel: (id, graph = self.graph) => {
-        let n = graph.getNode(id, true);
-        if (n !== false && n !== null && typeof n !== "undefined" && n.getLabel().trim().length > 0) {
+        let n = <NodeImmut | boolean> graph.getNode(id, true);
+        if (n !== false && n !== null && n instanceof NodeImmut && n.getLabel().trim().length > 0) {
             return n.getLabel().trim();
         }
 
@@ -195,7 +233,7 @@ let self = {
 
     // Preferentially search by ID, label, and case-insensitive label
     nodeLabelToID: (label, graph = self.graph) => {
-        let n = graph.getAllNodes(true);
+        let n: NodeImmut[] = <NodeImmut[]> graph.getAllNodes(true);
         n = n.filter((node) => {
             return node.getLabel().toLowerCase() === label.toLowerCase() || node.getID().toString() === label;
         });
@@ -258,21 +296,22 @@ let self = {
         let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
             let v = locations[i];
-            let node = newNodes.get(i);
+            let node = newNodes.get(parseInt(i));
             // Only change when there is actually a new position
             if (node.getAttribute("x") !== v.x || node.getAttribute("y") !== v.y) {
                 // Batch up all changes that we'll be making
-                newNodes = newNodes.set(i, node.editNode(node.getLabel(), {x: v.x, y: v.y}));
+                newNodes = newNodes.set(parseInt(i), node.editNode(node.getLabel(), {x: v.x, y: v.y}));
             }
         });
 
         return new GraphImmut(newNodes, graph.getAllEdgesAsImmutableList(), graph.isDirected(), graph.isWeighted());
     },
 
-    getGraphData: (graph = self.graph, clearColors = false) => {
+    getGraphData: (graph = self.graph, clearColors = false): GraphPlain => {
+        let nodes = <NodeImmutPlain[]> graph.getAllNodes();
         return {
-            nodes: clearColors ? self.clearColorFromNodes(graph.getAllNodes()) : graph.getAllNodes(),
-            edges: graph.getAllEdges(),
+            nodes: clearColors ? self.clearColorFromNodes(nodes) : nodes,
+            edges: <EdgeImmutPlain[]> graph.getAllEdges(),
             directed: graph.isDirected(),
             weighted: graph.isWeighted()
         };

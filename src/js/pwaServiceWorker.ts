@@ -4,14 +4,14 @@ let filesToCache = [
 	'index.html'
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches.open(dataCacheName).then((cache) => cache.addAll(filesToCache))
 	);
 });
 
 // Get files from network first (cache if not cached already), then the cache
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
 	event.respondWith(
 		fetch(event.request)
 			.then(response => {

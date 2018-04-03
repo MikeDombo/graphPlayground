@@ -1,15 +1,13 @@
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-
-const outputPath = path.resolve(__dirname, 'dist');
-
-let webpackOptions = {
+var path = require('path');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+var CleanWebpackPlugin = require('clean-webpack-plugin');
+var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+var outputPath = path.resolve(__dirname, 'dist');
+var webpackOptions = {
     entry: {
-        bundle: './src/js/app.ts',
-        pwaPacked: './src/js/pwaServiceWorker.ts'
+        bundle: './src/js/app.js',
+        pwaPacked: './src/js/pwaServiceWorker.js'
     },
     output: {
         filename: '[name]-[hash].min.js',
@@ -39,7 +37,7 @@ let webpackOptions = {
         ]
     },
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ]
+        extensions: ['.tsx', '.ts', '.js']
     },
     plugins: [
         new CleanWebpackPlugin([outputPath + "/*-*.min.js*", outputPath + "/*-*.min.*.js*"]),
@@ -79,12 +77,11 @@ let webpackOptions = {
         }
     }
 };
-
-module.exports = () => {
+module.exports = function () {
     if (process.env.npm_lifecycle_script.toString().includes("development")) {
         webpackOptions.watch = true;
         webpackOptions.plugins.push(new webpack.NamedModulesPlugin());
     }
-
     return webpackOptions;
 };
+//# sourceMappingURL=webpack.config.js.map
