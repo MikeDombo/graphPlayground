@@ -3,7 +3,7 @@
 import * as $ from 'jquery';
 import help from './genericHelpers';
 import randomColor from 'randomcolor';
-import GraphState from './graphState';
+import GraphState, {AddNodeI, GraphStateHistory} from './graphState';
 import GraphImmut from "./GraphImmut/GraphImmut";
 import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
@@ -11,39 +11,64 @@ import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 export interface MainI {
     graphState: GraphState;
     container: HTMLElement;
-    visWeightEdgeEdit: (data: any, callback: Function) => void;
+    visWeightEdgeEdit: (data: VisEditEdgeInternal, callback: Function) => void;
     visOptions: {
         interaction: { hover: boolean };
         manipulation: {
-            addNode: (data: any, callback: Function) => void;
-            editNode: (data: any, callback: Function) => void;
-            addEdge: (data: any, callback?: Function) => undefined | void;
-            editEdge: (data: any, callback: Function) => void;
-            deleteEdge: (data: any, callback?: Function) => void;
-            deleteNode: (data: any, callback: Function) => void
+            addNode: (data: AddNodeI, callback: Function) => void;
+            editNode: (data: AddNodeI, callback: Function) => void;
+            addEdge: (data: VisEdgeInternal, callback?: Function) => void;
+            editEdge: (data: VisEdgeInternal, callback: Function) => void;
+            deleteEdge: (data: { edges: string[] }, callback?: Function) => void;
+            deleteNode: (data: { nodes: string[] }, callback: Function) => void
         }
     };
     cancelEdit: (callback: Function) => void;
     saveData: (data: any, callback: Function, operation: string, label: string) => void;
     nodeLabelIDValidator: (v: string) => (boolean | string);
-    applyColors: () => undefined | void;
+    applyColors: () => Promise<void>;
     setData: (data: GraphPlain, recalcProps?: boolean, graphChanged?: boolean, rearrangeGraph?: boolean) => void;
-    saveState: () => undefined | void;
-    getStateForSaving: () => {};
+    saveState: () => void;
+    getStateForSaving: () => GraphStateHistory;
     undo: () => void;
     redo: () => void;
     applyState: (undo?: boolean, newState?: any) => void;
     saveStateLocalStorage: () => void;
     shuffleNetworkLayout: () => void;
-    randomizeNetworkLayoutSeed: (network: any) => void;
-    addNetworkListeners: (network: any) => void
+    randomizeNetworkLayoutSeed: (network: VisNetworkInternals) => void;
+    addNetworkListeners: (network: vis.Network) => void
+}
+
+interface VisNetworkEvent {
+    edges: vis.DataSet<vis.Edge>;
+    nodes: vis.DataSet<vis.Node>;
+}
+
+interface VisNetworkInternals extends vis.Network {
+    layoutEngine: {
+        randomSeed: number,
+        initialRandomSeed: number
+    }
+}
+
+interface VisEditEdgeInternal {
+    from: { id: string | number };
+    to: { id: string | number };
+    label?: string
+}
+
+interface VisEdgeInternal {
+    from: string | number;
+    to: string | number;
+    id: string;
+    label?: string
 }
 
 const self: MainI = {
     graphState: GraphState,
     container: document.getElementById('network'),
     // Function used to overwrite the edge edit functionality when weights are active
-    visWeightEdgeEdit: (data, callback) => {
+    visWeightEdgeEdit: (data: VisEditEdgeInternal, callback) => {
         help.showFormModal(($modal, vals) => {
             callback(null);
             $modal.modal("hide");
@@ -100,7 +125,7 @@ const self: MainI = {
                     self.cancelEdit(callback);
                 }).modal("show");
             },
-            addEdge: (data, callback?: any) => {
+            addEdge: (data, callback) => {
                 const apply = () => {
                     if (typeof callback === "function") {
                         callback(null);
@@ -121,7 +146,7 @@ const self: MainI = {
                 self.visOptions.manipulation.deleteEdge({edges: [data.id]});
                 self.visOptions.manipulation.addEdge(data);
             },
-            deleteEdge: (data, callback?: any) => {
+            deleteEdge: (data, callback) => {
                 if (typeof callback === "function") {
                     callback(null);
                 }
@@ -137,7 +162,7 @@ const self: MainI = {
             },
             deleteNode: (data, callback) => {
                 callback(null);
-                data.nodes.forEach((v: number) => {
+                data.nodes.forEach((v: string) => {
                     GraphState.deleteNode(v);
                 });
             },
@@ -151,9 +176,9 @@ const self: MainI = {
     },
 
     saveData: (data, callback, operation, label) => {
-        data.label = label;
         callback(null);
 
+        data.label = label;
         if (operation === "add") {
             GraphState.addNode(data);
         }
@@ -162,7 +187,7 @@ const self: MainI = {
         }
     },
 
-    nodeLabelIDValidator: (v: string) => {
+    nodeLabelIDValidator: (v) => {
         if (GraphState.nodeLabelToID(v) > -1) {
             return true;
         }
@@ -184,7 +209,7 @@ const self: MainI = {
         self.setData(GraphState.getGraphData(G), false, false);
     },
 
-    setData: (data: GraphPlain, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
+    setData: (data, recalcProps = false, graphChanged = true, rearrangeGraph = false) => {
         // Store existing positions in the data if we're supposed to keep the layout
         if (rearrangeGraph) {
             data.nodes.forEach((v) => {
@@ -210,7 +235,7 @@ const self: MainI = {
         GraphState.graph = g;
 
         // Set a new random seed so that the layout will be different
-        self.randomizeNetworkLayoutSeed(window.network);
+        self.randomizeNetworkLayoutSeed(window.network as VisNetworkInternals);
         window.network.setData(GraphState.getGraphAsDataSet(g));
         GraphState.graph = GraphState.setLocations(window.network.getPositions());
 
@@ -227,7 +252,7 @@ const self: MainI = {
         self.saveStateLocalStorage();
     },
 
-    saveState: (): void | undefined => {
+    saveState: () => {
         if (GraphState.graph === null) {
             return;
         }
@@ -260,7 +285,7 @@ const self: MainI = {
             }
         });
 
-        return state;
+        return state as GraphStateHistory;
     },
 
     undo: () => {
@@ -275,7 +300,7 @@ const self: MainI = {
         }
     },
 
-    applyState: (undo = true, newState: any = null) => {
+    applyState: (undo = true, newState: GraphStateHistory = null) => {
         const firstLoad = newState !== null;
         const currentState = self.getStateForSaving();
 
@@ -288,6 +313,7 @@ const self: MainI = {
             }
         }
 
+        //@ts-ignore Ignore accessing private props. I do this because saving the state lost the type of the data
         newState.graph = new GraphImmut(newState.graph.nodes, newState.graph.edges, newState.graph.directed, newState.graph.weighted);
 
         window.settings.changeOption("direction", newState.graph.isDirected());
@@ -310,7 +336,7 @@ const self: MainI = {
             else if (!k.toLowerCase().includes("history") && k.toLowerCase() !== "graph") {
                 if (k.toLowerCase() === "uptodate") {
                     Object.keys((GraphState as any)[k]).forEach((oldKey) => {
-                        (GraphState as any)[k][oldKey].upToDate = v[oldKey].upToDate;
+                        (GraphState as any)[k][oldKey].upToDate = (v as any)[oldKey].upToDate;
                     });
                 }
                 else {
@@ -319,23 +345,24 @@ const self: MainI = {
             }
         });
 
-        GraphState.makeAndPrintProperties();
-        if (undo && !firstLoad) {
-            $(".icon-redo").parent().parent().addClass("active");
-            if (GraphState.backHistory.length === 0) {
-                $(".icon-undo").parent().parent().removeClass("active");
+        GraphState.makeAndPrintProperties().then(() => {
+            if (undo && !firstLoad) {
+                $(".icon-redo").parent().parent().addClass("active");
+                if (GraphState.backHistory.length === 0) {
+                    $(".icon-undo").parent().parent().removeClass("active");
+                }
+                GraphState.forwardHistory.push(currentState);
             }
-            GraphState.forwardHistory.push(currentState);
-        }
-        else if (!undo && !firstLoad) {
-            $(".icon-undo").parent().parent().addClass("active");
-            if (GraphState.forwardHistory.length === 0) {
-                $(".icon-redo").parent().parent().removeClass("active");
+            else if (!undo && !firstLoad) {
+                $(".icon-undo").parent().parent().addClass("active");
+                if (GraphState.forwardHistory.length === 0) {
+                    $(".icon-redo").parent().parent().removeClass("active");
+                }
+                GraphState.backHistory.push(currentState);
             }
-            GraphState.backHistory.push(currentState);
-        }
 
-        self.saveStateLocalStorage();
+            self.saveStateLocalStorage();
+        });
     },
 
     saveStateLocalStorage: () => {
@@ -359,7 +386,7 @@ const self: MainI = {
 
     addNetworkListeners: (network) => {
         // Enable edit node/edge when double clicking
-        network.on("doubleClick", (p) => {
+        network.on("doubleClick", (p: VisNetworkEvent) => {
             if (window.settings.getOption("weights") && "edges" in p && p.edges.length === 1) {
                 network.editEdgeMode();
             }
@@ -375,17 +402,17 @@ const self: MainI = {
         });
 
         // Delete nodes/edges when hit "Delete"
-        let lastNetworkClickEvent: any = null;
-        network.on('click', (event) => {
+        let lastNetworkClickEvent: JQuery.Event = null;
+        network.on('click', (event: JQuery.Event) => {
             lastNetworkClickEvent = event;
         });
 
         // Delete key to delete node or edge
         $(document).on('keyup', (key) => {
             if (key.key === "Delete" && lastNetworkClickEvent !== null) {
-                if ($(self.container).has(lastNetworkClickEvent.event.target).length > 0) {
-                    if (("edges" in lastNetworkClickEvent && lastNetworkClickEvent.edges.length === 1)
-                        || ("nodes" in lastNetworkClickEvent && lastNetworkClickEvent.nodes.length === 1)) {
+                if ($(self.container).has((lastNetworkClickEvent as any).event.target).length > 0) {
+                    if (("edges" in lastNetworkClickEvent && (lastNetworkClickEvent as any).edges.length === 1)
+                        || ("nodes" in lastNetworkClickEvent && (lastNetworkClickEvent as any).nodes.length === 1)) {
                         if ($(':focus').parents(".modal").length === 0) {
                             network.deleteSelected();
                         }

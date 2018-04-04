@@ -493,7 +493,7 @@ export default class GraphImmut {
     }
 
     // Take a multigraph and reduce all multiple edges to a single edge, weighted using the reducer
-    reduceMultiGraph(reducer: Function, initialValue?: any): GraphImmut {
+    reduceMultiGraph(reducer: (a: number, b: number) => number, initialValue?: any): GraphImmut {
         if (typeof initialValue === "undefined") {
             initialValue = 0;
         }

@@ -32,12 +32,12 @@ settings.loadSettings();
 
 let loadDefault = true;
 if (settings.checkForLocalStorage()) {
-    let s: any = localStorage.getItem("graphPlayground.lastState");
+    const s: string = localStorage.getItem("graphPlayground.lastState");
     if (s !== null) {
-        s = JSON.parse(s);
-        if ("graph" in s && "nodes" in s.graph) {
+        const jsonGraph: any = JSON.parse(s);
+        if ("graph" in jsonGraph && "nodes" in jsonGraph.graph) {
             loadDefault = false;
-            main.applyState(false, s);
+            main.applyState(false, jsonGraph as {graph: GraphPlain});
         }
     }
 }

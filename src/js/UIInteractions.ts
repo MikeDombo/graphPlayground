@@ -2,16 +2,9 @@ import gHelp from "./graphHelpers";
 import help from "./genericHelpers";
 import * as $ from "jquery";
 import GraphState from './graphState';
-import GraphAlgorithms from "./GraphAlgorithms";
+import GraphAlgorithms, {ShortestPathResult} from "./GraphAlgorithms";
 
-interface ShortestPathResult {
-    pathExists: boolean;
-    cost?: number;
-    distance: number;
-    path: number[]
-}
-
-export interface AlgorithmI {
+interface AlgorithmI {
     name: string;
     directional?: boolean;
     weighted?: boolean;
@@ -102,7 +95,7 @@ const callWithGraphAlgorithms = async (f: (gAlgo: GraphAlgorithms) => any): Prom
     return f(gAlgo);
 };
 
-const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<any> => {
+const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void> => {
     let a = null;
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
@@ -139,8 +132,6 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<any> 
     p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
 
     help.printout(p);
-
-    return Promise.resolve("hi");
 };
 
 export default class UIInteractions {
@@ -224,7 +215,7 @@ export default class UIInteractions {
     }
 
     static registerListeners(): void {
-        const makeSimpleClickListener = (selector: string, fn: () => void) => {
+        const makeSimpleClickListener = (selector: string, fn: () => any) => {
             $(selector).on("click", (e) => {
                 e.preventDefault();
                 fn();
@@ -446,7 +437,7 @@ export default class UIInteractions {
             p += "\n\nUsing Edges:\n\n";
             p = help.htmlEncode(p);
             a.mst.forEach((v) => {
-                p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)}\n`;
+                p += `${GraphState.nodeIDToLabel(v.getFrom())}&rarr;${GraphState.nodeIDToLabel(v.getTo())}\n`;
             });
             p = p.trim();
             p = `<h3>Kruskal Minimum Spanning Tree</h3><hr>${p}`;

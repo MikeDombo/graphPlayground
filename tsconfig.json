@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"noImplicitAny": false,
+		"noImplicitAny": true,
 		"module": "esnext",
 		"target": "es5",
 		"allowJs": false,

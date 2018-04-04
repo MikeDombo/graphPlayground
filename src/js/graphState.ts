@@ -1,25 +1,69 @@
 "use strict";
 
 import * as $ from 'jquery';
-import {DataSet} from 'vis/index-network';
+import {DataSet, Edge} from 'vis/index-network';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 import NodeImmut, {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 
-declare interface GraphProperties {
+interface UpToDateProperties {
     name: string;
     upToDate: boolean;
     type: string;
     always?: boolean;
     applyFunc?: () => Promise<any>;
+    [index: string]: string|boolean|(() => Promise<any>)
 }
 
+interface GraphProperties {
+    vertices: number;
+    edges: number;
+    eulerian: boolean;
+    "Chromatic Number": number | null;
+    "Connected Components": number | null;
+    "Strongly Connected Components": number | null;
+    cyclic: boolean;
+
+    [index: string]: boolean | number | null;
+}
+
+interface GraphStateData {
+    stronglyConnectedComponents: null | { [key: number]: number };
+    connectedComponents: null | { [key: number]: number };
+    graphColoring: null | number[];
+
+    [index: string]: null | number[] | { [key: number]: number };
+}
+
+export interface AddNodeI {
+    id?: number
+    label: string;
+    x: number;
+    y: number;
+    color?:string;
+}
+
+export interface GraphStateHistory {
+    upToDate: UpToDateProperties[];
+    state: GraphStateData;
+    graph: GraphImmut;
+    graphProperties: GraphProperties;
+    [index: string]: UpToDateProperties[]|GraphStateData|GraphImmut|GraphProperties;
+}
+
+const getInt = (v: string|number): number => {
+    if(typeof v === 'number'){
+        return v;
+    }
+    return parseInt(v);
+};
+
 export default class GraphState {
-    public static backHistory: any = [];
-    public static forwardHistory: any = [];
+    public static backHistory: GraphStateHistory[] = [];
+    public static forwardHistory: GraphStateHistory[] = [];
     public static maxHistory = 10;
-    public static upToDate: GraphProperties[] = [
+    public static upToDate: UpToDateProperties[] = [
         {
             name: "Chromatic Number", upToDate: false, type: "property",
             applyFunc: () => {
@@ -71,13 +115,13 @@ export default class GraphState {
             }
         },
     ];
-    public static state = {
+    public static state: GraphStateData = {
         stronglyConnectedComponents: null,
         connectedComponents: null,
         graphColoring: null,
     };
     public static graph: GraphImmut = null;
-    public static graphProperties = {
+    public static graphProperties: GraphProperties = {
         vertices: 0,
         edges: 0,
         eulerian: false,
@@ -171,15 +215,17 @@ export default class GraphState {
         $("#graphProps").html(`<p class='nav-link'>${p}</p>`);
     }
 
-    static addEdge(from, to, weight = 0, graph = GraphState.graph) {
-        graph = graph.addEdge(from, to, weight);
+    static addEdge(from: number|string, to: number|string, weight = 0, graph = GraphState.graph) {
+        const edgeFrom = getInt(from);
+        const edgeTo = getInt(to);
+        graph = graph.addEdge(edgeFrom, edgeTo, weight);
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
             edges: graph.getAllEdges() as EdgeImmutPlain[]
         });
     }
 
-    static addNode(data, graph = GraphState.graph) {
+    static addNode(data: AddNodeI, graph = GraphState.graph) {
         graph = graph.addNode({label: data.label, x: data.x, y: data.y});
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
@@ -187,28 +233,34 @@ export default class GraphState {
         });
     }
 
-    static editNode(id, label, graph = GraphState.graph) {
-        graph = graph.editNode(id, {label});
+    static editNode(id: number|string, label: string, graph = GraphState.graph) {
+        const iId = getInt(id);
+        graph = graph.editNode(iId, {label});
         window.main.setData(GraphState.getGraphData(graph), false, false);
     }
 
-    static editEdge(from, to, newWeight, oldWeight, graph = GraphState.graph) {
-        const newGraph = graph.editEdge(from, to, newWeight, oldWeight);
+    static editEdge(from: number|string, to: number|string, newWeight: number, oldWeight: number, graph = GraphState.graph) {
+        const edgeFrom = getInt(from);
+        const edgeTo = getInt(to);
+        const newGraph = graph.editEdge(edgeFrom, edgeTo, newWeight, oldWeight);
         if (newGraph instanceof GraphImmut) {
             window.main.setData(GraphState.getGraphData(newGraph), false, false);
         }
     }
 
-    static deleteEdge(from, to, weight = null, graph = GraphState.graph) {
-        graph = graph.deleteEdge(from, to, weight, false);
+    static deleteEdge(from: number|string, to: number|string, weight: number = null, graph = GraphState.graph) {
+        const edgeFrom = getInt(from);
+        const edgeTo = getInt(to);
+        graph = graph.deleteEdge(edgeFrom, edgeTo, weight, false);
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
             edges: graph.getAllEdges() as EdgeImmutPlain[]
         });
     }
 
-    static deleteNode(id, graph = GraphState.graph) {
-        const newGraph = graph.deleteNode(id);
+    static deleteNode(id: number|string, graph = GraphState.graph) {
+        const iId = getInt(id);
+        const newGraph = graph.deleteNode(iId);
         if (newGraph instanceof GraphImmut) {
             window.main.setData({
                 nodes: GraphState.clearColorFromNodes(newGraph.getAllNodes() as NodeImmutPlain[]),
@@ -217,14 +269,14 @@ export default class GraphState {
         }
     }
 
-    static clearColorFromNodes(nodes: NodeImmutPlain[]) {
+    static clearColorFromNodes(nodes: NodeImmutPlain[]): NodeImmutPlain[] {
         nodes.forEach((v) => {
             v.color = null;
         });
         return nodes;
     }
 
-    static nodeIDToLabel(id, graph = GraphState.graph) {
+    static nodeIDToLabel(id: number, graph = GraphState.graph): string {
         const n = graph.getNode(id, true);
         if (n !== false && n !== null && n instanceof NodeImmut && n.getLabel().trim().length > 0) {
             return n.getLabel().trim();
@@ -234,7 +286,7 @@ export default class GraphState {
     }
 
     // Preferentially search by ID, label, and case-insensitive label
-    static nodeLabelToID(label, graph = GraphState.graph) {
+    static nodeLabelToID(label: string, graph = GraphState.graph) {
         let n = graph.getAllNodes(true) as NodeImmut[];
         n = n.filter((node) => {
             return node.getLabel().toLowerCase() === label.toLowerCase() || node.getID().toString() === label;
@@ -283,7 +335,7 @@ export default class GraphState {
     }
 
     // Return graph as a Vis compatible dataset
-    static getGraphAsDataSet(graph) {
+    static getGraphAsDataSet(graph: GraphImmut): { nodes: DataSet<vis.Node>; edges: DataSet<vis.Edge> } {
         const d = GraphState.getGraphData(graph);
         if (graph.isWeighted()) {
             d.edges.forEach((e) => {
@@ -291,10 +343,10 @@ export default class GraphState {
             });
         }
 
-        return {nodes: new DataSet(d.nodes), edges: new DataSet(d.edges)};
+        return {nodes: new DataSet(d.nodes as vis.Node[]), edges: new DataSet(d.edges as vis.Edge[])};
     }
 
-    static setLocations(locations, graph = GraphState.graph) {
+    static setLocations(locations: {[key: string]: {x: number; y: number}}, graph = GraphState.graph): GraphImmut {
         let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
             const v = locations[i];

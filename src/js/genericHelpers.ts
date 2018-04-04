@@ -25,7 +25,7 @@ declare interface BasicMapType {
     [key: string]: any
 }
 
-const defaultCancelCb = ($modal) => {
+const defaultCancelCb = ($modal: JQuery) => {
     $modal.modal("hide");
 };
 
@@ -50,7 +50,7 @@ const self = {
 
     datasetToArray: (ds: any, key: string): Readonly<any[]> => {
         const r: any[] = [];
-        ds.forEach((v) => {
+        ds.forEach((v: {[index: string]: any}) => {
             r.push(v[key]);
         });
         return self.deepFreeze(r);
