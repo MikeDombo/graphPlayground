@@ -203,26 +203,26 @@ export default class GraphAlgorithms {
 
         // Priority Queue implementation for Dijkstra
         class PriorityQueue {
-            private _nodes: { key: number | string; priority: number }[] = [];
+            private readonly _nodes: { key: number | string; priority: number }[] = [];
 
             enqueue(priority: number, key: number): void {
                 this._nodes.push({key, priority});
                 this.sort();
-            };
+            }
 
             dequeue(): number|string {
                 return this._nodes.shift().key;
-            };
+            }
 
             sort(): void {
                 this._nodes.sort((a: { priority: number }, b: { priority: number }) => {
                     return a.priority - b.priority;
                 });
-            };
+            }
 
             isEmpty(): boolean {
                 return !this._nodes.length;
-            };
+            }
         }
 
         const queue = new PriorityQueue();

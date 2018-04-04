@@ -318,7 +318,7 @@ export default class UIInteractions {
             a = gAlgo.colorNetwork();
         }
 
-        (GraphState.graphProperties["Chromatic Number"] as number) = a.chromaticNumber;
+        GraphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
         GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
         (GraphState.state.graphColoring as {}) = a.colors;
 
@@ -337,7 +337,7 @@ export default class UIInteractions {
         p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
 
         help.printout(p);
-        window.main.applyColors();
+        return window.main.applyColors();
     }
 
     static makeAndPrintConnectedComponents(): Promise<void> {
