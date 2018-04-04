@@ -10,7 +10,7 @@ interface SettingsList {
 }
 
 export default class Settings {
-    private static defaults: SettingsList = {
+    private static readonly defaults: SettingsList = {
         nodePhysics: true,
         direction: false,
         weights: false
