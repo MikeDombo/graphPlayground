@@ -4,22 +4,22 @@ import 'bootstrap';
 import * as Raven from 'raven-js';
 import {Network} from 'vis/index-network';
 import {default as main, MainI} from './main';
-import {default as settings, SettingsI} from './settings';
-import {default as UI, UIInteractionsI} from './UIInteractions';
+import Settings from './settings';
+import UI from './UIInteractions';
 
 declare global {
     interface Window {
         main: MainI;
         network: Network;
-        settings: SettingsI;
-        ui: UIInteractionsI,
+        settings: typeof Settings;
+        ui: typeof UI,
         Raven: Raven.RavenStatic
     }
 }
 
 window.main = main;
 window.network = new Network(main.container, {}, main.visOptions);
-window.settings = settings;
+window.settings = Settings;
 window.ui = UI;
 
 // Initialize Sentry.io error logging
@@ -28,10 +28,10 @@ window.Raven = Raven;
 
 main.addNetworkListeners(window.network);
 
-settings.loadSettings();
+Settings.loadSettings();
 
 let loadDefault = true;
-if (settings.checkForLocalStorage()) {
+if (Settings.checkForLocalStorage()) {
     const s: string = localStorage.getItem("graphPlayground.lastState");
     if (s !== null) {
         const jsonGraph: any = JSON.parse(s);

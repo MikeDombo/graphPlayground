@@ -95,30 +95,26 @@ const newCustomGraph = (V: number, directed = false, weighted = false): Readonly
     return help.deepFreeze({nodes, edges: [], directed, weighted} as GraphPlain);
 };
 
-export interface PredefinedGraphsI {
-    graphNames: string[];
-    Petersen: () => Readonly<GraphPlain>;
-    Konigsberg: () => Readonly<GraphPlain>;
-    Complete: () => void;
-    Hypercube: () => void;
-    Custom: () => void
-}
+export default class PredefinedGraphs {
+    public static Petersen(): Readonly<GraphPlain> {
+        return help.deepFreeze({
+            edges: petersenEdges,
+            nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
+            directed: false,
+            weighted: false,
+        });
+    }
 
-const self = {
-    graphNames: help.deepFreeze(["Petersen", "Konigsberg", "Complete", "Hypercube"]),
-    Petersen: () => (help.deepFreeze({
-        edges: petersenEdges,
-        nodes: gHelp.interpolateNodesFromEdges(petersenEdges),
-        directed: false,
-        weighted: false,
-    })),
-    Konigsberg: () => (help.deepFreeze({
-        edges: konigsbergEdges,
-        nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
-        directed: false,
-        weighted: false,
-    })),
-    Complete: () => {
+    public static Konigsberg(): Readonly<GraphPlain> {
+        return help.deepFreeze({
+            edges: konigsbergEdges,
+            nodes: gHelp.interpolateNodesFromEdges(konigsbergEdges),
+            directed: false,
+            weighted: false,
+        });
+    }
+
+    public static Complete(): void {
         help.showFormModal(($modal, vals) => {
                 $modal.modal("hide");
                 window.main.setData(completeGraph(vals[0]), false, true, true);
@@ -129,8 +125,9 @@ const self = {
                     return v >= 0 || "Number of vertices must be non-negative";
                 }
             }]);
-    },
-    Hypercube: () => {
+    }
+
+    public static Hypercube(): void {
         help.showFormModal(($modal, vals) => {
                 $modal.modal("hide");
                 window.main.setData(hypercubeGraph(vals[0]), false, true, true);
@@ -141,8 +138,9 @@ const self = {
                     return v >= 0 || "Number of dimensions must be non-negative";
                 }
             }]);
-    },
-    Custom: () => {
+    }
+
+    public static Custom(): void {
         help.showFormModal(($modal, vals) => {
                 $modal.modal("hide");
                 window.main.setData(newCustomGraph(vals[0], vals[1], vals[2]), false, true, true);
@@ -157,6 +155,5 @@ const self = {
                 {type: "checkbox", initialValue: false, label: "Directed"},
                 {type: "checkbox", initialValue: false, label: "Weighted"},
             ]);
-    },
-};
-export default self;
+    }
+}

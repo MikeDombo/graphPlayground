@@ -9,28 +9,15 @@ interface SettingsList {
     [index: string]: boolean
 }
 
-export interface SettingsI {
-    defaults: SettingsList;
-    current: any;
-    checkForLocalStorage: () => (boolean);
-    saveSettings: () => void;
-    loadSettings: () => void;
-    setAll: () => void;
-    changeOption: (option: string, value: string | boolean) => void;
-    getOption: (option: string) => string | boolean;
-    resetToDefault: () => void
-}
-
-const self: SettingsI = {
-    defaults: {
+export default class Settings {
+    private static defaults: SettingsList = {
         nodePhysics: true,
         direction: false,
         weights: false
-    } as SettingsList,
+    };
+    private static current: any = {};
 
-    current: {} as any,
-
-    checkForLocalStorage: () => {
+    public static checkForLocalStorage() {
         try {
             const x = '__storage_test__';
             localStorage.setItem(x, x);
@@ -40,28 +27,28 @@ const self: SettingsI = {
         catch (e) {
             return false;
         }
-    },
+    }
 
-    saveSettings: () => {
-        if (self.checkForLocalStorage()) {
-            localStorage.setItem("graphPlayground.settings", JSON.stringify(self.current));
+    public static saveSettings() {
+        if (Settings.checkForLocalStorage()) {
+            localStorage.setItem("graphPlayground.settings", JSON.stringify(Settings.current));
         }
-    },
+    }
 
-    loadSettings: () => {
-        if (self.checkForLocalStorage()) {
-            self.current = JSON.parse(localStorage.getItem("graphPlayground.settings"));
+    public static loadSettings() {
+        if (Settings.checkForLocalStorage()) {
+            Settings.current = JSON.parse(localStorage.getItem("graphPlayground.settings"));
         }
-        if (self.current === null) {
-            self.current = {};
+        if (Settings.current === null) {
+            Settings.current = {};
         }
-        self.setAll();
-    },
+        Settings.setAll();
+    }
 
-    setAll: () => {
-        window.network.setOptions({nodes: {physics: self.getOption("nodePhysics") as boolean}});
-        window.network.setOptions({edges: {arrows: {to: self.getOption("direction") as boolean}}});
-        if (self.getOption("weights")) {
+    public static setAll() {
+        window.network.setOptions({nodes: {physics: Settings.getOption("nodePhysics") as boolean}});
+        window.network.setOptions({edges: {arrows: {to: Settings.getOption("direction") as boolean}}});
+        if (Settings.getOption("weights")) {
             window.network.setOptions({
                 manipulation: {
                     editEdge: {
@@ -73,30 +60,28 @@ const self: SettingsI = {
         else {
             window.network.setOptions({manipulation: {editEdge: window.main.visOptions.manipulation.editEdge}});
         }
-    },
+    }
 
-    changeOption: (option: string, value: string | boolean): void => {
-        self.current[option] = value;
-        self.saveSettings();
-        self.setAll();
-    },
+    public static changeOption(option: string, value: string | boolean): void {
+        Settings.current[option] = value;
+        Settings.saveSettings();
+        Settings.setAll();
+    }
 
-    getOption: (option: string): string | boolean => {
-        if (option in self.current) {
-            return self.current[option];
+    public static getOption(option: string): string | boolean {
+        if (option in Settings.current) {
+            return Settings.current[option];
         }
-        return self.defaults[option];
-    },
+        return Settings.defaults[option];
+    }
 
-    resetToDefault: (): void => {
-        self.current = {};
-        self.saveSettings();
-        self.setAll();
+    public static resetToDefault(): void {
+        Settings.current = {};
+        Settings.saveSettings();
+        Settings.setAll();
 
         // Reset graph to just a plain graph. Not sure if this should actually happen or not.
-        const G = GraphState.graph.asChangedDirectedWeighted(self.defaults.direction, self.defaults.weights);
+        const G = GraphState.graph.asChangedDirectedWeighted(Settings.defaults.direction, Settings.defaults.weights);
         window.main.setData(GraphState.getGraphData(G));
     }
-};
-
-export default self;
+}

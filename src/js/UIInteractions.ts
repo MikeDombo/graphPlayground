@@ -12,42 +12,6 @@ interface AlgorithmI {
     display: boolean
 }
 
-export interface UIInteractionsI {
-    getAlgorithms(): AlgorithmI[];
-
-    registerListeners(): void;
-
-    printHelp(): void;
-
-    printOptions(): void;
-
-    makeAndPrintGraphColoring(): Promise<void>;
-
-    makeAndPrintConnectedComponents(): Promise<void>;
-
-    makeAndPrintDirectionalEulerian(): Promise<void>;
-
-    makeAndPrintEulerian(): Promise<void>;
-
-    makeAndPrintStronglyConnectedComponents(): Promise<void>;
-
-    makeAndPrintBFS(): Promise<void>;
-
-    makeAndPrintDijkstra(): Promise<void>;
-
-    makeAndPrintBFSP(): Promise<void>;
-
-    makeAndPrintFFMCMF(): void;
-
-    makeAndPrintKruskal(): Promise<void>;
-
-    makeAndPrintIsCyclic(): Promise<void>;
-
-    makeAndPrintTopologicalSort(): Promise<void>;
-
-    printGraphAlgorithms(): void;
-}
-
 const makeAndPrintShortestPath = (title: string,
                                   fn: (a: number, b: number) => boolean | ShortestPathResult,
                                   weighted: boolean): void => {
@@ -90,8 +54,8 @@ const makeAndPrintShortestPath = (title: string,
         ]);
 };
 
-const callWithGraphAlgorithms = async (f: (gAlgo: GraphAlgorithms) => any): Promise<any> => {
-    const gAlgo = new ((await import("./GraphAlgorithms")).default)();
+const callWithGraphAlgorithms = async (f: (gAlgo: typeof GraphAlgorithms) => any): Promise<any> => {
+    const gAlgo = (await import("./GraphAlgorithms")).default;
     return f(gAlgo);
 };
 
@@ -100,7 +64,7 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
 
-    const gAlgo = new ((await import("./GraphAlgorithms")).default)();
+    const gAlgo = (await import("./GraphAlgorithms")).default;
     if (stronglyConnected) {
         if (!window.settings.getOption("direction")) {
             return;
@@ -314,7 +278,7 @@ export default class UIInteractions {
             colors: GraphState.state.graphColoring as {}
         };
         if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
-            const gAlgo = new ((await import("./GraphAlgorithms")).default)();
+            const gAlgo = (await import("./GraphAlgorithms")).default;
             a = gAlgo.colorNetwork();
         }
 
@@ -398,7 +362,7 @@ export default class UIInteractions {
 
                 const source = GraphState.nodeLabelToID(values[0]);
                 const sink = GraphState.nodeLabelToID(values[1]);
-                const gAlgo = new ((await import("./GraphAlgorithms")).default)();
+                const gAlgo = (await import("./GraphAlgorithms")).default;
                 let a = gAlgo.fordFulkerson(source, sink);
 
                 let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from ${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;

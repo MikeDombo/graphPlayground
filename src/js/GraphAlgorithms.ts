@@ -14,7 +14,7 @@ export type ConnectedComponentResult = { components: {[key: number]: number}; co
 
 export default class GraphAlgorithms {
     // Welsh-Powell Algorithm
-    public colorNetwork = (G: GraphImmut = GraphState.graph): { colors: {}; chromaticNumber: number } => {
+    public static colorNetwork = (G: GraphImmut = GraphState.graph): { colors: {}; chromaticNumber: number } => {
         // Get node ID's only
         const nodeArr: number[] = genericH.datasetToArray(G.getAllNodes(), "id") as number[];
 
@@ -60,7 +60,7 @@ export default class GraphAlgorithms {
         return {colors: colorIndex, chromaticNumber};
     };
 
-    public connectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
+    public static connectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
         const components: { [key: number]: number } = {};
         let componentCount = 0;
         const setComponentNum = (v: number) => {
@@ -68,7 +68,7 @@ export default class GraphAlgorithms {
         };
         for (let i = 0; i < G.getNumberOfNodes(); i++) {
             if (!(i in components)) {
-                const visited = this.depthFirstSearch(G, i);
+                const visited = GraphAlgorithms.depthFirstSearch(G, i);
                 visited.forEach(setComponentNum);
                 componentCount++;
             }
@@ -77,7 +77,7 @@ export default class GraphAlgorithms {
         return Promise.resolve({components, count: componentCount});
     };
 
-    public depthFirstSearch = (G: GraphImmut = GraphState.graph, start: number): number[] => {
+    public static depthFirstSearch = (G: GraphImmut = GraphState.graph, start: number): number[] => {
         const visisted: number[] = [];
         const Stack: number[] = [];
         Stack.push(start);
@@ -95,7 +95,7 @@ export default class GraphAlgorithms {
     };
 
     // Tarjan's algorithm
-    public stronglyConnectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
+    public static stronglyConnectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
         let index = 0;
         const indices: { [key: number]: number } = {};
         const lowlink: { [key: number]: number } = {};
@@ -140,7 +140,7 @@ export default class GraphAlgorithms {
         return Promise.resolve({components, count: componentCount});
     };
 
-    public breadthFirstSearch = (startNodeID: number, targetNodeID: number,
+    public static breadthFirstSearch = (startNodeID: number, targetNodeID: number,
                                  G: GraphImmut = GraphState.graph): ShortestPathResult => {
         // Perform the BFS
         const visisted: number[] = [];
@@ -182,7 +182,7 @@ export default class GraphAlgorithms {
         return {pathExists: false, path: [], distance: -1, weight: -1};
     };
 
-    public dijkstraSearch = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (ShortestPathResult | boolean) => {
+    public static dijkstraSearch = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (ShortestPathResult | boolean) => {
         if (!G.isDirected()) {
             G = G.asDirected(true);
         }
@@ -281,7 +281,7 @@ export default class GraphAlgorithms {
         return {pathExists: false, path: [], distance: -1, cost: 0};
     };
 
-    public bellmanFord = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): ( ShortestPathResult | boolean ) => {
+    public static bellmanFord = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): ( ShortestPathResult | boolean ) => {
         const distances: number[] = [];
         const parents: number[] = [];
 
@@ -329,7 +329,7 @@ export default class GraphAlgorithms {
         return {pathExists: false, path: [], distance: -1, cost: 0};
     };
 
-    public fordFulkerson = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (boolean | { maxFlow: number; flowPath: EdgeFlowProp[] }) => {
+    public static fordFulkerson = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (boolean | { maxFlow: number; flowPath: EdgeFlowProp[] }) => {
         // Must be a directed graph
         if (!G.isDirected()) {
             return false;
@@ -340,7 +340,7 @@ export default class GraphAlgorithms {
             return false;
         }
 
-        const bfs = this.breadthFirstSearch(startNodeID, targetNodeID, G);
+        const bfs = GraphAlgorithms.breadthFirstSearch(startNodeID, targetNodeID, G);
         // No path from source to sink
         if (!bfs.pathExists) {
             return false;
@@ -455,7 +455,7 @@ export default class GraphAlgorithms {
         return {maxFlow: value, flowPath: getFlows()};
     };
 
-    public kruskal = (G: GraphImmut = GraphState.graph): { mst: EdgeImmut[]; totalWeight: number } => {
+    public static kruskal = (G: GraphImmut = GraphState.graph): { mst: EdgeImmut[]; totalWeight: number } => {
         // If we have a multigraph, reduce it by using the minimum edge weights
         G.reduceMultiGraph(Math.min, Infinity);
 
@@ -484,7 +484,7 @@ export default class GraphAlgorithms {
         return {mst: kruskal, totalWeight: weight};
     };
 
-    public topologicalSort = (G: GraphImmut = GraphState.graph): boolean | NodeImmut[] => {
+    public static topologicalSort = (G: GraphImmut = GraphState.graph): boolean | NodeImmut[] => {
         const adjacency = G.getFullAdjacency();
         const degrees = graphH.findVertexDegreesDirectional(adjacency);
 
@@ -523,12 +523,12 @@ export default class GraphAlgorithms {
         return edges.length > 0 || L;
     };
 
-    public isGraphCyclic = (G: GraphImmut = GraphState.graph): boolean => {
+    public static isGraphCyclic = (G: GraphImmut = GraphState.graph): boolean => {
         // If the topological sorting returns true, then it failed, so the graph has a cycle
-        return this.topologicalSort(G) === true;
+        return GraphAlgorithms.topologicalSort(G) === true;
     };
 
-    public directionalEulerian = async (directionalDegrees: {in: number; out: number}[]): Promise<boolean> => {
+    public static directionalEulerian = async (directionalDegrees: {in: number; out: number}[]): Promise<boolean> => {
         const scc = await GraphState.getProperty("stronglyConnectedComponents", true);
 
         let eulerian = true;
@@ -550,7 +550,7 @@ export default class GraphAlgorithms {
         return eulerian;
     };
 
-    public hasEulerianCircuit = async (degrees: number[]): Promise<boolean> => {
+    public static hasEulerianCircuit = async (degrees: number[]): Promise<boolean> => {
         const oddDegree = degrees.filter((v) => {
             return v % 2 !== 0;
         });
