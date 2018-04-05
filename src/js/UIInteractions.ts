@@ -64,6 +64,10 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
 
+    if(UIInteractions.runningConnectedComponents){
+        return Promise.reject("Already running");
+    }
+    UIInteractions.runningConnectedComponents = true;
     const gAlgo = (await import("./GraphAlgorithms")).default;
     if (stronglyConnected) {
         if (!window.settings.getOption("direction")) {
@@ -96,9 +100,11 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
     p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
 
     help.printout(p);
+    UIInteractions.runningConnectedComponents = false;
 };
 
 export default class UIInteractions {
+    public static runningConnectedComponents = false;
     static getAlgorithms(): AlgorithmI[] {
         return [
             {

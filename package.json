@@ -7,12 +7,11 @@
 		"url": "git+https://github.com/MikeDombo/graphPlayground.git"
 	},
 	"scripts": {
-		"run-dev": "webpack --mode development",
+		"dev": "webpack --mode development",
 		"build": "webpack --mode production",
 		"deploy": "git subtree push --prefix dist origin gh-pages",
 		"webpackStats": "webpack --json --mode production | webpack-bundle-size-analyzer",
-		"sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat",
-		"start": "webpack-dev-server"
+		"sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat"
 	},
 	"keywords": [],
 	"author": "Michael Dombrowski",
@@ -25,6 +24,8 @@
 		"@types/jquery": "^3.3.1",
 		"@types/vis": "^4.21.3",
 		"babel-eslint": "^8.2.2",
+		"browser-sync": "^2.23.6",
+		"browser-sync-webpack-plugin": "^2.2.2",
 		"cache-loader": "^1.2.2",
 		"clean-webpack-plugin": "^0.1.19",
 		"copy-webpack-plugin": "^4.5.1",
@@ -32,8 +33,7 @@
 		"ts-loader": "^4.1.0",
 		"typescript": "^2.8.1",
 		"webpack": "^4.5.0",
-		"webpack-cli": "^2.0.13",
-		"webpack-dev-server": "^3.1.1"
+		"webpack-cli": "^2.0.13"
 	},
 	"dependencies": {
 		"bootstrap": "^4.0.0",

@@ -3,6 +3,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
 const outputPath = path.resolve(__dirname, 'dist');
 
@@ -42,6 +43,11 @@ let webpackOptions = {
         extensions: [ '.tsx', '.ts', '.js' ]
     },
     plugins: [
+        new BrowserSyncPlugin({
+            host: 'localhost',
+            port: 80,
+            server: { baseDir: ['dist'] }
+        }),
         new CleanWebpackPlugin([outputPath + "/*-*.min.js*", outputPath + "/*-*.min.*.js*"]),
         new HtmlWebpackPlugin({
             template: 'index.html',
