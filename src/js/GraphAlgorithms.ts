@@ -8,11 +8,17 @@ import NodeImmut from "./GraphImmut/NodeImmut";
 import GraphImmut from "./GraphImmut/GraphImmut";
 import GraphState from "./graphState";
 
-type EdgeFlowProp = {from: number; to: number; capacity: number; flow: number};
-export type ShortestPathResult = { pathExists: boolean; path: number[]; distance: number; cost?: number; weight?: number};
-export type ConnectedComponentResult = { components: {[key: number]: number}; count: number };
+type EdgeFlowProp = { from: number; to: number; capacity: number; flow: number };
+export type MSTResult = { mst: EdgeImmut[]; totalWeight: number };
+export type FlowResult = { maxFlow: number; flowPath: EdgeFlowProp[] };
+export type ShortestPathResult = { pathExists: boolean; path: number[]; distance: number; cost?: number; weight?: number };
+export type ConnectedComponentResult = { components: { [key: number]: number }; count: number };
 
 export default class GraphAlgorithms {
+    public static graphPlainToGraphImmut = (gp: GraphPlain): GraphImmut => {
+        return new GraphImmut(gp.nodes, gp.edges, gp.directed, gp.weighted);
+    };
+
     // Welsh-Powell Algorithm
     public static colorNetwork = (G: GraphImmut = GraphState.graph): { colors: {}; chromaticNumber: number } => {
         // Get node ID's only
@@ -60,7 +66,7 @@ export default class GraphAlgorithms {
         return {colors: colorIndex, chromaticNumber};
     };
 
-    public static connectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
+    public static connectedComponents = (G: GraphImmut = GraphState.graph): ConnectedComponentResult => {
         const components: { [key: number]: number } = {};
         let componentCount = 0;
         const setComponentNum = (v: number) => {
@@ -68,16 +74,16 @@ export default class GraphAlgorithms {
         };
         for (let i = 0; i < G.getNumberOfNodes(); i++) {
             if (!(i in components)) {
-                const visited = GraphAlgorithms.depthFirstSearch(G, i);
+                const visited = GraphAlgorithms.depthFirstSearch(i, G);
                 visited.forEach(setComponentNum);
                 componentCount++;
             }
         }
 
-        return Promise.resolve({components, count: componentCount});
+        return {components, count: componentCount};
     };
 
-    public static depthFirstSearch = (G: GraphImmut = GraphState.graph, start: number): number[] => {
+    public static depthFirstSearch = (start: number, G = GraphState.graph): number[] => {
         const visisted: number[] = [];
         const Stack: number[] = [];
         Stack.push(start);
@@ -95,7 +101,7 @@ export default class GraphAlgorithms {
     };
 
     // Tarjan's algorithm
-    public static stronglyConnectedComponents = (G: GraphImmut = GraphState.graph): Promise<ConnectedComponentResult> => {
+    public static stronglyConnectedComponents = (G: GraphImmut = GraphState.graph): ConnectedComponentResult => {
         let index = 0;
         const indices: { [key: number]: number } = {};
         const lowlink: { [key: number]: number } = {};
@@ -137,11 +143,11 @@ export default class GraphAlgorithms {
             }
         }
 
-        return Promise.resolve({components, count: componentCount});
+        return {components, count: componentCount};
     };
 
     public static breadthFirstSearch = (startNodeID: number, targetNodeID: number,
-                                 G: GraphImmut = GraphState.graph): ShortestPathResult => {
+                                        G: GraphImmut = GraphState.graph): ShortestPathResult => {
         // Perform the BFS
         const visisted: number[] = [];
         const Q: number[] = []; // Use Push and Shift for Queue operations
@@ -194,10 +200,6 @@ export default class GraphAlgorithms {
             return edge.getWeight() < 0;
         });
         if (typeof nonNegative !== "undefined") {
-            genericH.showSimpleModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
-                " with totally non-negative edge weights. Please fix the graph so that there are no" +
-                " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
-                " exactly this problem.</p>");
             return false;
         }
 
@@ -210,7 +212,7 @@ export default class GraphAlgorithms {
                 this.sort();
             }
 
-            dequeue(): number|string {
+            dequeue(): number | string {
                 return this._nodes.shift().key;
             }
 
@@ -281,7 +283,7 @@ export default class GraphAlgorithms {
         return {pathExists: false, path: [], distance: -1, cost: 0};
     };
 
-    public static bellmanFord = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): ( ShortestPathResult | boolean ) => {
+    public static bellmanFord = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (ShortestPathResult | boolean) => {
         const distances: number[] = [];
         const parents: number[] = [];
 
@@ -321,15 +323,13 @@ export default class GraphAlgorithms {
         }
 
         if (negativeCylce) {
-            genericH.showSimpleModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
-                " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>");
             return false;
         }
 
         return {pathExists: false, path: [], distance: -1, cost: 0};
     };
 
-    public static fordFulkerson = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (boolean | { maxFlow: number; flowPath: EdgeFlowProp[] }) => {
+    public static fordFulkerson = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (boolean | FlowResult) => {
         // Must be a directed graph
         if (!G.isDirected()) {
             return false;
@@ -356,7 +356,7 @@ export default class GraphAlgorithms {
         let marked: boolean[] = [];
         let edgeTo: string[] = [];
 
-        const edgeProperties: {[key: string]: EdgeFlowProp} = {};
+        const edgeProperties: { [key: string]: EdgeFlowProp } = {};
         (G.getAllEdges(true) as EdgeImmut[]).forEach((edge) => {
             edgeProperties[`${edge.getFrom()}_${edge.getTo()}`] = {
                 from: edge.getFrom(),
@@ -455,7 +455,7 @@ export default class GraphAlgorithms {
         return {maxFlow: value, flowPath: getFlows()};
     };
 
-    public static kruskal = (G: GraphImmut = GraphState.graph): { mst: EdgeImmut[]; totalWeight: number } => {
+    public static kruskal = (G: GraphImmut = GraphState.graph): MSTResult => {
         // If we have a multigraph, reduce it by using the minimum edge weights
         G.reduceMultiGraph(Math.min, Infinity);
 
@@ -528,9 +528,7 @@ export default class GraphAlgorithms {
         return GraphAlgorithms.topologicalSort(G) === true;
     };
 
-    public static directionalEulerian = async (directionalDegrees: {in: number; out: number}[]): Promise<boolean> => {
-        const scc = await GraphState.getProperty("stronglyConnectedComponents", true);
-
+    public static directionalEulerian = (directionalDegrees: { in: number; out: number }[], scc: number[]): boolean => {
         let eulerian = true;
         let component = -1;
         directionalDegrees.forEach((deg, id) => {
@@ -550,7 +548,7 @@ export default class GraphAlgorithms {
         return eulerian;
     };
 
-    public static hasEulerianCircuit = async (degrees: number[]): Promise<boolean> => {
+    public static hasEulerianCircuit = (degrees: number[], cc: number[]): boolean => {
         const oddDegree = degrees.filter((v) => {
             return v % 2 !== 0;
         });
@@ -559,8 +557,6 @@ export default class GraphAlgorithms {
         if (oddDegree.length !== 0) {
             return false;
         }
-
-        const cc = await GraphState.getProperty("connectedComponents", true);
 
         let eulerian = true;
         let component = -1;
