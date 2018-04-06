@@ -36,19 +36,23 @@ let webpackOptions = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
+            },
+            {
+                test: /\.GraphAlgorithmWorker\.tsx?$/,
+                use: {loader: 'worker-loader'}
             }
         ]
     },
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ]
+        extensions: ['.tsx', '.ts', '.js']
     },
     plugins: [
         new BrowserSyncPlugin({
             host: 'localhost',
             port: 80,
-            server: { baseDir: ['dist'] }
+            server: {baseDir: ['dist']}
         }),
-        new CleanWebpackPlugin([outputPath + "/*-*.min.js*", outputPath + "/*-*.min.*.js*"]),
+        new CleanWebpackPlugin([outputPath + "/*.js*"]),
         new HtmlWebpackPlugin({
             template: 'index.html',
             inject: false,

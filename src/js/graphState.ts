@@ -12,8 +12,8 @@ interface UpToDateProperties {
     upToDate: boolean;
     type: string;
     always?: boolean;
-    applyFunc?: () => Promise<any>;
-    [index: string]: string|boolean|(() => Promise<any>)
+    applyFunc?: () => void;
+    [index: string]: string|boolean|(() => void)
 }
 
 interface GraphProperties {
@@ -87,25 +87,25 @@ export default class GraphState {
         {
             name: "Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                return window.ui.makeAndPrintConnectedComponents();
+                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components').applyFunc();
             }
         },
         {
             name: "connectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                return window.ui.makeAndPrintConnectedComponents();
+                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components').applyFunc();
             }
         },
         {
             name: "Strongly Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                return window.ui.makeAndPrintStronglyConnectedComponents();
+                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components').applyFunc();
             }
         },
         {
             name: "stronglyConnectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                return window.ui.makeAndPrintStronglyConnectedComponents();
+                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components').applyFunc();
             }
         },
         {
@@ -147,30 +147,17 @@ export default class GraphState {
         }
     }
 
-    static async getProperty(property: string, updateIfNotUpdated = false): Promise<any> {
+    static getProperty(property: string, updateIfNotUpdated = false): any {
         const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
         });
         if (!a.upToDate) {
             if ("applyFunc" in a && updateIfNotUpdated) {
-                await a.applyFunc();
+                a.applyFunc();
             }
             else {
-                return Promise.resolve(null);
+                return null;
             }
-        }
-        if (a.type === "state") {
-            return Promise.resolve(GraphState.state[property]);
-        }
-        return Promise.resolve(GraphState.graphProperties[property]);
-    }
-
-    static getPropertyImm(property: string): any {
-        const a = GraphState.upToDate.find((v) => {
-            return ("name" in v && v.name === property);
-        });
-        if (!a.upToDate) {
-            return null;
         }
         if (a.type === "state") {
             return GraphState.state[property];

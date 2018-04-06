@@ -2,7 +2,10 @@ import gHelp from "./graphHelpers";
 import help from "./genericHelpers";
 import * as $ from "jquery";
 import GraphState from './graphState';
-import GraphAlgorithms, {ShortestPathResult} from "./GraphAlgorithms";
+import {FlowResult, MSTResult, ShortestPathResult} from "./GraphAlgorithms";
+//@ts-ignore
+import Worker from 'worker-loader!./GraphAlgorithmWorker';
+import NodeImmut from "./GraphImmut/NodeImmut";
 
 interface AlgorithmI {
     name: string;
@@ -13,7 +16,7 @@ interface AlgorithmI {
 }
 
 const makeAndPrintShortestPath = (title: string,
-                                  fn: (a: number, b: number) => boolean | ShortestPathResult,
+                                  fn: string,
                                   weighted: boolean): void => {
     help.showFormModal(($modal, values) => {
             $modal.modal("hide");
@@ -21,32 +24,48 @@ const makeAndPrintShortestPath = (title: string,
             const source = GraphState.nodeLabelToID(values[0]);
             const sink = GraphState.nodeLabelToID(values[1]);
 
-            let a = fn(source, sink);
-            if (a === false) {
-                return;
-            }
+            const w = new Worker();
+            w.addEventListener("message", (e: MessageEvent) => {
+                let a = e.data;
+                w.terminate();
 
-            a = a as ShortestPathResult;
-
-            let p = `<h3>${title}</h3><hr>No path exists from ${help.htmlEncode(source.toString())} to ${help.htmlEncode(sink.toString())}`;
-
-            if (a.pathExists) {
-                p = `${title} From ${GraphState.nodeIDToLabel(source)} to `;
-                p += `${GraphState.nodeIDToLabel(sink)}: ${a.distance}`;
-                if (weighted) {
-                    p += `\nWith weighted cost: ${a.cost}`;
+                if (a === false) {
+                    if(title.includes("Dijkstra")){
+                        help.showSimpleModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
+                            " with totally non-negative edge weights. Please fix the graph so that there are no" +
+                            " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
+                            " exactly this problem.</p>");
+                    }
+                    else if(title.includes("Bellman")) {
+                        help.showSimpleModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
+                            " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>");
+                    }
+                    return;
                 }
-                p += "\n\nUsing Path: ";
 
-                p = help.htmlEncode(p);
-                a.path.forEach((v) => {
-                    p += `${help.htmlEncode(GraphState.nodeIDToLabel(v))} &rarr; `;
-                });
-                p = p.slice(0, -8);
-                p = `<h3>${title}</h3><hr>${p}`;
-            }
+                a = a as ShortestPathResult;
 
-            help.printout(p);
+                let p = `<h3>${title}</h3><hr>No path exists from ${help.htmlEncode(source.toString())} to ${help.htmlEncode(sink.toString())}`;
+
+                if (a.pathExists) {
+                    p = `${title} From ${GraphState.nodeIDToLabel(source)} to `;
+                    p += `${GraphState.nodeIDToLabel(sink)}: ${a.distance}`;
+                    if (weighted) {
+                        p += `\nWith weighted cost: ${a.cost}`;
+                    }
+                    p += "\n\nUsing Path: ";
+
+                    p = help.htmlEncode(p);
+                    a.path.forEach((v: number) => {
+                        p += `${help.htmlEncode(GraphState.nodeIDToLabel(v))} &rarr; `;
+                    });
+                    p = p.slice(0, -8);
+                    p = `<h3>${title}</h3><hr>${p}`;
+                }
+
+                help.printout(p);
+            });
+            w.postMessage({type: fn, args: [source, sink], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
         },
         title, "Go", [
             {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
@@ -54,57 +73,50 @@ const makeAndPrintShortestPath = (title: string,
         ]);
 };
 
-const callWithGraphAlgorithms = async (f: (gAlgo: typeof GraphAlgorithms) => any): Promise<any> => {
-    const gAlgo = (await import("./GraphAlgorithms")).default;
-    return f(gAlgo);
-};
-
-const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void> => {
+const makeAndPrintComponents = (stronglyConnected: boolean): void => {
     let a = null;
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
 
-    if(UIInteractions.runningConnectedComponents){
-        return Promise.reject("Already running");
-    }
-    UIInteractions.runningConnectedComponents = true;
-    const gAlgo = (await import("./GraphAlgorithms")).default;
     if (stronglyConnected) {
         if (!window.settings.getOption("direction")) {
             return;
         }
         cc = "Strongly " + cc;
         componentKey = "stronglyConnectedComponents";
-        a = await gAlgo.stronglyConnectedComponents();
     }
     else {
         if (window.settings.getOption("direction")) {
             return;
         }
-        a = await gAlgo.connectedComponents();
     }
 
-    GraphState.graphProperties[cc] = a.count;
-    GraphState.setUpToDate(true, [cc, componentKey]);
-    GraphState.state[componentKey] = a.components;
+    const w = new Worker();
+    w.addEventListener("message", (e: MessageEvent) => {
+        a = e.data;
+        w.terminate();
 
-    const components = help.flatten(a.components);
-    let p = `Number of ${cc}: ${a.count}`;
-    p += "\n\n";
+        GraphState.graphProperties[cc] = a.count;
+        GraphState.setUpToDate(true, [cc, componentKey]);
+        GraphState.state[componentKey] = a.components;
 
-    components.forEach((v, i) => {
-        p += `Vertex ${GraphState.nodeIDToLabel(i)} is in connected component #${v}\n`;
+        const components = help.flatten(a.components);
+        let p = `Number of ${cc}: ${a.count}`;
+        p += "\n\n";
+
+        components.forEach((v, i) => {
+            p += `Vertex ${GraphState.nodeIDToLabel(i)} is in connected component #${v}\n`;
+        });
+
+        p += `\n${JSON.stringify(help.rotate(a.components), null, 4)}\n\n`;
+        p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
+
+        help.printout(p);
     });
-
-    p += `\n${JSON.stringify(help.rotate(a.components), null, 4)}\n\n`;
-    p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
-
-    help.printout(p);
-    UIInteractions.runningConnectedComponents = false;
+    w.postMessage({type: componentKey, args: [], graph: window.main.graphState.getGraphData(), convertToGraphImmut: true});
 };
 
 export default class UIInteractions {
-    public static runningConnectedComponents = false;
     static getAlgorithms(): AlgorithmI[] {
         return [
             {
@@ -116,31 +128,31 @@ export default class UIInteractions {
             {
                 name: "Connected Components",
                 directional: false,
-                applyFunc: UIInteractions.makeAndPrintConnectedComponents,
+                applyFunc: () => { makeAndPrintComponents(false); },
                 display: true
             },
             {
                 name: "Strongly Connected Components",
                 directional: true,
                 display: true,
-                applyFunc: UIInteractions.makeAndPrintStronglyConnectedComponents
+                applyFunc: () => { makeAndPrintComponents(true); }
             },
             {
                 name: "Breadth-First Shortest Path",
                 directional: false,
-                applyFunc: UIInteractions.makeAndPrintBFS,
+                applyFunc: () => { makeAndPrintShortestPath("Breadth-First Shortest Path", "breadthFirstSearch", false); },
                 display: true
             },
             {
                 name: "Dijkstra Shortest Path",
-                applyFunc: UIInteractions.makeAndPrintDijkstra,
+                applyFunc: () => { makeAndPrintShortestPath("Dijkstra Shortest Path", "dijkstraSearch", true); },
                 display: true
             },
             {
                 name: "Bellman-Ford Shortest Path",
                 weighted: true,
                 directional: true,
-                applyFunc: UIInteractions.makeAndPrintBFSP,
+                applyFunc: () => { makeAndPrintShortestPath("Bellman-Ford Shortest Path", "bellmanFord", true); },
                 display: true
             },
             {
@@ -180,7 +192,7 @@ export default class UIInteractions {
                 directional: true,
                 display: true,
                 applyFunc: UIInteractions.makeAndPrintDirectionalEulerian
-            },
+            }
         ] as AlgorithmI[];
     }
 
@@ -283,80 +295,72 @@ export default class UIInteractions {
             chromaticNumber: (await GraphState.getProperty("Chromatic Number")) as number,
             colors: GraphState.state.graphColoring as {}
         };
+
+        const printGC = () => {
+            GraphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
+            GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
+            (GraphState.state.graphColoring as {}) = a.colors;
+
+            const colors = help.flatten(a.colors);
+            let p = `Number of Vertices: ${colors.length}`;
+            p += `\nChromatic Number: ${a.chromaticNumber}`;
+            p += "\n\n";
+
+            colors.forEach((v, i) => {
+                p += `Vertex ${GraphState.nodeIDToLabel(i)} gets color ${v}\n`;
+            });
+
+            p += `\n${JSON.stringify(help.rotate(a.colors), null, 4)}\n\n`;
+
+            p = `<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>${help.htmlEncode(p)}`;
+            p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
+
+            help.printout(p);
+            window.main.applyColors();
+        };
+
         if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
-            const gAlgo = (await import("./GraphAlgorithms")).default;
-            a = gAlgo.colorNetwork();
+            const w = new Worker();
+            w.addEventListener("message", (e: MessageEvent) => {
+                a = e.data;
+                printGC();
+                w.terminate();
+            });
+            w.postMessage({type: "colorNetwork", args: [], graph: window.main.graphState.getGraphData(), convertToGraphImmut: true});
         }
-
-        GraphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
-        GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
-        (GraphState.state.graphColoring as {}) = a.colors;
-
-        const colors = help.flatten(a.colors);
-        let p = `Number of Vertices: ${colors.length}`;
-        p += `\nChromatic Number: ${a.chromaticNumber}`;
-        p += "\n\n";
-
-        colors.forEach((v, i) => {
-            p += `Vertex ${GraphState.nodeIDToLabel(i)} gets color ${v}\n`;
-        });
-
-        p += `\n${JSON.stringify(help.rotate(a.colors), null, 4)}\n\n`;
-
-        p = `<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>${help.htmlEncode(p)}`;
-        p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
-
-        help.printout(p);
-        return window.main.applyColors();
+        else {
+            printGC();
+        }
     }
 
-    static makeAndPrintConnectedComponents(): Promise<void> {
-        return makeAndPrintComponents(false);
-    }
-
-    static makeAndPrintDirectionalEulerian(): Promise<void> {
+    static async makeAndPrintDirectionalEulerian(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        return callWithGraphAlgorithms(async (gAlgo) => {
-            GraphState.graphProperties.eulerian = await gAlgo.directionalEulerian(
-                gHelp.findVertexDegreesDirectional(
-                    GraphState.graph.getFullAdjacency()));
+        const w = new Worker();
+        w.addEventListener("message", (e: MessageEvent) => {
+            GraphState.graphProperties.eulerian = e.data;
             GraphState.setUpToDate(true, ["eulerian"]);
+            w.terminate();
         });
+        const scc = await GraphState.getProperty("stronglyConnectedComponents", true);
+        w.postMessage({type: "directionalEulerian", args: [gHelp.findVertexDegreesDirectional(GraphState.graph.getFullAdjacency()), scc]});
     }
 
-    static makeAndPrintEulerian(): Promise<void> {
+    static async makeAndPrintEulerian(): Promise<void> {
         if (window.settings.getOption("direction")) {
             return UIInteractions.makeAndPrintDirectionalEulerian();
         }
 
-        return callWithGraphAlgorithms(async (gAlgo) => {
-            GraphState.graphProperties.eulerian = await gAlgo.hasEulerianCircuit(GraphState.graph.getAllOutDegrees());
+        const cc = await GraphState.getProperty("connectedComponents", true);
+
+        const w = new Worker();
+        w.addEventListener("message", (e: MessageEvent) => {
+            GraphState.graphProperties.eulerian = e.data;
             GraphState.setUpToDate(true, ["eulerian"]);
+            w.terminate();
         });
-    }
-
-    static makeAndPrintStronglyConnectedComponents(): Promise<void> {
-        return makeAndPrintComponents(true);
-    }
-
-    static makeAndPrintBFS(): Promise<void> {
-        return callWithGraphAlgorithms((gAlgo) => {
-            makeAndPrintShortestPath("Breadth-First Shortest Path", gAlgo.breadthFirstSearch as any, false);
-        });
-    }
-
-    static makeAndPrintDijkstra(): Promise<void> {
-        return callWithGraphAlgorithms((gAlgo) => {
-            makeAndPrintShortestPath("Dijkstra Shortest Path", gAlgo.dijkstraSearch as any, true);
-        });
-    }
-
-    static makeAndPrintBFSP(): Promise<void> {
-        return callWithGraphAlgorithms((gAlgo) => {
-            makeAndPrintShortestPath("Bellman-Ford Shortest Path", gAlgo.bellmanFord as any, true);
-        });
+        w.postMessage({type: "hasEulerianCircuit", args: [GraphState.graph.getAllOutDegrees(), cc]});
     }
 
     static makeAndPrintFFMCMF(): void {
@@ -368,27 +372,37 @@ export default class UIInteractions {
 
                 const source = GraphState.nodeLabelToID(values[0]);
                 const sink = GraphState.nodeLabelToID(values[1]);
-                const gAlgo = (await import("./GraphAlgorithms")).default;
-                let a = gAlgo.fordFulkerson(source, sink);
 
-                let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from ${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;
+                let a: (boolean | FlowResult) = null;
 
-                if (a === false) {
+                const cb = () => {
+                    let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from ${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;
+
+                    if (a === false) {
+                        help.printout(p);
+                        return;
+                    }
+                    a = a as { maxFlow: number; flowPath: any[] };
+
+                    p = `Ford-Fulkerson MaxFlow-MinCut Max Flow From ${GraphState.nodeIDToLabel(source)} to ${GraphState.nodeIDToLabel(sink)}: ${a.maxFlow}`;
+                    p += "\n\nUsing Capacities:\n\n";
+                    p = help.htmlEncode(p);
+                    a.flowPath.forEach((v) => {
+                        p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)} using ${v.flow} of ${v.capacity}\n`;
+                    });
+                    p = p.trim();
+                    p = "<h3>Ford-Fulkerson MaxFlow-MinCut</h3><hr>" + p;
+
                     help.printout(p);
-                    return;
-                }
-                a = a as { maxFlow: number; flowPath: any[] };
+                };
 
-                p = `Ford-Fulkerson MaxFlow-MinCut Max Flow From ${GraphState.nodeIDToLabel(source)} to ${GraphState.nodeIDToLabel(sink)}: ${a.maxFlow}`;
-                p += "\n\nUsing Capacities:\n\n";
-                p = help.htmlEncode(p);
-                a.flowPath.forEach((v) => {
-                    p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)} using ${v.flow} of ${v.capacity}\n`;
+                const w = new Worker();
+                w.addEventListener("message", (e: MessageEvent) => {
+                    a = e.data;
+                    cb();
+                    w.terminate();
                 });
-                p = p.trim();
-                p = "<h3>Ford-Fulkerson MaxFlow-MinCut</h3><hr>" + p;
-
-                help.printout(p);
+                w.postMessage({type: "fordFulkerson", args: [source, sink], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
             },
             "Ford-Fulkerson MaxFlow-MinCut", "Go", [
                 {label: "Source Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
@@ -396,12 +410,15 @@ export default class UIInteractions {
             ]);
     }
 
-    static makeAndPrintKruskal(): Promise<void> {
+    static makeAndPrintKruskal(): void {
         if (window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
-        return callWithGraphAlgorithms((gAlgo) => {
-            const a = gAlgo.kruskal();
+
+        const w = new Worker();
+        w.addEventListener("message", (e: MessageEvent) => {
+            const a: MSTResult = e.data;
+            w.terminate();
 
             let p = `Kruskal's Minimum Spanning Tree Total Weight: ${a.totalWeight}`;
             p += "\n\nUsing Edges:\n\n";
@@ -414,29 +431,36 @@ export default class UIInteractions {
 
             help.printout(p);
         });
+        w.postMessage({type: "kruskal", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
     }
 
-    static async makeAndPrintIsCyclic(): Promise<void> {
+    static makeAndPrintIsCyclic(): void {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        return callWithGraphAlgorithms((gAlgo) => {
-            GraphState.graphProperties.cyclic = gAlgo.isGraphCyclic();
+
+        const w = new Worker();
+        w.addEventListener("message", (e: MessageEvent) => {
+            GraphState.graphProperties.cyclic = e.data;
             GraphState.setUpToDate(true, ["cyclic"]);
+            w.terminate();
         });
+        w.postMessage({type: "isGraphCyclic", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
     }
 
-    static makeAndPrintTopologicalSort(): Promise<void> {
+    static makeAndPrintTopologicalSort(): void {
         if (!window.settings.getOption("direction")) {
             return;
         }
-        return callWithGraphAlgorithms((gAlgo) => {
-            const a = gAlgo.topologicalSort();
+
+        const w = new Worker();
+        w.addEventListener("message", (e: MessageEvent) => {
+            const a: boolean | NodeImmut[] = e.data;
+            w.terminate();
 
             if (a === true) {
                 GraphState.graphProperties.cyclic = true;
                 GraphState.setUpToDate(true, ["cyclic"]);
-
                 help.printout("<h3>Topological Sorting Failed</h3><hr>Topological sorting failed because the graph contains a cycle");
 
                 return;
@@ -452,6 +476,7 @@ export default class UIInteractions {
 
             help.printout(p);
         });
+        w.postMessage({type: "topologicalSort", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
     }
 
     static printGraphAlgorithms(): void {

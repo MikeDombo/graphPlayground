@@ -9,3 +9,10 @@ declare global {
         weighted?: boolean
     }
 }
+declare module "worker-loader!*" {
+    class WebpackWorker extends Worker {
+        constructor();
+    }
+
+    export = WebpackWorker;
+}

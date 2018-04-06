@@ -9,7 +9,7 @@ import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 
 export interface MainI {
-    graphState: GraphState;
+    graphState: typeof GraphState;
     container: HTMLElement;
     visWeightEdgeEdit: (data: VisEditEdgeInternal, callback: Function) => void;
     visOptions: {
@@ -89,9 +89,9 @@ const self: MainI = {
                 const $popup = help.makeFormModal("Add Node", "Save", [
                     {
                         type: "html",
-                        initialValue: `<p>Node ID: ${GraphState.getPropertyImm("vertices")}</p>`
+                        initialValue: `<p>Node ID: ${GraphState.getProperty("vertices")}</p>`
                     },
-                    {type: "text", label: "Label", initialValue: GraphState.getPropertyImm("vertices")}
+                    {type: "text", label: "Label", initialValue: GraphState.getProperty("vertices")}
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
