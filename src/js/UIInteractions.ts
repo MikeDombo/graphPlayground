@@ -6,6 +6,7 @@ import {FlowResult, MSTResult, ShortestPathResult} from "./GraphAlgorithms";
 //@ts-ignore
 import Worker from 'worker-loader!./GraphAlgorithmWorker';
 import NodeImmut from "./GraphImmut/NodeImmut";
+import EdgeImmut from "./GraphImmut/EdgeImmut";
 
 interface AlgorithmI {
     name: string;
@@ -24,19 +25,18 @@ const makeAndPrintShortestPath = (title: string,
             const source = GraphState.nodeLabelToID(values[0]);
             const sink = GraphState.nodeLabelToID(values[1]);
 
-            const w = new Worker();
-            w.addEventListener("message", (e: MessageEvent) => {
+            const w = UIInteractions.getWorkerIfPossible((e) => {
                 let a = e.data;
-                w.terminate();
+                w.cleanup();
 
                 if (a === false) {
-                    if(title.includes("Dijkstra")){
+                    if (title.includes("Dijkstra")) {
                         help.showSimpleModal("Dijkstra Error", "<p>The Dijkstra algorithm only works on graphs" +
                             " with totally non-negative edge weights. Please fix the graph so that there are no" +
                             " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
                             " exactly this problem.</p>");
                     }
-                    else if(title.includes("Bellman")) {
+                    else if (title.includes("Bellman")) {
                         help.showSimpleModal("Bellman-Ford Error", "<p>The Bellman-Ford algorithm only works on graphs" +
                             " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>");
                     }
@@ -65,7 +65,12 @@ const makeAndPrintShortestPath = (title: string,
 
                 help.printout(p);
             });
-            w.postMessage({type: fn, args: [source, sink], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
+            w.send({
+                type: fn,
+                args: [source, sink],
+                convertToGraphImmut: true,
+                graph: window.main.graphState.getGraphData()
+            });
         },
         title, "Go", [
             {label: "Start Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
@@ -73,7 +78,7 @@ const makeAndPrintShortestPath = (title: string,
         ]);
 };
 
-const makeAndPrintComponents = (stronglyConnected: boolean): void => {
+const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void> => {
     let a = null;
     let cc = "Connected Components";
     let componentKey = "connectedComponents";
@@ -91,10 +96,9 @@ const makeAndPrintComponents = (stronglyConnected: boolean): void => {
         }
     }
 
-    const w = new Worker();
-    w.addEventListener("message", (e: MessageEvent) => {
+    const w = UIInteractions.getWorkerIfPossible((e) => {
         a = e.data;
-        w.terminate();
+        w.cleanup();
 
         GraphState.graphProperties[cc] = a.count;
         GraphState.setUpToDate(true, [cc, componentKey]);
@@ -113,8 +117,38 @@ const makeAndPrintComponents = (stronglyConnected: boolean): void => {
 
         help.printout(p);
     });
-    w.postMessage({type: componentKey, args: [], graph: window.main.graphState.getGraphData(), convertToGraphImmut: true});
+    w.send({
+        type: componentKey,
+        args: [],
+        graph: window.main.graphState.getGraphData(),
+        convertToGraphImmut: true
+    });
 };
+
+class WorkerProxy {
+    private worker: Worker;
+    private readonly id: number;
+    private readonly listener: (e: { data: any }) => any;
+
+    constructor(id: number, w: Worker, listener: ((e: { data: any }) => any)) {
+        this.id = id;
+        this.worker = w;
+        this.listener = listener;
+        w.postMessage({type: "id", id});
+        w.onmessage = (e: MessageEvent) => {
+            this.listener({data: e.data.data});
+        };
+    }
+
+    public send(data: any) {
+        this.worker.postMessage(data);
+    }
+
+    public cleanup() {
+        this.worker.terminate();
+        GraphState.workerPool[this.id] = null;
+    }
+}
 
 export default class UIInteractions {
     static getAlgorithms(): AlgorithmI[] {
@@ -128,31 +162,41 @@ export default class UIInteractions {
             {
                 name: "Connected Components",
                 directional: false,
-                applyFunc: () => { makeAndPrintComponents(false); },
+                applyFunc: () => {
+                    makeAndPrintComponents(false);
+                },
                 display: true
             },
             {
                 name: "Strongly Connected Components",
                 directional: true,
                 display: true,
-                applyFunc: () => { makeAndPrintComponents(true); }
+                applyFunc: () => {
+                    makeAndPrintComponents(true);
+                }
             },
             {
                 name: "Breadth-First Shortest Path",
                 directional: false,
-                applyFunc: () => { makeAndPrintShortestPath("Breadth-First Shortest Path", "breadthFirstSearch", false); },
+                applyFunc: () => {
+                    makeAndPrintShortestPath("Breadth-First Shortest Path", "breadthFirstSearch", false);
+                },
                 display: true
             },
             {
                 name: "Dijkstra Shortest Path",
-                applyFunc: () => { makeAndPrintShortestPath("Dijkstra Shortest Path", "dijkstraSearch", true); },
+                applyFunc: () => {
+                    makeAndPrintShortestPath("Dijkstra Shortest Path", "dijkstraSearch", true);
+                },
                 display: true
             },
             {
                 name: "Bellman-Ford Shortest Path",
                 weighted: true,
                 directional: true,
-                applyFunc: () => { makeAndPrintShortestPath("Bellman-Ford Shortest Path", "bellmanFord", true); },
+                applyFunc: () => {
+                    makeAndPrintShortestPath("Bellman-Ford Shortest Path", "bellmanFord", true);
+                },
                 display: true
             },
             {
@@ -192,6 +236,20 @@ export default class UIInteractions {
                 directional: true,
                 display: true,
                 applyFunc: UIInteractions.makeAndPrintDirectionalEulerian
+            },
+            {
+                name: "Run Long Task",
+                display: true,
+                applyFunc: () => {
+                    const w = UIInteractions.getWorkerIfPossible((e) => {
+                        console.log(e.data);
+                        w.cleanup();
+                    });
+                    w.send({
+                        type: "test",
+                        waitTime: 10000
+                    });
+                }
             }
         ] as AlgorithmI[];
     }
@@ -285,82 +343,121 @@ export default class UIInteractions {
             ], null);
     }
 
-    static async makeAndPrintGraphColoring(): Promise<void> {
-        if (window.settings.getOption("direction")) {
-            return;
+    static terminateAllWebWorkers(): void {
+        for (let i = 0; i < GraphState.workerPool.length; i++) {
+            const v = GraphState.workerPool[i];
+            if (v instanceof window.Worker) {
+                v.terminate();
+            }
+        }
+        GraphState.workerPool = [];
+    }
+
+    static getWorkerIfPossible(onmessage: (d: { data: any }) => any): WorkerProxy {
+        let nextIndex = GraphState.workerPool.findIndex((v) => {
+            return v === null || typeof v === 'undefined';
+        });
+        if(nextIndex === -1){
+            nextIndex = GraphState.workerPool.length;
         }
 
-        // Use cached responses when able
-        let a = {
-            chromaticNumber: (await GraphState.getProperty("Chromatic Number")) as number,
-            colors: GraphState.state.graphColoring as {}
-        };
+        const w = new Worker();
+        GraphState.workerPool[nextIndex] = w;
+        return new WorkerProxy(nextIndex, w, onmessage);
+    }
 
-        const printGC = () => {
-            GraphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
-            GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
-            (GraphState.state.graphColoring as {}) = a.colors;
+    static makeAndPrintGraphColoring(): Promise<void> {
+        return new Promise<void>(async (resolve) => {
+            if (window.settings.getOption("direction")) {
+                return resolve();
+            }
 
-            const colors = help.flatten(a.colors);
-            let p = `Number of Vertices: ${colors.length}`;
-            p += `\nChromatic Number: ${a.chromaticNumber}`;
-            p += "\n\n";
+            // Use cached responses when able
+            let a = {
+                chromaticNumber: (await GraphState.getProperty("Chromatic Number")) as number,
+                colors: GraphState.state.graphColoring as {}
+            };
 
-            colors.forEach((v, i) => {
-                p += `Vertex ${GraphState.nodeIDToLabel(i)} gets color ${v}\n`;
-            });
+            const printGC = () => {
+                GraphState.graphProperties["Chromatic Number"] = a.chromaticNumber;
+                GraphState.setUpToDate(true, ["Chromatic Number", "graphColoring"]);
+                (GraphState.state.graphColoring as {}) = a.colors;
 
-            p += `\n${JSON.stringify(help.rotate(a.colors), null, 4)}\n\n`;
+                const colors = help.flatten(a.colors);
+                let p = `Number of Vertices: ${colors.length}`;
+                p += `\nChromatic Number: ${a.chromaticNumber}`;
+                p += "\n\n";
 
-            p = `<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>${help.htmlEncode(p)}`;
-            p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
+                colors.forEach((v, i) => {
+                    p += `Vertex ${GraphState.nodeIDToLabel(i)} gets color ${v}\n`;
+                });
 
-            help.printout(p);
-            window.main.applyColors();
-        };
+                p += `\n${JSON.stringify(help.rotate(a.colors), null, 4)}\n\n`;
 
-        if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
-            const w = new Worker();
-            w.addEventListener("message", (e: MessageEvent) => {
-                a = e.data;
+                p = `<h3>Graph Coloring Using Welsh-Powell Algorithm</h3><hr>${help.htmlEncode(p)}`;
+                p += "<br/><button class='btn btn-primary' onclick='main.applyColors()'>Apply New Colors To Graph</button>";
+
+                help.printout(p);
+                window.main.applyColors();
+            };
+
+            if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
+                const w = UIInteractions.getWorkerIfPossible((e) => {
+                    a = e.data;
+                    printGC();
+                    w.cleanup();
+                    resolve(e.data);
+                });
+                w.send({
+                    type: "colorNetwork",
+                    args: [],
+                    graph: window.main.graphState.getGraphData(),
+                    convertToGraphImmut: true
+                });
+            }
+            else {
                 printGC();
-                w.terminate();
+            }
+        });
+    }
+
+    static makeAndPrintDirectionalEulerian(): Promise<void> {
+        return new Promise<void>(async (resolve) => {
+            if (!window.settings.getOption("direction")) {
+                return resolve();
+            }
+            const w = UIInteractions.getWorkerIfPossible((e) => {
+                GraphState.graphProperties.eulerian = e.data;
+                GraphState.setUpToDate(true, ["eulerian"]);
+                w.cleanup();
+                resolve(e.data);
             });
-            w.postMessage({type: "colorNetwork", args: [], graph: window.main.graphState.getGraphData(), convertToGraphImmut: true});
-        }
-        else {
-            printGC();
-        }
+
+            const scc = await GraphState.getProperty("stronglyConnectedComponents", true);
+
+            w.send({
+                type: "directionalEulerian",
+                args: [gHelp.findVertexDegreesDirectional(GraphState.graph.getFullAdjacency()), scc]
+            });
+        });
     }
 
-    static async makeAndPrintDirectionalEulerian(): Promise<void> {
-        if (!window.settings.getOption("direction")) {
-            return;
-        }
-        const w = new Worker();
-        w.addEventListener("message", (e: MessageEvent) => {
-            GraphState.graphProperties.eulerian = e.data;
-            GraphState.setUpToDate(true, ["eulerian"]);
-            w.terminate();
+    static makeAndPrintEulerian(): Promise<void> {
+        return new Promise<void>(async (resolve) => {
+            if (window.settings.getOption("direction")) {
+                return resolve(UIInteractions.makeAndPrintDirectionalEulerian());
+            }
+
+            const cc = await GraphState.getProperty("connectedComponents", true);
+
+            const w = UIInteractions.getWorkerIfPossible((e) => {
+                GraphState.graphProperties.eulerian = e.data;
+                GraphState.setUpToDate(true, ["eulerian"]);
+                w.cleanup();
+                resolve(e.data);
+            });
+            w.send({type: "hasEulerianCircuit", args: [GraphState.graph.getAllOutDegrees(), cc]});
         });
-        const scc = await GraphState.getProperty("stronglyConnectedComponents", true);
-        w.postMessage({type: "directionalEulerian", args: [gHelp.findVertexDegreesDirectional(GraphState.graph.getFullAdjacency()), scc]});
-    }
-
-    static async makeAndPrintEulerian(): Promise<void> {
-        if (window.settings.getOption("direction")) {
-            return UIInteractions.makeAndPrintDirectionalEulerian();
-        }
-
-        const cc = await GraphState.getProperty("connectedComponents", true);
-
-        const w = new Worker();
-        w.addEventListener("message", (e: MessageEvent) => {
-            GraphState.graphProperties.eulerian = e.data;
-            GraphState.setUpToDate(true, ["eulerian"]);
-            w.terminate();
-        });
-        w.postMessage({type: "hasEulerianCircuit", args: [GraphState.graph.getAllOutDegrees(), cc]});
     }
 
     static makeAndPrintFFMCMF(): void {
@@ -376,7 +473,8 @@ export default class UIInteractions {
                 let a: (boolean | FlowResult) = null;
 
                 const cb = () => {
-                    let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from ${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;
+                    let p = `<h3>Ford-Fulkerson</h3><hr>No path exists from `;
+                    p += `${help.htmlEncode(GraphState.nodeIDToLabel(source))} to ${help.htmlEncode(GraphState.nodeIDToLabel(sink))}`;
 
                     if (a === false) {
                         help.printout(p);
@@ -384,7 +482,8 @@ export default class UIInteractions {
                     }
                     a = a as { maxFlow: number; flowPath: any[] };
 
-                    p = `Ford-Fulkerson MaxFlow-MinCut Max Flow From ${GraphState.nodeIDToLabel(source)} to ${GraphState.nodeIDToLabel(sink)}: ${a.maxFlow}`;
+                    p = `Ford-Fulkerson MaxFlow-MinCut Max Flow From ${GraphState.nodeIDToLabel(source)} `;
+                    p += `to ${GraphState.nodeIDToLabel(sink)}: ${a.maxFlow}`;
                     p += "\n\nUsing Capacities:\n\n";
                     p = help.htmlEncode(p);
                     a.flowPath.forEach((v) => {
@@ -396,13 +495,17 @@ export default class UIInteractions {
                     help.printout(p);
                 };
 
-                const w = new Worker();
-                w.addEventListener("message", (e: MessageEvent) => {
+                const w = UIInteractions.getWorkerIfPossible((e) => {
                     a = e.data;
                     cb();
-                    w.terminate();
+                    w.cleanup();
                 });
-                w.postMessage({type: "fordFulkerson", args: [source, sink], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
+                w.send({
+                    type: "fordFulkerson",
+                    args: [source, sink],
+                    convertToGraphImmut: true,
+                    graph: window.main.graphState.getGraphData()
+                });
             },
             "Ford-Fulkerson MaxFlow-MinCut", "Go", [
                 {label: "Source Node", type: "text", validationFunc: window.main.nodeLabelIDValidator},
@@ -415,37 +518,51 @@ export default class UIInteractions {
             return;
         }
 
-        const w = new Worker();
-        w.addEventListener("message", (e: MessageEvent) => {
+        const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: MSTResult = e.data;
-            w.terminate();
+            w.cleanup();
 
             let p = `Kruskal's Minimum Spanning Tree Total Weight: ${a.totalWeight}`;
             p += "\n\nUsing Edges:\n\n";
             p = help.htmlEncode(p);
             a.mst.forEach((v) => {
-                p += `${GraphState.nodeIDToLabel(v.getFrom())}&rarr;${GraphState.nodeIDToLabel(v.getTo())}\n`;
+                //@ts-ignore
+                p += `${GraphState.nodeIDToLabel((new EdgeImmut(v)).getFrom())}&rarr;`;
+                //@ts-ignore
+                p += `${GraphState.nodeIDToLabel((new EdgeImmut(v)).getTo())}\n`;
             });
             p = p.trim();
             p = `<h3>Kruskal Minimum Spanning Tree</h3><hr>${p}`;
 
             help.printout(p);
         });
-        w.postMessage({type: "kruskal", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
+        w.send({
+            type: "kruskal",
+            args: [],
+            convertToGraphImmut: true,
+            graph: window.main.graphState.getGraphData()
+        });
     }
 
-    static makeAndPrintIsCyclic(): void {
+    static makeAndPrintIsCyclic(): Promise<void> {
         if (!window.settings.getOption("direction")) {
             return;
         }
 
-        const w = new Worker();
-        w.addEventListener("message", (e: MessageEvent) => {
-            GraphState.graphProperties.cyclic = e.data;
-            GraphState.setUpToDate(true, ["cyclic"]);
-            w.terminate();
+        return new Promise<void>((resolve) => {
+            const w = UIInteractions.getWorkerIfPossible((e) => {
+                GraphState.graphProperties.cyclic = e.data;
+                GraphState.setUpToDate(true, ["cyclic"]);
+                w.cleanup();
+                resolve();
+            });
+            w.send({
+                type: "isGraphCyclic",
+                args: [],
+                convertToGraphImmut: true,
+                graph: window.main.graphState.getGraphData()
+            });
         });
-        w.postMessage({type: "isGraphCyclic", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
     }
 
     static makeAndPrintTopologicalSort(): void {
@@ -453,10 +570,9 @@ export default class UIInteractions {
             return;
         }
 
-        const w = new Worker();
-        w.addEventListener("message", (e: MessageEvent) => {
+        const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: boolean | NodeImmut[] = e.data;
-            w.terminate();
+            w.cleanup();
 
             if (a === true) {
                 GraphState.graphProperties.cyclic = true;
@@ -476,7 +592,12 @@ export default class UIInteractions {
 
             help.printout(p);
         });
-        w.postMessage({type: "topologicalSort", args: [], convertToGraphImmut: true, graph: window.main.graphState.getGraphData()});
+        w.send({
+            type: "topologicalSort",
+            args: [],
+            convertToGraphImmut: true,
+            graph: window.main.graphState.getGraphData()
+        });
     }
 
     static printGraphAlgorithms(): void {

@@ -13,7 +13,8 @@ declare global {
         network: Network;
         settings: typeof Settings;
         ui: typeof UI,
-        Raven: Raven.RavenStatic
+        Raven: Raven.RavenStatic,
+        Worker: Function
     }
 }
 

@@ -60,6 +60,7 @@ const getInt = (v: string|number): number => {
 };
 
 export default class GraphState {
+    public static workerPool: Worker[] = [];
     public static backHistory: GraphStateHistory[] = [];
     public static forwardHistory: GraphStateHistory[] = [];
     public static maxHistory = 10;
@@ -147,22 +148,22 @@ export default class GraphState {
         }
     }
 
-    static getProperty(property: string, updateIfNotUpdated = false): any {
+    static async getProperty(property: string, updateIfNotUpdated = false): Promise<any> {
         const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
         });
         if (!a.upToDate) {
             if ("applyFunc" in a && updateIfNotUpdated) {
-                a.applyFunc();
+                await a.applyFunc();
             }
             else {
                 return null;
             }
         }
         if (a.type === "state") {
-            return GraphState.state[property];
+            return Promise.resolve(GraphState.state[property]);
         }
-        return GraphState.graphProperties[property];
+        return Promise.resolve(GraphState.graphProperties[property]);
     }
 
     static async makeAndPrintProperties(recalcLong = false) {

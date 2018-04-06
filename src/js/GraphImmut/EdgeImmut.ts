@@ -12,7 +12,13 @@ export default class EdgeImmut {
     private readonly to: Readonly<number>;
     private readonly weight: Readonly<number>;
 
-    constructor(from: number, to: number, weight: any = 1) {
+    constructor(from: number | EdgeImmutPlain, to?: number, weight: any = 1) {
+        if(typeof from === "object"){
+            to = from.to;
+            weight = from.weight;
+            from = from.from;
+        }
+
         this.from = Object.freeze(from);
         this.to = Object.freeze(to);
         this.weight = Object.freeze(parseFloat(weight));

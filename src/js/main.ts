@@ -85,13 +85,13 @@ const self: MainI = {
     visOptions: {
         interaction: {hover: true},
         manipulation: {
-            addNode: (data, callback) => {
+            addNode: async (data, callback) => {
                 const $popup = help.makeFormModal("Add Node", "Save", [
                     {
                         type: "html",
-                        initialValue: `<p>Node ID: ${GraphState.getProperty("vertices")}</p>`
+                        initialValue: `<p>Node ID: ${await GraphState.getProperty("vertices")}</p>`
                     },
-                    {type: "text", label: "Label", initialValue: GraphState.getProperty("vertices")}
+                    {type: "text", label: "Label", initialValue: await GraphState.getProperty("vertices")}
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
@@ -243,6 +243,7 @@ const self: MainI = {
         window.network.enableEditMode();
 
         if (graphChanged) {
+            window.ui.terminateAllWebWorkers();
             window.ui.printGraphAlgorithms();
             help.printout("");
             GraphState.setUpToDate();
