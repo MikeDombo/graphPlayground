@@ -25,9 +25,13 @@ const makeAndPrintShortestPath = (title: string,
             const source = GraphState.nodeLabelToID(values[0]);
             const sink = GraphState.nodeLabelToID(values[1]);
 
+            let iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 let a = e.data;
                 w.cleanup();
+                if(iStartedProgress){
+                    UIInteractions.stopLoadingAnimation();
+                }
 
                 if (a === false) {
                     if (title.includes("Dijkstra")) {
@@ -96,6 +100,7 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
         }
     }
 
+    let iStartedProgress = UIInteractions.startLoadingAnimation();
     const w = UIInteractions.getWorkerIfPossible((e) => {
         a = e.data;
         w.cleanup();
@@ -114,6 +119,10 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
 
         p += `\n${JSON.stringify(help.rotate(a.components), null, 4)}\n\n`;
         p = `<h3>${cc}</h3><hr>${help.htmlEncode(p)}`;
+
+        if(iStartedProgress){
+            UIInteractions.stopLoadingAnimation();
+        }
 
         help.printout(p);
     });
@@ -236,20 +245,6 @@ export default class UIInteractions {
                 directional: true,
                 display: true,
                 applyFunc: UIInteractions.makeAndPrintDirectionalEulerian
-            },
-            {
-                name: "Run Long Task",
-                display: true,
-                applyFunc: () => {
-                    const w = UIInteractions.getWorkerIfPossible((e) => {
-                        console.log(e.data);
-                        w.cleanup();
-                    });
-                    w.send({
-                        type: "test",
-                        waitTime: 10000
-                    });
-                }
             }
         ] as AlgorithmI[];
     }
@@ -366,6 +361,22 @@ export default class UIInteractions {
         return new WorkerProxy(nextIndex, w, onmessage);
     }
 
+    static startLoadingAnimation() {
+        const prog = document.getElementById("task-spinner");
+        if(prog.style.display !== "flex"){
+            prog.style.display =  "flex";
+            return true;
+        }
+        return false;
+    }
+
+    static stopLoadingAnimation() {
+        const prog = document.getElementById("task-spinner");
+        if(prog.style.display !== "none"){
+            prog.style.display =  "none";
+        }
+    }
+
     static makeAndPrintGraphColoring(): Promise<void> {
         return new Promise<void>(async (resolve) => {
             if (window.settings.getOption("direction")) {
@@ -401,11 +412,16 @@ export default class UIInteractions {
                 window.main.applyColors();
             };
 
+            let iStartedProgress = UIInteractions.startLoadingAnimation();
+
             if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
                 const w = UIInteractions.getWorkerIfPossible((e) => {
                     a = e.data;
                     printGC();
                     w.cleanup();
+                    if(iStartedProgress) {
+                        UIInteractions.stopLoadingAnimation();
+                    }
                     resolve(e.data);
                 });
                 w.send({
@@ -417,6 +433,9 @@ export default class UIInteractions {
             }
             else {
                 printGC();
+                if(iStartedProgress) {
+                    UIInteractions.stopLoadingAnimation();
+                }
             }
         });
     }
@@ -426,10 +445,15 @@ export default class UIInteractions {
             if (!window.settings.getOption("direction")) {
                 return resolve();
             }
+
+            let iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 GraphState.graphProperties.eulerian = e.data;
                 GraphState.setUpToDate(true, ["eulerian"]);
                 w.cleanup();
+                if(iStartedProgress) {
+                    UIInteractions.stopLoadingAnimation();
+                }
                 resolve(e.data);
             });
 
@@ -447,12 +471,15 @@ export default class UIInteractions {
             if (window.settings.getOption("direction")) {
                 return resolve(UIInteractions.makeAndPrintDirectionalEulerian());
             }
-
+            let iStartedProgress = UIInteractions.startLoadingAnimation();
             const cc = await GraphState.getProperty("connectedComponents", true);
 
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 GraphState.graphProperties.eulerian = e.data;
                 GraphState.setUpToDate(true, ["eulerian"]);
+                if(iStartedProgress){
+                    UIInteractions.stopLoadingAnimation();
+                }
                 w.cleanup();
                 resolve(e.data);
             });
@@ -495,9 +522,13 @@ export default class UIInteractions {
                     help.printout(p);
                 };
 
+                let iStartedProgress = UIInteractions.startLoadingAnimation();
                 const w = UIInteractions.getWorkerIfPossible((e) => {
                     a = e.data;
                     cb();
+                    if(iStartedProgress){
+                        UIInteractions.stopLoadingAnimation();
+                    }
                     w.cleanup();
                 });
                 w.send({
@@ -518,6 +549,7 @@ export default class UIInteractions {
             return;
         }
 
+        let iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: MSTResult = e.data;
             w.cleanup();
@@ -533,6 +565,10 @@ export default class UIInteractions {
             });
             p = p.trim();
             p = `<h3>Kruskal Minimum Spanning Tree</h3><hr>${p}`;
+
+            if(iStartedProgress){
+                UIInteractions.stopLoadingAnimation();
+            }
 
             help.printout(p);
         });
@@ -550,10 +586,14 @@ export default class UIInteractions {
         }
 
         return new Promise<void>((resolve) => {
+            let iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 GraphState.graphProperties.cyclic = e.data;
                 GraphState.setUpToDate(true, ["cyclic"]);
                 w.cleanup();
+                if(iStartedProgress){
+                    UIInteractions.stopLoadingAnimation();
+                }
                 resolve();
             });
             w.send({
@@ -570,9 +610,14 @@ export default class UIInteractions {
             return;
         }
 
+        let iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: boolean | NodeImmut[] = e.data;
             w.cleanup();
+
+            if(iStartedProgress){
+                UIInteractions.stopLoadingAnimation();
+            }
 
             if (a === true) {
                 GraphState.graphProperties.cyclic = true;
