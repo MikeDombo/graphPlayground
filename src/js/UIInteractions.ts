@@ -19,7 +19,7 @@ interface AlgorithmI {
 const makeAndPrintShortestPath = (title: string,
                                   fn: string,
                                   weighted: boolean): void => {
-    let myName = "Shortest Path";
+    const myName = "Shortest Path";
     if(UIInteractions.isRunning[myName]){
         UIInteractions.printAlreadyRunning(myName);
         return;
@@ -32,7 +32,7 @@ const makeAndPrintShortestPath = (title: string,
             const source = GraphState.nodeLabelToID(values[0]);
             const sink = GraphState.nodeLabelToID(values[1]);
 
-            let iStartedProgress = UIInteractions.startLoadingAnimation();
+            const iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 let a = e.data;
                 w.cleanup();
@@ -114,7 +114,7 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
     }
     UIInteractions.isRunning[cc] = true;
 
-    let iStartedProgress = UIInteractions.startLoadingAnimation();
+    const iStartedProgress = UIInteractions.startLoadingAnimation();
     const w = UIInteractions.getWorkerIfPossible((e) => {
         a = e.data;
         w.cleanup();
@@ -150,7 +150,7 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
 };
 
 class WorkerProxy {
-    private worker: Worker;
+    private readonly worker: Worker;
     private readonly id: number;
     private readonly listener: (e: { data: any }) => any;
 
@@ -355,8 +355,7 @@ export default class UIInteractions {
     }
 
     static terminateAllWebWorkers(): void {
-        for (let i = 0; i < GraphState.workerPool.length; i++) {
-            const v = GraphState.workerPool[i];
+        for(const v of GraphState.workerPool){
             if (v instanceof window.Worker) {
                 v.terminate();
             }
@@ -403,7 +402,7 @@ export default class UIInteractions {
     }
 
     static makeAndPrintGraphColoring(): Promise<void> {
-        let myName = "Graph Coloring";
+        const myName = "Graph Coloring";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return Promise.reject("Already Running");
@@ -445,7 +444,7 @@ export default class UIInteractions {
                 window.main.applyColors();
             };
 
-            let iStartedProgress = UIInteractions.startLoadingAnimation();
+            const iStartedProgress = UIInteractions.startLoadingAnimation();
 
             if (!(a.chromaticNumber !== null && (await GraphState.getProperty("graphColoring")) !== null)) {
                 const w = UIInteractions.getWorkerIfPossible((e) => {
@@ -475,7 +474,7 @@ export default class UIInteractions {
     }
 
     static makeAndPrintDirectionalEulerian(): Promise<void> {
-        let myName = "Eulerian";
+        const myName = "Eulerian";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return Promise.reject("Already Running");
@@ -488,7 +487,7 @@ export default class UIInteractions {
                 return resolve();
             }
 
-            let iStartedProgress = UIInteractions.startLoadingAnimation();
+            const iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 GraphState.graphProperties.eulerian = e.data;
                 GraphState.setUpToDate(true, ["eulerian"]);
@@ -510,7 +509,7 @@ export default class UIInteractions {
     }
 
     static makeAndPrintEulerian(ignoreDuplicate = false): Promise<void> {
-        let myName = "Eulerian";
+        const myName = "Eulerian";
         if(UIInteractions.isRunning[myName]){
             if(ignoreDuplicate){
                 return;
@@ -526,7 +525,7 @@ export default class UIInteractions {
                 return resolve(UIInteractions.makeAndPrintDirectionalEulerian());
             }
 
-            let iStartedProgress = UIInteractions.startLoadingAnimation();
+            const iStartedProgress = UIInteractions.startLoadingAnimation();
             const cc = await GraphState.getProperty("connectedComponents", true);
 
             const w = UIInteractions.getWorkerIfPossible((e) => {
@@ -547,7 +546,7 @@ export default class UIInteractions {
         if (!window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
-        let myName = "Ford-Fulkerson";
+        const myName = "Ford-Fulkerson";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return;
@@ -585,7 +584,7 @@ export default class UIInteractions {
                     help.printout(p);
                 };
 
-                let iStartedProgress = UIInteractions.startLoadingAnimation();
+                const iStartedProgress = UIInteractions.startLoadingAnimation();
                 const w = UIInteractions.getWorkerIfPossible((e) => {
                     a = e.data;
                     UIInteractions.isRunning[myName] = false;
@@ -613,14 +612,14 @@ export default class UIInteractions {
             return;
         }
 
-        let myName = "Kruskal";
+        const myName = "Kruskal";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return;
         }
         UIInteractions.isRunning[myName] = true;
 
-        let iStartedProgress = UIInteractions.startLoadingAnimation();
+        const iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: MSTResult = e.data;
             w.cleanup();
@@ -657,7 +656,7 @@ export default class UIInteractions {
             return;
         }
 
-        let myName = "Cyclic";
+        const myName = "Cyclic";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return Promise.reject("Already Running");
@@ -665,7 +664,7 @@ export default class UIInteractions {
         UIInteractions.isRunning[myName] = true;
 
         return new Promise<void>((resolve) => {
-            let iStartedProgress = UIInteractions.startLoadingAnimation();
+            const iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
                 GraphState.graphProperties.cyclic = e.data;
                 GraphState.setUpToDate(true, ["cyclic"]);
@@ -690,14 +689,14 @@ export default class UIInteractions {
             return;
         }
 
-        let myName = "Topological Sort";
+        const myName = "Topological Sort";
         if(UIInteractions.isRunning[myName]){
             UIInteractions.printAlreadyRunning(myName);
             return;
         }
         UIInteractions.isRunning[myName] = true;
 
-        let iStartedProgress = UIInteractions.startLoadingAnimation();
+        const iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: boolean | NodeImmut[] = e.data;
             w.cleanup();
