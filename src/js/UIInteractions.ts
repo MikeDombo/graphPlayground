@@ -19,6 +19,13 @@ interface AlgorithmI {
 const makeAndPrintShortestPath = (title: string,
                                   fn: string,
                                   weighted: boolean): void => {
+    let myName = "Shortest Path";
+    if(UIInteractions.isRunning[myName]){
+        UIInteractions.printAlreadyRunning(myName);
+        return;
+    }
+    UIInteractions.isRunning[myName] = true;
+
     help.showFormModal(($modal, values) => {
             $modal.modal("hide");
 
@@ -32,6 +39,7 @@ const makeAndPrintShortestPath = (title: string,
                 if(iStartedProgress){
                     UIInteractions.stopLoadingAnimation();
                 }
+                UIInteractions.isRunning[myName] = false;
 
                 if (a === false) {
                     if (title.includes("Dijkstra")) {
@@ -100,6 +108,12 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
         }
     }
 
+    if(UIInteractions.isRunning[cc]){
+        UIInteractions.printAlreadyRunning(cc);
+        return Promise.reject("Already Running");
+    }
+    UIInteractions.isRunning[cc] = true;
+
     let iStartedProgress = UIInteractions.startLoadingAnimation();
     const w = UIInteractions.getWorkerIfPossible((e) => {
         a = e.data;
@@ -123,6 +137,7 @@ const makeAndPrintComponents = async (stronglyConnected: boolean): Promise<void>
         if(iStartedProgress){
             UIInteractions.stopLoadingAnimation();
         }
+        UIInteractions.isRunning[cc] = false;
 
         help.printout(p);
     });
@@ -160,6 +175,7 @@ class WorkerProxy {
 }
 
 export default class UIInteractions {
+    public static isRunning: {[index: string]: boolean} = {};
     static getAlgorithms(): AlgorithmI[] {
         return [
             {
@@ -377,9 +393,26 @@ export default class UIInteractions {
         }
     }
 
+    static printAlreadyRunning(name?: string){
+        let n = "This task";
+        if(name){
+            n = name;
+        }
+        help.showSimpleModal("Task Already Running", "<p>" + n + " is already running, please wait for it to finish" +
+            " first.</p>");
+    }
+
     static makeAndPrintGraphColoring(): Promise<void> {
+        let myName = "Graph Coloring";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return Promise.reject("Already Running");
+        }
+        UIInteractions.isRunning[myName] = true;
+
         return new Promise<void>(async (resolve) => {
             if (window.settings.getOption("direction")) {
+                UIInteractions.isRunning[myName] = false;
                 return resolve();
             }
 
@@ -422,6 +455,7 @@ export default class UIInteractions {
                     if(iStartedProgress) {
                         UIInteractions.stopLoadingAnimation();
                     }
+                    UIInteractions.isRunning[myName] = false;
                     resolve(e.data);
                 });
                 w.send({
@@ -441,8 +475,16 @@ export default class UIInteractions {
     }
 
     static makeAndPrintDirectionalEulerian(): Promise<void> {
+        let myName = "Eulerian";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return Promise.reject("Already Running");
+        }
+        UIInteractions.isRunning[myName] = true;
+
         return new Promise<void>(async (resolve) => {
             if (!window.settings.getOption("direction")) {
+                UIInteractions.isRunning[myName] = false;
                 return resolve();
             }
 
@@ -454,6 +496,7 @@ export default class UIInteractions {
                 if(iStartedProgress) {
                     UIInteractions.stopLoadingAnimation();
                 }
+                UIInteractions.isRunning[myName] = false;
                 resolve(e.data);
             });
 
@@ -466,11 +509,23 @@ export default class UIInteractions {
         });
     }
 
-    static makeAndPrintEulerian(): Promise<void> {
+    static makeAndPrintEulerian(ignoreDuplicate = false): Promise<void> {
+        let myName = "Eulerian";
+        if(UIInteractions.isRunning[myName]){
+            if(ignoreDuplicate){
+                return;
+            }
+            UIInteractions.printAlreadyRunning(myName);
+            return Promise.reject("Already Running");
+        }
+        UIInteractions.isRunning[myName] = true;
+
         return new Promise<void>(async (resolve) => {
             if (window.settings.getOption("direction")) {
+                UIInteractions.isRunning[myName] = false;
                 return resolve(UIInteractions.makeAndPrintDirectionalEulerian());
             }
+
             let iStartedProgress = UIInteractions.startLoadingAnimation();
             const cc = await GraphState.getProperty("connectedComponents", true);
 
@@ -480,6 +535,7 @@ export default class UIInteractions {
                 if(iStartedProgress){
                     UIInteractions.stopLoadingAnimation();
                 }
+                UIInteractions.isRunning[myName] = false;
                 w.cleanup();
                 resolve(e.data);
             });
@@ -491,6 +547,13 @@ export default class UIInteractions {
         if (!window.settings.getOption("direction") || !window.settings.getOption("weights")) {
             return;
         }
+        let myName = "Ford-Fulkerson";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return;
+        }
+        UIInteractions.isRunning[myName] = true;
+
         help.showFormModal(async ($modal, values) => {
                 $modal.modal("hide");
 
@@ -525,6 +588,7 @@ export default class UIInteractions {
                 let iStartedProgress = UIInteractions.startLoadingAnimation();
                 const w = UIInteractions.getWorkerIfPossible((e) => {
                     a = e.data;
+                    UIInteractions.isRunning[myName] = false;
                     cb();
                     if(iStartedProgress){
                         UIInteractions.stopLoadingAnimation();
@@ -549,6 +613,13 @@ export default class UIInteractions {
             return;
         }
 
+        let myName = "Kruskal";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return;
+        }
+        UIInteractions.isRunning[myName] = true;
+
         let iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: MSTResult = e.data;
@@ -569,6 +640,7 @@ export default class UIInteractions {
             if(iStartedProgress){
                 UIInteractions.stopLoadingAnimation();
             }
+            UIInteractions.isRunning[myName] = false;
 
             help.printout(p);
         });
@@ -585,6 +657,13 @@ export default class UIInteractions {
             return;
         }
 
+        let myName = "Cyclic";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return Promise.reject("Already Running");
+        }
+        UIInteractions.isRunning[myName] = true;
+
         return new Promise<void>((resolve) => {
             let iStartedProgress = UIInteractions.startLoadingAnimation();
             const w = UIInteractions.getWorkerIfPossible((e) => {
@@ -594,6 +673,7 @@ export default class UIInteractions {
                 if(iStartedProgress){
                     UIInteractions.stopLoadingAnimation();
                 }
+                UIInteractions.isRunning[myName] = false;
                 resolve();
             });
             w.send({
@@ -610,6 +690,13 @@ export default class UIInteractions {
             return;
         }
 
+        let myName = "Topological Sort";
+        if(UIInteractions.isRunning[myName]){
+            UIInteractions.printAlreadyRunning(myName);
+            return;
+        }
+        UIInteractions.isRunning[myName] = true;
+
         let iStartedProgress = UIInteractions.startLoadingAnimation();
         const w = UIInteractions.getWorkerIfPossible((e) => {
             const a: boolean | NodeImmut[] = e.data;
@@ -618,6 +705,7 @@ export default class UIInteractions {
             if(iStartedProgress){
                 UIInteractions.stopLoadingAnimation();
             }
+            UIInteractions.isRunning[myName] = false;
 
             if (a === true) {
                 GraphState.graphProperties.cyclic = true;

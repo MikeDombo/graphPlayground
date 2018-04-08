@@ -204,8 +204,10 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	<div class="row">
 		<div id="task-spinner" class="progress" style="display:none; width:100vw; bottom:0; height:8px;
-			position:fixed; border-radius:0;">
+			position:fixed; border-radius:0; overflow-x:hidden">
 			<div class="progress-bar progress-bar-animated progress-bar-striped" role="progressbar" aria-valuemax="100"
 			     aria-valuemin="0" aria-valuenow="100" style="width:100%;"></div>
 		</div>
@@ -213,13 +215,13 @@
 </div>
 
 <script src="vendors-585a1a15aa09733b5224.min.js" defer></script>
-<script src="bundle-ef82ad699ede757de825.min.js" defer></script>
+<script src="bundle-23fc3f78c641beb7649a.min.js" defer></script>
 
 <script type="text/javascript" defer>
     // Register service worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
-            navigator.serviceWorker.register("pwaPacked-ef82ad699ede757de825.min.js").then(function
+            navigator.serviceWorker.register("pwaPacked-23fc3f78c641beb7649a.min.js").then(function
 	            (registration) {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);
             }).catch(function (err) {

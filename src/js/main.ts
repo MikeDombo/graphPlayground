@@ -243,6 +243,8 @@ const self: MainI = {
         window.network.enableEditMode();
 
         if (graphChanged) {
+            window.ui.stopLoadingAnimation();
+            window.ui.isRunning = {};
             window.ui.terminateAllWebWorkers();
             window.ui.printGraphAlgorithms();
             help.printout("");

@@ -12,8 +12,8 @@ interface UpToDateProperties {
     upToDate: boolean;
     type: string;
     always?: boolean;
-    applyFunc?: () => void;
-    [index: string]: string|boolean|(() => void)
+    applyFunc?: (ignoreDuplicate?: boolean) => any;
+    [index: string]: string|boolean|((ignoreDuplicate?: boolean) => any)
 }
 
 interface GraphProperties {
@@ -81,8 +81,8 @@ export default class GraphState {
         {name: "edges", upToDate: true, always: true, type: "property"},
         {
             name: "eulerian", upToDate: false, type: "property",
-            applyFunc: () => {
-                return window.ui.makeAndPrintEulerian();
+            applyFunc: (i) => {
+                return window.ui.makeAndPrintEulerian(i);
             }
         },
         {
@@ -148,13 +148,13 @@ export default class GraphState {
         }
     }
 
-    static async getProperty(property: string, updateIfNotUpdated = false): Promise<any> {
+    static async getProperty(property: string, updateIfNotUpdated = false, ignoreDuplicate = false): Promise<any> {
         const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
         });
         if (!a.upToDate) {
             if ("applyFunc" in a && updateIfNotUpdated) {
-                await a.applyFunc();
+                await a.applyFunc(ignoreDuplicate);
             }
             else {
                 return null;
@@ -173,7 +173,7 @@ export default class GraphState {
         GraphState.graphProperties.edges = GraphState.graph.getNumberOfEdges();
 
         if (!directional) {
-            await GraphState.getProperty("eulerian", true);
+            await GraphState.getProperty("eulerian", true, true);
         }
 
         const p = Object.keys(GraphState.graphProperties);
