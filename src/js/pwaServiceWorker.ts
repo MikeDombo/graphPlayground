@@ -7,7 +7,14 @@ let filesToCache = [
 self.addEventListener('install', (event: ExtendableEvent) => {
     event.waitUntil(
         caches.open(dataCacheName).then((cache) => cache.addAll(filesToCache))
+            //@ts-ignore
+            .then(() => self.skipWaiting())
     );
+});
+
+self.addEventListener('activate', (event: ExtendableEvent) => {
+    //@ts-ignore
+    self.clients.claim();
 });
 
 // Get files from network first (cache if not cached already), then the cache
