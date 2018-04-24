@@ -40,7 +40,7 @@
 		"bootstrap": "^4.1.0",
 		"immutable": "^3.8.2",
 		"jquery": "^3.3.1",
-		"npm": "^5.8.0",
+		"npm": "^6.0.0",
 		"popper.js": "^1.14.3",
 		"randomcolor": "^0.5.3",
 		"raven-js": "^3.24.2",
