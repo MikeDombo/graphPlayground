@@ -1,6 +1,5 @@
 "use strict";
 
-import * as $ from 'jquery';
 import help from './genericHelpers';
 import randomColor from 'randomcolor';
 import GraphState, {AddNodeI, GraphStateHistory} from './graphState';
@@ -266,7 +265,7 @@ const self: MainI = {
 
         GraphState.backHistory.push(self.getStateForSaving());
         GraphState.forwardHistory = [];
-        $(".icon-undo").parent().parent().addClass("active");
+        document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.add("active");
     },
 
     getStateForSaving: () => {
@@ -282,7 +281,7 @@ const self: MainI = {
                         state[k] = v;
                     }
                     if (!k.toLowerCase().includes("history")) {
-                        state[k] = $.extend(true, Array.isArray(v) ? [] : {}, v);
+                        state[k] = help.deepCopy(true, Array.isArray(v) ? [] : {}, v);
                     }
                 }
             }
@@ -343,23 +342,23 @@ const self: MainI = {
                     });
                 }
                 else {
-                    (GraphState as any)[k] = $.extend(true, (GraphState as any)[k], v);
+                    (GraphState as any)[k] = help.deepCopy(true, (GraphState as any)[k], v);
                 }
             }
         });
 
         GraphState.makeAndPrintProperties().then(() => {
             if (undo && !firstLoad) {
-                $(".icon-redo").parent().parent().addClass("active");
+                document.getElementsByClassName("icon-redo").item(0).parentElement.parentElement.classList.add("active");
                 if (GraphState.backHistory.length === 0) {
-                    $(".icon-undo").parent().parent().removeClass("active");
+                    document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.remove("active");
                 }
                 GraphState.forwardHistory.push(currentState);
             }
             else if (!undo && !firstLoad) {
-                $(".icon-undo").parent().parent().addClass("active");
+                document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.add("active");
                 if (GraphState.forwardHistory.length === 0) {
-                    $(".icon-redo").parent().parent().removeClass("active");
+                    document.getElementsByClassName("icon-redo").item(0).parentElement.parentElement.classList.remove("active");
                 }
                 GraphState.backHistory.push(currentState);
             }
@@ -405,27 +404,25 @@ const self: MainI = {
         });
 
         // Delete nodes/edges when hit "Delete"
-        let lastNetworkClickEvent: JQuery.Event = null;
-        network.on('click', (event: JQuery.Event) => {
+        let lastNetworkClickEvent: Event = null;
+        network.on('click', (event) => {
             lastNetworkClickEvent = event;
         });
 
         // Delete key to delete node or edge
-        $(document).on('keyup', (key) => {
+        document.addEventListener('keyup', (key) => {
             if (key.key === "Delete" && lastNetworkClickEvent !== null) {
-                if ($(self.container).has((lastNetworkClickEvent as any).event.target).length > 0) {
+                if (self.container.contains((lastNetworkClickEvent as any).event.target)) {
                     if (("edges" in lastNetworkClickEvent && (lastNetworkClickEvent as any).edges.length === 1)
                         || ("nodes" in lastNetworkClickEvent && (lastNetworkClickEvent as any).nodes.length === 1)) {
-                        if ($(':focus').parents(".modal").length === 0) {
-                            network.deleteSelected();
-                        }
+                        network.deleteSelected();
                     }
                 }
             }
         });
 
         // Undo/Redo keyboard commands
-        $(document).on("keydown", (e) => {
+        document.addEventListener("keydown", (e) => {
             if ((e.key.toLowerCase() === 'y' && e.ctrlKey) || (e.key.toLowerCase() === 'z' && e.ctrlKey && e.shiftKey)) {
                 self.redo();
             }
@@ -435,8 +432,8 @@ const self: MainI = {
         });
 
         // When clicking off of the network, remove the Delete functionality
-        $(document).on("click", (e) => {
-            if ($(self.container).has(e.target).length === 0) {
+        document.addEventListener("click", (e) => {
+            if (self.container !== e.target && !self.container.contains(e.target as Node)) {
                 lastNetworkClickEvent = null;
             }
         });

@@ -1,6 +1,5 @@
 "use strict";
 
-import * as $ from 'jquery';
 import {DataSet, Edge} from 'vis/index-network';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
@@ -200,7 +199,7 @@ export default class GraphState {
         });
         p = p.trim();
         p = help.htmlEncode(p);
-        $("#graphProps").html(`<p class='nav-link'>${p}</p>`);
+        document.getElementById("graphProps").innerHTML = `<p class='nav-link'>${p}</p>`;
     }
 
     static addEdge(from: number|string, to: number|string, weight = 0, graph = GraphState.graph) {

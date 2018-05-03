@@ -1,13 +1,12 @@
 "use strict";
 
-import * as $ from 'jquery';
 import help from './genericHelpers';
 import GraphImmut from './GraphImmut/GraphImmut';
 import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
 import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
 import GraphState from "./graphState";
 
-const exportedTextSelector = "#exportedText";
+const exportedTextSelector = "exportedText";
 
 const self = {
     importByString: (string: string, format: string): void => {
@@ -160,7 +159,7 @@ const self = {
                         " min-height:400px; white-space:nowrap; margin-top: 1rem;"
                     },
                     onclick: () => {
-                        $(exportedTextSelector).trigger("select");
+                        (document.getElementById(exportedTextSelector) as HTMLTextAreaElement).select();
                         document.execCommand("copy");
                     }, id: "exportedText"
                 }
@@ -180,10 +179,10 @@ const self = {
 
     exportToText: (format: string): void => {
         if (format.toLowerCase() === "json") {
-            $(exportedTextSelector).text(JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2));
+            document.getElementById(exportedTextSelector).innerHTML = JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2);
         }
         else if (format.toLowerCase() === "dimacs") {
-            $(exportedTextSelector).text(self.getDataAsDIMACS());
+            document.getElementById(exportedTextSelector).innerHTML = self.getDataAsDIMACS();
         }
     },
 
@@ -201,7 +200,7 @@ const self = {
         // If I add direction, DIMACS cannot be used, it only works for undirected graphs
         const g = GraphState.getGraphData();
         let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground " +
-            "-- https://md100play.github.io/graphPlayground -- https://mikedombrowski.com";
+            "-- https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
         let adj = GraphState.graph.getFullAdjacency();
         adj = adj.filter((v: number[]) => {
@@ -223,12 +222,12 @@ const self = {
         let edgeCount = 0;
         let edgeText = "";
         g.edges.forEach((v: EdgeImmutPlain) => {
-            edgeText += `e ${v.from + 1} ${v.to + 1}`;
+            edgeText += `e ${v.from + 1} ${v.to + 1}\n`;
             edgeCount++;
         });
         edgeText = edgeText.trim();
 
-        text += `p edge ${nodes.length} ${edgeCount}`;
+        text += `p edge ${nodes.length} ${edgeCount}\n`;
         return text + edgeText;
     },
 

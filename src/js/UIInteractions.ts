@@ -1,6 +1,5 @@
 import gHelp from "./graphHelpers";
 import help from "./genericHelpers";
-import * as $ from "jquery";
 import GraphState from './graphState';
 import {FlowResult, MSTResult, ShortestPathResult} from "./GraphAlgorithms";
 //@ts-ignore
@@ -267,7 +266,7 @@ export default class UIInteractions {
 
     static registerListeners(): void {
         const makeSimpleClickListener = (selector: string, fn: () => any) => {
-            $(selector).on("click", (e) => {
+            document.querySelector(selector).addEventListener("click", (e) => {
                 e.preventDefault();
                 fn();
             });
@@ -733,17 +732,22 @@ export default class UIInteractions {
     }
 
     static printGraphAlgorithms(): void {
-        const $div = $("#algorithms-pane");
-        $div.empty();
+        const $div = document.getElementById("algorithms-pane");
+        $div.innerHTML = "";
         const directional = window.settings.getOption("direction");
         const weighted = window.settings.getOption("weights");
 
         const addAlgoToPane = (alg: AlgorithmI) => {
-            $div.append($("<a>", {class: "nav-link", href: "#"})
-                .text(alg.name).on("click", (e) => {
-                    e.preventDefault();
-                    alg.applyFunc();
-                }));
+            const navlink = document.createElement('a');
+            navlink.classList.add("nav-link");
+            navlink.setAttribute("href", "#");
+            navlink.innerText = alg.name;
+            navlink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alg.applyFunc();
+            });
+
+            $div.appendChild(navlink);
         };
 
         const a = UIInteractions.getAlgorithms();
