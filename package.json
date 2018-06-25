@@ -21,7 +21,7 @@
 	"homepage": "https://github.com/MikeDombo/graphPlayground#readme",
 	"devDependencies": {
 		"@types/bootstrap": "^4.1.0",
-		"@types/jquery": "^3.3.2",
+		"@types/jquery": "^3.3.4",
 		"@types/vis": "^4.21.5",
 		"babel-eslint": "^8.2.3",
 		"browser-sync": "^2.24.4",
