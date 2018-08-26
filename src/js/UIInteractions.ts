@@ -6,6 +6,7 @@ import {FlowResult, MSTResult, ShortestPathResult} from "./GraphAlgorithms";
 import Worker from 'worker-loader!./GraphAlgorithmWorker';
 import NodeImmut from "./GraphImmut/NodeImmut";
 import EdgeImmut from "./GraphImmut/EdgeImmut";
+import GraphImmut from "./GraphImmut/GraphImmut";
 
 interface AlgorithmI {
     name: string;
@@ -67,9 +68,17 @@ const makeAndPrintShortestPath = (title: string,
                     p += "\n\nUsing Path: ";
 
                     p = help.htmlEncode(p);
-                    a.path.forEach((v: number) => {
+                    let graph = GraphState.getGraphData(GraphState.graph, false, true);
+                    let G = new GraphImmut(graph.nodes, graph.edges, graph.directed, graph.weighted);
+                    a.path.forEach((v: number, i: number) => {
                         p += `${help.htmlEncode(GraphState.nodeIDToLabel(v))} &rarr; `;
+                        if(i > 0) {
+                            G = G.editEdge(a.path[i - 1], v, null, null, '#FF0000') as GraphImmut;
+                        }
                     });
+                    GraphState.graph = G;
+                    window.main.setData(GraphState.getGraphData(G),
+                        false, false, false);
                     p = p.slice(0, -8);
                     p = `<h3>${title}</h3><hr>${p}`;
                 }

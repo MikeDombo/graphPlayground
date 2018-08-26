@@ -189,7 +189,7 @@ const self = {
     getDataAsJSON: (): string => {
         const d = GraphState.getGraphData(GraphState.graph);
         const nodeKeys = ["id", "label", "color", "x", "y"];
-        const edgeKeys = ["from", "to", "weight"];
+        const edgeKeys = ["from", "to", "weight", "color"];
         d.nodes = help.keepOnlyKeys(d.nodes, nodeKeys) as NodeImmutPlain[];
         d.edges = help.keepOnlyKeys(d.edges, edgeKeys) as EdgeImmutPlain[];
 

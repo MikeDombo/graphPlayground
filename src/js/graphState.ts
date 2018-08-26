@@ -208,7 +208,7 @@ export default class GraphState {
         graph = graph.addEdge(edgeFrom, edgeTo, weight);
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: graph.getAllEdges() as EdgeImmutPlain[]
+            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
         });
     }
 
@@ -216,7 +216,7 @@ export default class GraphState {
         graph = graph.addNode({label: data.label, x: data.x, y: data.y});
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: graph.getAllEdges() as EdgeImmutPlain[]
+            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
         });
     }
 
@@ -226,7 +226,8 @@ export default class GraphState {
         window.main.setData(GraphState.getGraphData(graph), false, false);
     }
 
-    static editEdge(from: number|string, to: number|string, newWeight: number, oldWeight: number, graph = GraphState.graph) {
+    static editEdge(from: number | string, to: number | string,
+                    newWeight: number, oldWeight: number, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         const newGraph = graph.editEdge(edgeFrom, edgeTo, newWeight, oldWeight);
@@ -241,7 +242,7 @@ export default class GraphState {
         graph = graph.deleteEdge(edgeFrom, edgeTo, weight, false);
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: graph.getAllEdges() as EdgeImmutPlain[]
+            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
         });
     }
 
@@ -251,7 +252,7 @@ export default class GraphState {
         if (newGraph instanceof GraphImmut) {
             window.main.setData({
                 nodes: GraphState.clearColorFromNodes(newGraph.getAllNodes() as NodeImmutPlain[]),
-                edges: newGraph.getAllEdges() as EdgeImmutPlain[]
+                edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
             });
         }
     }
@@ -261,6 +262,13 @@ export default class GraphState {
             v.color = null;
         });
         return nodes;
+    }
+
+    static clearColorFromEdges(edges: EdgeImmutPlain[]): EdgeImmutPlain[] {
+        edges.forEach((v) => {
+            delete v.color;
+        });
+        return edges;
     }
 
     static nodeIDToLabel(id: number, graph = GraphState.graph): string {
@@ -329,6 +337,11 @@ export default class GraphState {
                 e.label = e.weight.toString();
             });
         }
+        d.edges.forEach((e) => {
+            if('color' in e) {
+                e.color = {color: e.color};
+            }
+        });
 
         return {nodes: new DataSet(d.nodes as vis.Node[]), edges: new DataSet(d.edges as vis.Edge[])};
     }
@@ -348,11 +361,12 @@ export default class GraphState {
         return new GraphImmut(newNodes, graph.getAllEdgesAsImmutableList(), graph.isDirected(), graph.isWeighted());
     }
 
-    static getGraphData(graph = GraphState.graph, clearColors = false): GraphPlain {
+    static getGraphData(graph = GraphState.graph, clearNodeColors = false, clearEdgeColors = false): GraphPlain {
         const nodes = graph.getAllNodes() as NodeImmutPlain[];
+        const edges = graph.getAllEdges() as EdgeImmutPlain[];
         return {
-            nodes: clearColors ? GraphState.clearColorFromNodes(nodes) : nodes,
-            edges: graph.getAllEdges() as EdgeImmutPlain[],
+            nodes: clearNodeColors ? GraphState.clearColorFromNodes(nodes) : nodes,
+            edges: clearEdgeColors ? GraphState.clearColorFromEdges(edges) : edges,
             directed: graph.isDirected(),
             weighted: graph.isWeighted()
         };

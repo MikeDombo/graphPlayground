@@ -8,13 +8,21 @@ interface NodeMapping {
     [key: number]: number
 }
 
-const filterNodeExtraAttr = (data: any) => {
+const filterExtraAttr = (data: any, labels: any) => {
     return Object.keys(data)
-        .filter((key) => !(["label", "id"]).includes(key))
+        .filter((key) => !(labels).includes(key))
         .reduce((obj: any, key) => {
             obj[key] = data[key];
             return obj;
         }, {});
+};
+
+const filterNodeExtraAttr = (data: any) => {
+    return filterExtraAttr(data, ["label", "id"]);
+};
+
+const filterEdgeExtraAttr = (data: any) => {
+    return filterExtraAttr(data, ["from", "to", "weight"]);
 };
 
 const genericEdgesToImmutEdges = (edges: any, nodeMap: NodeMapping = {}): boolean | List<EdgeImmut> => {
@@ -29,6 +37,7 @@ const genericEdgesToImmutEdges = (edges: any, nodeMap: NodeMapping = {}): boolea
             let weight = 0;
             let from = 0;
             let to = 0;
+            let extraAttrs = {};
 
             if ("weight" in edge) {
                 weight = parseFloat(edge.weight);
@@ -39,8 +48,14 @@ const genericEdgesToImmutEdges = (edges: any, nodeMap: NodeMapping = {}): boolea
             if ("to" in edge) {
                 to = nodeMap[edge.to];
             }
+            if ("attributes" in edge) {
+                extraAttrs = filterEdgeExtraAttr(edge.attributes);
+            }
+            else {
+                extraAttrs = filterEdgeExtraAttr(edge);
+            }
 
-            newEdges = newEdges.push(new EdgeImmut(from, to, weight));
+            newEdges = newEdges.push(new EdgeImmut(from, to, weight, extraAttrs));
         });
     }
     else {
@@ -300,13 +315,7 @@ export default class GraphImmut {
         return new GraphImmut(this.nodes, newEdges, this.directed, this.weighted);
     }
 
-    editEdge(from: number, to: number, newWeight: any, oldWeight: any = null): GraphImmut | boolean {
-        // Editing only makes sense for weighted graphs.
-        // To change from/to, just delete the edge and add a new one
-        if (!this.weighted) {
-            return false;
-        }
-
+    editEdge(from: number, to: number, newWeight: any, oldWeight: any = null, color: string | null = null): GraphImmut | boolean {
         let foundFirst = false;
 
         if (oldWeight !== null) {
@@ -318,8 +327,19 @@ export default class GraphImmut {
             if (foundFirst) {
                 return;
             }
-            if (edge.getFrom() === from && edge.getTo() === to && (oldWeight === null || edge.getWeight() === oldWeight)) {
-                newEdges = newEdges.set(index, edge.editEdge(parseFloat(newWeight)));
+
+            if (((edge.getFrom() === from && edge.getTo() === to)
+                    || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
+                && (oldWeight === null || edge.getWeight() === oldWeight)) {
+
+                if(color !== null){
+                    newEdges = newEdges.set(index,
+                        edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
+                            {color: color}));
+                }
+                else {
+                    newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
+                }
                 foundFirst = true;
             }
         });
