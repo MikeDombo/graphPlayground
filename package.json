@@ -24,7 +24,7 @@
 		"@types/jquery": "^3.3.6",
 		"@types/vis": "^4.21.7",
 		"babel-eslint": "^8.2.6",
-		"browser-sync": "^2.24.6",
+		"browser-sync": "^2.24.7",
 		"browser-sync-webpack-plugin": "^2.2.2",
 		"cache-loader": "^1.2.2",
 		"clean-webpack-plugin": "^0.1.19",
