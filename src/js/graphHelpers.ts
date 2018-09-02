@@ -35,8 +35,8 @@ export default {
     interpolateNodesFromEdges: (edges: EdgeImmutPlain[]): NodeImmutPlain[] => {
         const nodes: NodeImmutPlain[] = [];
         edges.forEach((v) => {
-            nodes[v.from] = {id: v.from, label: "" + v.from};
-            nodes[v.to] = {id: v.to, label: "" + v.to};
+            nodes[v.from] = {id: v.from, label: v.from.toString()};
+            nodes[v.to] = {id: v.to, label: v.to.toString()};
         });
 
         return nodes;

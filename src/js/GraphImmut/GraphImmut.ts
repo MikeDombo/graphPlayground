@@ -361,6 +361,9 @@ export default class GraphImmut {
 
     getAllOutDegrees(): number[] {
         const degrees: number[] = [];
+        this.nodes.forEach((_, i) => {
+            degrees[i] = 0;
+        });
         this.edges.forEach((edge) => {
             if (edge.getFrom() in degrees) {
                 degrees[edge.getFrom()]++;

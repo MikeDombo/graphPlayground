@@ -179,7 +179,7 @@ const self = {
         return self.deepFreeze(r);
     },
 
-    rotate: (map: any): Readonly<any> => {
+    rotate: (map: {[key: string]: any}): Readonly<any> => {
         const r: any = {};
         Object.keys(map).forEach((i) => {
             if (map[i] in r) {
