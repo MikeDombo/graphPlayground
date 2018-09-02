@@ -12,7 +12,7 @@
 		"deploy": "git subtree push --prefix dist origin gh-pages",
 		"webpackStats": "webpack --json --mode production | webpack-bundle-size-analyzer",
 		"sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat",
-		"test": "mocha -r ts-node/register ./test/**/*Test.ts"
+		"test": "cross-env TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} mocha -r ts-node/register ./test/**/*Test.ts"
 	},
 	"keywords": [],
 	"author": "Michael Dombrowski",
@@ -33,6 +33,7 @@
 		"chai": "^4.1.2",
 		"clean-webpack-plugin": "^0.1.19",
 		"copy-webpack-plugin": "^4.5.2",
+		"cross-env": "^5.2.0",
 		"html-webpack-plugin": "^3.2.0",
 		"mocha": "^5.2.0",
 		"nyc": "^13.0.1",
