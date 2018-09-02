@@ -18,3 +18,4 @@
 /.scannerwork/
 .htaccess
 /.cache-loader/
+/.nyc_output/

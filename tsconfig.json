@@ -18,8 +18,7 @@
 		}
 	},
 	"include" : [
-		"./src/**/*.ts",
-		"./test/**/*.ts"
+		"./src/**/*.ts"
 	],
 	"files": [
 		"node_modules/immutable/dist/immutable.d.ts",

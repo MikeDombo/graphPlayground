@@ -3,7 +3,6 @@ import 'mocha';
 import GraphImmut from '../../src/js/GraphImmut/GraphImmut';
 import EdgeImmut, {EdgeImmutPlain} from "../../src/js/GraphImmut/EdgeImmut";
 import NodeImmut, {NodeImmutPlain} from "../../src/js/GraphImmut/NodeImmut";
-import {min} from "moment";
 
 describe('Constructor', () => {
     it('Should construct with defaults', () => {
