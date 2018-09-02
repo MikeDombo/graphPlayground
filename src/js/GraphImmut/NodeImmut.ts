@@ -14,7 +14,7 @@ export default class NodeImmut {
     private readonly label: Readonly<string>;
     private readonly attributes: any;
 
-    constructor(id: any, label: any = null, extraAttrs: null | any = null) {
+    constructor(id: any, label: null | string = null, extraAttrs: null | any = null) {
         if (label === null) {
             this.label = id.toString();
         }
@@ -76,9 +76,11 @@ export default class NodeImmut {
 
         // Merge existing and new attributes favoring the new
         const attributes = Object.assign({}, this.attributes);
-        Object.keys(extraAttrs).forEach((key) => {
-            attributes[key] = extraAttrs[key];
-        });
+        if(extraAttrs !== null) {
+            Object.keys(extraAttrs).forEach((key) => {
+                attributes[key] = extraAttrs[key];
+            });
+        }
 
         return new NodeImmut(this.getID(), label, attributes);
     }

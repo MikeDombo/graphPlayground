@@ -171,28 +171,6 @@ export default class GraphImmut {
         }
     }
 
-    alignNodeIDs(alignTo = 0): GraphImmut {
-        const nodeMap: NodeMapping = {};
-        let nodeCount = alignTo;
-        let newNodes: List<NodeImmut> = List();
-        this.nodes.forEach((v) => {
-            let label = v.getLabel();
-            if (v.getLabel() === v.getID().toString()) {
-                label = nodeCount.toString();
-            }
-
-            newNodes = newNodes.set(nodeCount, new NodeImmut(nodeCount, label, v.getAllAttributes()));
-            nodeMap[v.getID()] = nodeCount++;
-        });
-
-        let newEdges: List<EdgeImmut> = List();
-        this.edges.forEach((v) => {
-            newEdges = newEdges.push(new EdgeImmut(nodeMap[v.getFrom()], nodeMap[v.getTo()], v.getWeight()));
-        });
-
-        return new GraphImmut(newNodes, newEdges, this.directed, this.weighted);
-    }
-
     getNode(id: number, rich = false): NodeImmut | NodeImmutPlain | boolean {
         if (id >= this.numNodes) {
             return false;
@@ -268,7 +246,7 @@ export default class GraphImmut {
                 return !(edge.getFrom() === id || edge.getTo() === id);
             })
             .map((edge) => {
-                return new EdgeImmut(nodeMap[edge.getFrom()], nodeMap[edge.getTo()], edge.getWeight());
+                return new EdgeImmut(nodeMap[edge.getFrom()], nodeMap[edge.getTo()], edge.getWeight(), edge.getAllAttributes());
             }) as List<EdgeImmut>;
 
         return new GraphImmut(newNodes, newEdges, this.directed, this.weighted);
@@ -329,10 +307,10 @@ export default class GraphImmut {
             }
 
             if (((edge.getFrom() === from && edge.getTo() === to)
-                    || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
+                || (!this.isDirected() && edge.getFrom() === to && edge.getTo() === from))
                 && (oldWeight === null || edge.getWeight() === oldWeight)) {
 
-                if(color !== null){
+                if (color !== null) {
                     newEdges = newEdges.set(index,
                         edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
                             {color: color}));
@@ -414,7 +392,7 @@ export default class GraphImmut {
 
         let newEdges = this.edges;
         this.edges.forEach((edge) => {
-            newEdges = newEdges.push(new EdgeImmut(edge.getTo(), edge.getFrom(), edge.getWeight()));
+            newEdges = newEdges.push(new EdgeImmut(edge.getTo(), edge.getFrom(), edge.getWeight(), edge.getAllAttributes()));
         });
 
         return new GraphImmut(this.nodes, newEdges, true, this.weighted);
@@ -427,13 +405,13 @@ export default class GraphImmut {
         this.edges.forEach((edge) => {
             let from = edge.getFrom();
             let to = edge.getTo();
-            if (to > from) {
+            if (to < from) {
                 from = to;
                 to = edge.getFrom();
             }
             if (!(`${from}_${to}` in addedEdges)) {
                 addedEdges[`${from}_${to}`] = null;
-                newEdges = newEdges.push(new EdgeImmut(from, to, edge.getWeight()));
+                newEdges = newEdges.push(new EdgeImmut(from, to, edge.getWeight(), edge.getAllAttributes()));
             }
         });
 
@@ -443,17 +421,17 @@ export default class GraphImmut {
     asChangedDirectedWeighted(directed: boolean, weighted: boolean): GraphImmut {
         let G: GraphImmut = this;
         if (directed && !this.directed) {
-            G = this.asDirected();
+            G = G.asDirected();
         }
         else if (!directed && this.directed) {
-            G = this.asUndirected();
+            G = G.asUndirected();
         }
 
         if (weighted && !this.weighted) {
-            G = this.asWeighted();
+            G = G.asWeighted();
         }
         else if (!weighted && this.weighted) {
-            G = this.asUnweighted();
+            G = G.asUnweighted();
         }
 
         return G;
@@ -488,6 +466,10 @@ export default class GraphImmut {
 
     getEdgesBetween(id1: number, id2: number): EdgeImmut[] {
         const edgeList: EdgeImmut[] = [];
+        if (id1 >= this.numNodes || id2 >= this.numNodes) {
+            return edgeList;
+        }
+
         this.edges.forEach((edge) => {
             if (!this.directed && edge.getFrom() === id2 && edge.getTo() === id1) {
                 edgeList.push(edge);
@@ -513,11 +495,7 @@ export default class GraphImmut {
     }
 
     // Take a multigraph and reduce all multiple edges to a single edge, weighted using the reducer
-    reduceMultiGraph(reducer: (a: number, b: number) => number, initialValue?: any): GraphImmut {
-        if (typeof initialValue === "undefined") {
-            initialValue = 0;
-        }
-
+    reduceMultiGraph(reducer: (a: number, b: number) => number = Math.min, initialValue: any = Infinity): GraphImmut {
         const multiEdges: EdgeImmutPlain[] = [];
         this.nodes.forEach((node) => {
             // If we have duplicates

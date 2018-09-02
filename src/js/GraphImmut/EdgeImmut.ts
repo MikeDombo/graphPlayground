@@ -5,7 +5,9 @@ export interface EdgeImmutPlain {
     from: number;
     to: number;
     weight: number
+
     [key: string]: any;
+
     [key: number]: any
 }
 
@@ -16,7 +18,14 @@ export default class EdgeImmut {
     private readonly attributes: any;
 
     constructor(from: number | EdgeImmutPlain, to?: number, weight: any = 1, extraAttrs: any = null) {
-        if(typeof from === "object"){
+        if (typeof from === "object") {
+            extraAttrs = Object.keys(from)
+                .filter((key) => !['from', 'to', 'weight'].includes(key))
+                .reduce((obj: any, key: string) => {
+                    obj[key] = (<EdgeImmutPlain> from)[key];
+                    return obj;
+                }, {});
+
             to = from.to;
             weight = from.weight;
             from = from.from;
@@ -51,7 +60,19 @@ export default class EdgeImmut {
         return this.weight;
     }
 
-    toPlain(): { from: Readonly<number>; to: Readonly<number>; weight: Readonly<number> } {
+    getAttribute(attribute: string | number): any {
+        if (attribute in this.attributes) {
+            return this.attributes[attribute];
+        }
+
+        return null;
+    }
+
+    getAllAttributes(): { [key: string]: any; [key: number]: any } {
+        return this.attributes;
+    }
+
+    toPlain(): EdgeImmutPlain {
         const toReturn: EdgeImmutPlain = {from: this.from, to: this.to, weight: this.weight};
         Object.keys(this.attributes).forEach((key) => {
             if (!(key in toReturn)) {

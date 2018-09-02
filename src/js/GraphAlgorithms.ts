@@ -349,7 +349,7 @@ export default class GraphAlgorithms {
         // If we have a multigraph, then reduce the graph to have single edges with the sum of the capacities
         G = G.reduceMultiGraph((a, b) => {
             return a + b;
-        });
+        }, 0);
 
         const V = G.getNumberOfNodes();
         let value = 0;
@@ -457,7 +457,7 @@ export default class GraphAlgorithms {
 
     public static kruskal = (G: GraphImmut = GraphState.graph): MSTResult => {
         // If we have a multigraph, reduce it by using the minimum edge weights
-        G.reduceMultiGraph(Math.min, Infinity);
+        G.reduceMultiGraph();
 
         const Q: EdgeImmut[] = G.getAllEdges(true) as EdgeImmut[];
 
