@@ -1,4 +1,4 @@
-import GraphAlgorithms from './GraphAlgorithms';
+import GraphAlgorithms from '../GraphAlgorithms';
 const ctx: Worker = self as any;
 
 let myID: number;

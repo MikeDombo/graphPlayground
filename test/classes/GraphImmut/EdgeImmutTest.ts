@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import 'mocha';
-import EdgeImmut from "../../src/js/GraphImmut/EdgeImmut";
+import EdgeImmut from "../../../src/js/classes/GraphImmut/EdgeImmut";
 
 describe('Constructor', () => {
     it('Should properly be constructed with defaults', () => {

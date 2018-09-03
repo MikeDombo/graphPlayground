@@ -74,14 +74,4 @@ export default class Settings {
         }
         return Settings.defaults[option];
     }
-
-    public static resetToDefault(): void {
-        Settings.current = {};
-        Settings.saveSettings();
-        Settings.setAll();
-
-        // Reset graph to just a plain graph. Not sure if this should actually happen or not.
-        const G = GraphState.graph.asChangedDirectedWeighted(Settings.defaults.direction, Settings.defaults.weights);
-        window.main.setData(GraphState.getGraphData(G));
-    }
 }

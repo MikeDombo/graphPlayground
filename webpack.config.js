@@ -10,7 +10,7 @@ const outputPath = path.resolve(__dirname, 'dist');
 let webpackOptions = {
     entry: {
         bundle: './src/js/app.ts',
-        pwaPacked: './src/js/pwaServiceWorker.ts'
+        pwaPacked: './src/js/workers/pwaServiceWorker.ts'
     },
     output: {
         filename: '[name]-[hash].min.js',

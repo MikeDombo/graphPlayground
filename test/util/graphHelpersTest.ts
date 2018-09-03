@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import 'mocha';
-import help from '../src/js/graphHelpers';
+import help from '../../src/js/util/graphHelpers';
 
 describe('Test find vertex degrees directional', () => {
     it('Should find vertex degrees directional', () => {

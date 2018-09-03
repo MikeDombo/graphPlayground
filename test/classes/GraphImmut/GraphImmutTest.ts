@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 import 'mocha';
-import GraphImmut from '../../src/js/GraphImmut/GraphImmut';
-import EdgeImmut, {EdgeImmutPlain} from "../../src/js/GraphImmut/EdgeImmut";
-import NodeImmut, {NodeImmutPlain} from "../../src/js/GraphImmut/NodeImmut";
+import GraphImmut from '../../../src/js/classes/GraphImmut/GraphImmut';
+import EdgeImmut, {EdgeImmutPlain} from "../../../src/js/classes/GraphImmut/EdgeImmut";
+import NodeImmut, {NodeImmutPlain} from "../../../src/js/classes/GraphImmut/NodeImmut";
 
 describe('Constructor', () => {
     it('Should construct with defaults', () => {

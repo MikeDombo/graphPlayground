@@ -1,7 +1,7 @@
 "use strict";
 
-import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
-import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import {EdgeImmutPlain} from "../classes/GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "../classes/GraphImmut/NodeImmut";
 
 interface Degree {
     in: number;

@@ -1,12 +1,12 @@
-import gHelp from "./graphHelpers";
-import help from "./genericHelpers";
+import gHelp from "./util/graphHelpers";
+import help from "./util/genericHelpers";
 import GraphState from './graphState';
 import {FlowResult, MSTResult, ShortestPathResult} from "./GraphAlgorithms";
 //@ts-ignore
-import Worker from 'worker-loader!./GraphAlgorithmWorker';
-import NodeImmut from "./GraphImmut/NodeImmut";
-import EdgeImmut from "./GraphImmut/EdgeImmut";
-import GraphImmut from "./GraphImmut/GraphImmut";
+import Worker from 'worker-loader!./workers/GraphAlgorithmWorker';
+import NodeImmut from "./classes/GraphImmut/NodeImmut";
+import EdgeImmut from "./classes/GraphImmut/EdgeImmut";
+import GraphImmut from "./classes/GraphImmut/GraphImmut";
 
 interface AlgorithmI {
     name: string;
@@ -284,23 +284,23 @@ export default class UIInteractions {
         makeSimpleClickListener("#print-help-link", UIInteractions.printHelp);
         makeSimpleClickListener("#graph-options-link", UIInteractions.printOptions);
         makeSimpleClickListener("#load-petersen-link", async () => {
-            const predefined = (await import('./predefinedGraphs')).default;
+            const predefined = (await import('./util/predefinedGraphs')).default;
             window.main.setData(predefined.Petersen(), false, true, true);
         });
         makeSimpleClickListener("#load-konigsberg-link", async () => {
-            const predefined = (await import('./predefinedGraphs')).default;
+            const predefined = (await import('./util/predefinedGraphs')).default;
             window.main.setData(predefined.Konigsberg(), false, true, true);
         });
         makeSimpleClickListener("#load-complete-link", async () => {
-            const predefined = (await import('./predefinedGraphs')).default;
+            const predefined = (await import('./util/predefinedGraphs')).default;
             predefined.Complete();
         });
         makeSimpleClickListener("#load-hypercube-link", async () => {
-            const predefined = (await import('./predefinedGraphs')).default;
+            const predefined = (await import('./util/predefinedGraphs')).default;
             predefined.Hypercube();
         });
         makeSimpleClickListener("#load-custom-link", async () => {
-            const predefined = (await import('./predefinedGraphs')).default;
+            const predefined = (await import('./util/predefinedGraphs')).default;
             predefined.Custom();
         });
         makeSimpleClickListener("#undo-link", window.main.undo);
@@ -328,10 +328,10 @@ export default class UIInteractions {
     }
 
     static printHelp(): void {
-        help.showSimpleModal("Help", "<h4>For support see the <a href='https://github.com/MikeDombo/graphPlayground' " +
-            "target='_blank'>GitHub repository</a> for guides</h4> <h4>See " +
-            "<a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>GitHub issues</a>" +
-            " to submit bugs or feature requests.</h4>");
+        help.showSimpleModal("Help", "<h4>For support see the " +
+            "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
+            " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +
+            "GitHub issues</a> to submit bugs or feature requests.</h4>");
     }
 
     static printOptions(): void {
@@ -405,8 +405,8 @@ export default class UIInteractions {
         if(name){
             n = name;
         }
-        help.showSimpleModal("Task Already Running", "<p>" + n + " is already running, please wait for it to finish" +
-            " first.</p>");
+        help.showSimpleModal("Task Already Running", "<p>" + n
+            + " is already running, please wait for it to finish first.</p>");
     }
 
     static makeAndPrintGraphColoring(): Promise<void> {

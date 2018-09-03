@@ -1,10 +1,11 @@
 "use strict";
 
-import help from './genericHelpers';
-import GraphImmut from './GraphImmut/GraphImmut';
-import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
-import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import help from './util/genericHelpers';
+import GraphImmut from './classes/GraphImmut/GraphImmut';
+import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
 import GraphState from "./graphState";
+import {GraphPlain} from "./util/predefinedGraphs";
 
 const exportedTextSelector = "exportedText";
 

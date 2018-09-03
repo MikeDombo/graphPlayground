@@ -1,12 +1,13 @@
 "use strict";
 
-import genericH from './genericHelpers';
-import graphH from './graphHelpers';
-import SpanningTree from './SpanningTree';
-import EdgeImmut from "./GraphImmut/EdgeImmut";
-import NodeImmut from "./GraphImmut/NodeImmut";
-import GraphImmut from "./GraphImmut/GraphImmut";
+import genericH from './util/genericHelpers';
+import graphH from './util/graphHelpers';
+import SpanningTree from './classes/SpanningTree';
+import EdgeImmut from "./classes/GraphImmut/EdgeImmut";
+import NodeImmut from "./classes/GraphImmut/NodeImmut";
+import GraphImmut from "./classes/GraphImmut/GraphImmut";
 import GraphState from "./graphState";
+import {GraphPlain} from "./util/predefinedGraphs";
 
 type EdgeFlowProp = { from: number; to: number; capacity: number; flow: number };
 export type MSTResult = { mst: EdgeImmut[]; totalWeight: number };
@@ -574,4 +575,3 @@ export default class GraphAlgorithms {
         return eulerian;
     };
 }
-

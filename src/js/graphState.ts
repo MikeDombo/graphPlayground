@@ -1,10 +1,11 @@
 "use strict";
 
 import {DataSet, Edge} from 'vis/index-network';
-import help from './genericHelpers';
-import GraphImmut from './GraphImmut/GraphImmut';
-import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
-import NodeImmut, {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import help from './util/genericHelpers';
+import GraphImmut from './classes/GraphImmut/GraphImmut';
+import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
+import NodeImmut, {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
+import {GraphPlain} from "./util/predefinedGraphs";
 
 interface UpToDateProperties {
     name: string;

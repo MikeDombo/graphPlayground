@@ -6,6 +6,7 @@ import {Network} from 'vis/index-network';
 import {default as main, MainI} from './main';
 import Settings from './settings';
 import UI from './UIInteractions';
+import {GraphPlain} from "./util/predefinedGraphs";
 
 declare global {
     interface Window {
@@ -44,7 +45,7 @@ if (Settings.checkForLocalStorage()) {
 }
 if (loadDefault) {
     (async () => {
-        const predefined = (await import("./predefinedGraphs")).default;
+        const predefined = (await import("./util/predefinedGraphs")).default;
         main.setData(predefined.Petersen(), false, true, true);
     })();
 }

@@ -1,11 +1,12 @@
 "use strict";
 
-import help from './genericHelpers';
+import help from './util/genericHelpers';
 import randomColor from 'randomcolor';
 import GraphState, {AddNodeI, GraphStateHistory} from './graphState';
-import GraphImmut from "./GraphImmut/GraphImmut";
-import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
-import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
+import GraphImmut from "./classes/GraphImmut/GraphImmut";
+import {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
+import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
+import {GraphPlain} from "./util/predefinedGraphs";
 
 export interface MainI {
     graphState: typeof GraphState;

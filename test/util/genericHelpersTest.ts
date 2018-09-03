@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import 'mocha';
-import help from '../src/js/genericHelpers';
+import help from '../../src/js/util/genericHelpers';
 
 describe('Test deep copy', () => {
     it('Should copy deeply', () => {
@@ -24,14 +24,14 @@ describe('Test deep freeze', () => {
 
 describe('Test dataset to array', () => {
     it('Should convert to array', () => {
-        const arr = help.datasetToArray([{id:1, x: 1}, {id:2, x:0}], 'id');
+        const arr = help.datasetToArray([{id: 1, x: 1}, {id: 2, x: 0}], 'id');
         expect(arr).to.deep.equal([1, 2]);
     });
 });
 
 describe('Test keep only some keys', () => {
     it('Should keep only some keys', () => {
-        const arr = help.keepOnlyKeys([{id:1, x: 1}, {id:2, x:0}], ['id']);
+        const arr = help.keepOnlyKeys([{id: 1, x: 1}, {id: 2, x: 0}], ['id']);
         expect(arr).to.deep.equal([{id: 1}, {id: 2}]);
         expect(arr).to.be.frozen;
     });

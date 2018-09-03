@@ -2,8 +2,15 @@
 
 import gHelp from './graphHelpers';
 import help from './genericHelpers';
-import {EdgeImmutPlain} from "./GraphImmut/EdgeImmut";
-import {NodeImmutPlain} from "./GraphImmut/NodeImmut";
+import {EdgeImmutPlain} from "../classes/GraphImmut/EdgeImmut";
+import {NodeImmutPlain} from "../classes/GraphImmut/NodeImmut";
+
+export interface GraphPlain {
+    edges: EdgeImmutPlain[];
+    nodes: NodeImmutPlain[];
+    directed?: boolean;
+    weighted?: boolean
+}
 
 const petersenEdges = help.deepFreeze([
     {from: 1, to: 2, weight: 1},
@@ -96,6 +103,10 @@ const newCustomGraph = (V: number, directed = false, weighted = false): Readonly
 };
 
 export default class PredefinedGraphs {
+    public static _complete = completeGraph;
+    public static _custom = newCustomGraph;
+    public static _hypercube = hypercubeGraph;
+
     public static Petersen(): Readonly<GraphPlain> {
         return help.deepFreeze({
             edges: petersenEdges,

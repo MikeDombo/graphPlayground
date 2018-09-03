@@ -1,4 +1,4 @@
-import NodeImmut from "../../src/js/GraphImmut/NodeImmut";
+import NodeImmut from "../../../src/js/classes/GraphImmut/NodeImmut";
 import {expect} from 'chai';
 import 'mocha';
 
@@ -79,27 +79,27 @@ describe('Edit Node', () => {
     });
     it('Should add extra attributes', () => {
         const node = new NodeImmut(0);
-        const newNode = node.editNode(null, {color : 'red'});
+        const newNode = node.editNode(null, {color: 'red'});
         expect(newNode).to.not.equal(node);
         expect(newNode).to.be.frozen;
         expect(newNode.toPlain()).to.deep.equal({id: 0, label: '0', color: 'red'});
 
         const node2 = new NodeImmut(0, '0', {oldKey: 1});
-        const newNode2 = node2.editNode(null, {color : 'red'});
+        const newNode2 = node2.editNode(null, {color: 'red'});
         expect(newNode2).to.not.equal(node2);
         expect(newNode2).to.be.frozen;
         expect(newNode2.toPlain()).to.deep.equal({id: 0, label: '0', color: 'red', oldKey: 1});
     });
     it('Should edit extra attributes', () => {
         const node = new NodeImmut(0, '0', {color: 'blue'});
-        const newNode = node.editNode(null, {color : 'red'});
+        const newNode = node.editNode(null, {color: 'red'});
         expect(newNode).to.not.equal(node);
         expect(newNode).to.be.frozen;
         expect(newNode.toPlain()).to.deep.equal({id: 0, label: '0', color: 'red'});
     });
     it('Should change label and attributes', () => {
         const node = new NodeImmut(0, '0', {color: 'blue'});
-        const newNode = node.editNode('abc', {color : 'red'});
+        const newNode = node.editNode('abc', {color: 'red'});
         expect(newNode).to.not.equal(node);
         expect(newNode).to.be.frozen;
         expect(newNode.toPlain()).to.deep.equal({id: 0, label: 'abc', color: 'red'});
