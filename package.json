@@ -24,7 +24,7 @@
 	"devDependencies": {
 		"@types/bootstrap": "^4.1.2",
 		"@types/chai": "^4.1.4",
-		"@types/jquery": "^3.3.6",
+		"@types/jquery": "^3.3.9",
 		"@types/mocha": "^5.2.5",
 		"@types/vis": "^4.21.7",
 		"babel-eslint": "^9.0.0",
