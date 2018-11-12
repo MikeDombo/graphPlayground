@@ -50,7 +50,7 @@
 		"immutable": "^3.8.2",
 		"jquery": "^3.3.1",
 		"npm": "^6.4.1",
-		"popper.js": "^1.14.4",
+		"popper.js": "^1.14.5",
 		"randomcolor": "^0.5.3",
 		"raven-js": "^3.27.0",
 		"vis": "^4.21.0"
