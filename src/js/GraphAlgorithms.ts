@@ -316,7 +316,7 @@ export default class GraphAlgorithms {
         if (distances[targetNodeID] !== Infinity) {
             const path: number[] = [targetNodeID];
             while (!path.includes(startNodeID)) {
-                path.push(parents[path.slice().pop()]);
+                path.push(parents[path.slice().pop()!]);
             }
             path.reverse();
 
@@ -407,7 +407,7 @@ export default class GraphAlgorithms {
 
             marked[startNodeID] = true;
             while (queue.length > 0) {
-                const v = queue.shift();
+                const v = queue.shift()!;
                 const vertexAdjacency = G.getNodeAdjacency(v);
                 for (const i of vertexAdjacency) {
                     const e = `${v}_${i}`;
@@ -470,7 +470,7 @@ export default class GraphAlgorithms {
         const kruskal: EdgeImmut[] = [];
         const set = new SpanningTree(G.getNumberOfNodes());
         while (Q.length > 0 && kruskal.length < G.getNumberOfNodes() - 1) {
-            const e = Q.shift();
+            const e = Q.shift()!;
             if (!set.connected(e.getFrom(), e.getTo())) {
                 set.union(e.getFrom(), e.getTo());
                 kruskal.push(e);
@@ -496,7 +496,7 @@ export default class GraphAlgorithms {
         let edges = G.getAllEdges(true) as EdgeImmut[];
 
         while (S.length !== 0) {
-            const nodeN = S.pop();
+            const nodeN = S.pop()!;
             L.push(nodeN);
 
             const nodeNConnectedTo = adjacency[nodeN.getID()];

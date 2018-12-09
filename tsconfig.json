@@ -15,6 +15,7 @@
 			"raven-js": ["node_modules/raven-js/typescript/raven.d.ts"]
 		}
 	},
+	"compileOnSave": false,
 	"include" : [
 		"./src/**/*.ts",
 		"./test/**/*.ts"

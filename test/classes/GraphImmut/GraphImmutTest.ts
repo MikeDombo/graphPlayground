@@ -97,6 +97,9 @@ describe('Get Methods', () => {
         const graph2 = new GraphImmut([{id: 0, label: '0'}, {id: 1, label: '1'}, {id: 2, label: 'different'}],
             [{from: 0, to: 2, weight: 1}, {from: 2, to: 1, weight: 1}], false, false);
         expect(graph2.getAllOutDegrees()).to.deep.equal([1, 0, 1]);
+        const graph3 = new GraphImmut([{id: 0, label: '0'}, {id: 1, label: '1'}, {id: 2, label: 'different'}],
+            [{from: 0, to: 2, weight: 1}, {from: 0, to: 1, weight: 1}, {from: 2, to: 1, weight: 1}], false, false);
+        expect(graph3.getAllOutDegrees()).to.deep.equal([2, 0, 1]);
     });
 
     it('Should get node adjacency', () => {
