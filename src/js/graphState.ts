@@ -237,7 +237,7 @@ export default class GraphState {
         }
     }
 
-    static deleteEdge(from: number|string, to: number|string, weight: number = null, graph = GraphState.graph) {
+    static deleteEdge(from: number|string, to: number|string, weight: (undefined|null|number) = null, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         graph = graph.deleteEdge(edgeFrom, edgeTo, weight, false);

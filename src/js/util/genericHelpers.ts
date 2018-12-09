@@ -166,9 +166,9 @@ const self = {
 
     printout: (text: string, escape?: string): void => {
         if (escape) {
-            text = this.htmlEncode(escape);
+            text = self.htmlEncode(escape);
         }
-        document.getElementById("printout").innerHTML = text;
+        document.getElementById("printout")!.innerHTML = text;
     },
 
     flatten: <T>(map: { [key: string]: T }): Readonly<T[]> => {
@@ -208,7 +208,7 @@ const self = {
         self.showFormModal(null, title, null, [{type: "html", initialValue: body}], null, false);
     },
 
-    makeFormModal: (title: string, successText: string, form: ModalFormRow[], footer = true): JQuery => {
+    makeFormModal: (title: string, successText: string|null, form: ModalFormRow[], footer = true): JQuery => {
         const f = $("<div>", {class: "modal-body form-group"});
         form.forEach((formRow, i) => {
             if (!("initialValue" in formRow)) {
@@ -231,11 +231,11 @@ const self = {
             }
 
             let validFunc = (value?: any, container?: JQuery): string | boolean => true;
-            if ("validationFunc" in formRow) {
+            if ("validationFunc" in formRow && typeof formRow.validationFunc === "function") {
                 validFunc = formRow.validationFunc;
             }
 
-            const generalValidator = (event: any, valueMutator: (v: any) => any = null) => {
+            const generalValidator = (event: any, valueMutator: null|((v: any) => any) = null) => {
                 const $v = $(event.target);
                 let val = $v.val();
                 if (valueMutator !== null && typeof valueMutator === "function") {
@@ -267,12 +267,12 @@ const self = {
 
                 f.append($("<div>", {class: "form-check"})
                     .append($("<label>", {for: id, class: "form-check-label"})
-                        .text(formRow.label).prepend($("<input>", basicMap))
+                        .text(formRow.label!).prepend($("<input>", basicMap))
                     )
                 );
             }
             else {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label));
+                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label!));
 
                 if (formRow.type === "button") {
                     if ("clickDismiss" in formRow && formRow.clickDismiss === true) {
@@ -302,15 +302,15 @@ const self = {
                 else if (formRow.type === "textarea") {
                     const $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
                     if ("onclick" in formRow) {
-                        $b.on("click", formRow.onclick);
+                        $b.on("click", formRow.onclick!);
                     }
                     f.append($b);
                 }
                 else if (formRow.type === "select") {
                     const $options = $("<select>", basicMap);
-                    formRow.optionText.forEach((oText, oIndex) => {
-                        if (oIndex < formRow.optionValues.length) {
-                            $options.append($("<option>", {value: formRow.optionValues[oIndex]}).text(oText));
+                    formRow.optionText!.forEach((oText, oIndex) => {
+                        if (oIndex < formRow.optionValues!.length) {
+                            $options.append($("<option>", {value: formRow.optionValues![oIndex]}).text(oText));
                         }
                         else {
                             $options.append($("<option>").text(oText));
@@ -321,8 +321,8 @@ const self = {
             }
         });
 
-        let $footer = $("<div>", {class: "modal-footer"})
-            .append($("<button>", {class: "btn btn-success", type: "button"}).text(successText))
+        let $footer: JQuery<HTMLElement>|null = $("<div>", {class: "modal-footer"})
+            .append($("<button>", {class: "btn btn-success", type: "button"}).text(successText!))
             .append($("<button>", {class: "btn btn-danger btn-cancel", type: "button"}).text("Cancel"));
 
         if (footer === false) {
@@ -340,7 +340,7 @@ const self = {
                         )
                     )
                     .append(f)
-                    .append($footer)
+                    .append($footer!)
                 )
             );
         $modal.find("input, textarea").off("keyup").on("keyup", (e) => {
@@ -355,9 +355,9 @@ const self = {
         return $modal;
     },
 
-    showFormModal: (successCb: ($modal: JQuery, vals: any[]) => void,
-                    title: string, successText: string, form: ModalFormRow[],
-                    cancelCb: ($modal: JQuery) => void = defaultCancelCb, footer = true) => {
+    showFormModal: (successCb: (null|(($modal: JQuery, vals: any[]) => void)),
+                    title: string, successText: string|null, form: ModalFormRow[],
+                    cancelCb: (null|(($modal: JQuery) => void)) = defaultCancelCb, footer = true) => {
         const $modal = self.makeFormModal(title, successText, form, footer);
 
         $modal.on("click", ".btn-cancel", () => {

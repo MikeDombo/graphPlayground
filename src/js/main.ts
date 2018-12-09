@@ -66,19 +66,19 @@ interface VisEdgeInternal {
 
 const self: MainI = {
     graphState: GraphState,
-    container: document.getElementById('network'),
+    container: document.getElementById('network')!,
     // Function used to overwrite the edge edit functionality when weights are active
     visWeightEdgeEdit: (data: VisEditEdgeInternal, callback) => {
         help.showFormModal(($modal, vals) => {
             callback(null);
             $modal.modal("hide");
             const value = parseFloat(vals[0]);
-            GraphState.editEdge(data.from.id, data.to.id, value, parseFloat(data.label));
+            GraphState.editEdge(data.from.id, data.to.id, value, parseFloat(data.label!));
         }, "Edit Edge", "Save", [
             {
                 type: "numeric",
                 label: "Weight/Capacity",
-                initialValue: parseFloat(data.label)
+                initialValue: parseFloat(data.label!)
             }
         ]);
     },
@@ -222,10 +222,10 @@ const self: MainI = {
             self.saveState();
         }
 
-        if ("directed" in data) {
+        if ("directed" in data && typeof data.directed !== "undefined") {
             window.settings.changeOption("direction", data.directed);
         }
-        if ("weighted" in data) {
+        if ("weighted" in data && typeof data.weighted !== "undefined") {
             window.settings.changeOption("weights", data.weighted);
         }
         const directional = window.settings.getOption("direction") as boolean;
@@ -266,7 +266,7 @@ const self: MainI = {
 
         GraphState.backHistory.push(self.getStateForSaving());
         GraphState.forwardHistory = [];
-        document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.add("active");
+        document.getElementsByClassName("icon-undo")!.item(0)!.parentElement!.parentElement!.classList.add("active");
     },
 
     getStateForSaving: () => {
@@ -303,26 +303,26 @@ const self: MainI = {
         }
     },
 
-    applyState: (undo = true, newState: GraphStateHistory = null) => {
+    applyState: (undo = true, newState: null|GraphStateHistory = null) => {
         const firstLoad = newState !== null;
         const currentState = self.getStateForSaving();
 
         if (!firstLoad) {
             if (undo) {
-                newState = GraphState.backHistory.pop();
+                newState = GraphState.backHistory.pop()!;
             }
             else {
-                newState = GraphState.forwardHistory.pop();
+                newState = GraphState.forwardHistory.pop()!;
             }
         }
 
         //@ts-ignore Ignore accessing private props. I do this because saving the state lost the type of the data
         newState.graph = new GraphImmut(newState.graph.nodes, newState.graph.edges, newState.graph.directed, newState.graph.weighted);
 
-        window.settings.changeOption("direction", newState.graph.isDirected());
-        window.settings.changeOption("weights", newState.graph.isWeighted());
+        window.settings.changeOption("direction", newState!.graph.isDirected());
+        window.settings.changeOption("weights", newState!.graph.isWeighted());
 
-        GraphState.graph = newState.graph;
+        GraphState.graph = newState!.graph;
 
         window.network.setData(GraphState.getGraphAsDataSet(GraphState.graph));
         window.network.disableEditMode();
@@ -331,8 +331,8 @@ const self: MainI = {
         window.ui.printGraphAlgorithms();
         help.printout("");
 
-        Object.keys(newState).forEach((k: string) => {
-            const v = newState[k];
+        Object.keys(newState!).forEach((k: string) => {
+            const v = newState![k];
             if (typeof v !== "object") {
                 (GraphState as any)[k] = v;
             }
@@ -350,16 +350,16 @@ const self: MainI = {
 
         GraphState.makeAndPrintProperties().then(() => {
             if (undo && !firstLoad) {
-                document.getElementsByClassName("icon-redo").item(0).parentElement.parentElement.classList.add("active");
+                document.getElementsByClassName("icon-redo")!.item(0)!.parentElement!.parentElement!.classList.add("active");
                 if (GraphState.backHistory.length === 0) {
-                    document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.remove("active");
+                    document.getElementsByClassName("icon-undo")!.item(0)!.parentElement!.parentElement!.classList.remove("active");
                 }
                 GraphState.forwardHistory.push(currentState);
             }
             else if (!undo && !firstLoad) {
-                document.getElementsByClassName("icon-undo").item(0).parentElement.parentElement.classList.add("active");
+                document.getElementsByClassName("icon-undo")!.item(0)!.parentElement!.parentElement!.classList.add("active");
                 if (GraphState.forwardHistory.length === 0) {
-                    document.getElementsByClassName("icon-redo").item(0).parentElement.parentElement.classList.remove("active");
+                    document.getElementsByClassName("icon-redo")!.item(0)!.parentElement!.parentElement!.classList.remove("active");
                 }
                 GraphState.backHistory.push(currentState);
             }
@@ -405,7 +405,7 @@ const self: MainI = {
         });
 
         // Delete nodes/edges when hit "Delete"
-        let lastNetworkClickEvent: Event = null;
+        let lastNetworkClickEvent: Event|null = null;
         network.on('click', (event) => {
             lastNetworkClickEvent = event;
         });
