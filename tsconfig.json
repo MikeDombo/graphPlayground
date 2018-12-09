@@ -1,12 +1,10 @@
 {
 	"compilerOptions": {
-		"noImplicitAny": true,
 		"module": "esnext",
 		"target": "es5",
 		"allowJs": false,
 		"sourceMap": true,
-		//"declaration": true,
-		//"emitDeclarationOnly": true,
+		"strict": true,
 		"lib": [
 			"dom",
 			"es7"
