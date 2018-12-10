@@ -30,7 +30,7 @@ const self = {
         }
         else if (format.toLowerCase() === "dimacs") {
             const lines = string.split(/\r?\n/);
-            let graph: GraphImmut = null;
+            let graph: GraphImmut|null = null;
             let error = false;
             lines.forEach((l) => {
                 const vals = l.split(/\s+/);
@@ -54,7 +54,7 @@ const self = {
             }
 
             if (!error) {
-                const d: GraphPlain = GraphState.getGraphData(graph);
+                const d: GraphPlain = GraphState.getGraphData(graph!);
                 d.nodes.forEach((v) => {
                     v.label = v.id.toString();
                 });
@@ -180,10 +180,10 @@ const self = {
 
     exportToText: (format: string): void => {
         if (format.toLowerCase() === "json") {
-            document.getElementById(exportedTextSelector).innerHTML = JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2);
+            document.getElementById(exportedTextSelector)!.innerHTML = JSON.stringify(JSON.parse(self.getDataAsJSON()), null, 2);
         }
         else if (format.toLowerCase() === "dimacs") {
-            document.getElementById(exportedTextSelector).innerHTML = self.getDataAsDIMACS();
+            document.getElementById(exportedTextSelector)!.innerHTML = self.getDataAsDIMACS();
         }
     },
 

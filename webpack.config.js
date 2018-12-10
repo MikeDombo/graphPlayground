@@ -1,32 +1,32 @@
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
-const outputPath = path.resolve(__dirname, 'dist');
+const outputPath = path.resolve(__dirname, "dist");
 
 let webpackOptions = {
     entry: {
-        bundle: './src/js/app.ts',
-        pwaPacked: './src/js/workers/pwaServiceWorker.ts'
+        bundle: "./src/js/app.ts",
+        pwaPacked: "./src/js/workers/pwaServiceWorker.ts"
     },
     output: {
-        filename: '[name]-[hash].min.js',
-        chunkFilename: '[name]-[chunkhash].min.js',
+        filename: "[name]-[hash].min.js",
+        chunkFilename: "[name]-[chunkhash].min.js",
         path: outputPath,
-        publicPath: ''
+        publicPath: ""
     },
     watch: false,
     watchOptions: {
-        ignored: /node_modules/,
+        ignored: /node_modules/
     },
     stats: {
         colors: true
     },
     devServer: {
-        contentBase: './dist',
+        contentBase: "./dist",
         hot: false
     },
     devtool: "source-map",
@@ -34,45 +34,50 @@ let webpackOptions = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+                loader: "ts-loader",
+                exclude: [/node_modules/, /pwaServiceWorker\.ts/]
+            },
+            {
+                test: /pwaServiceWorker\.ts/,
+                loader: "ts-loader",
+                options: { configFile: "/src/js/workers/tsconfig.json" }
             },
             {
                 test: /\.GraphAlgorithmWorker\.tsx?$/,
-                use: {loader: 'worker-loader'}
+                use: { loader: "worker-loader" }
             }
         ]
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: [".tsx", ".ts", ".js"]
     },
     plugins: [
         new BrowserSyncPlugin({
-            host: 'localhost',
+            host: "localhost",
             port: 80,
-            server: {baseDir: ['dist']}
+            server: { baseDir: ["dist"] }
         }),
         new CleanWebpackPlugin([outputPath + "/*.js*"]),
         new HtmlWebpackPlugin({
-            template: 'index.html',
-            inject: false,
+            template: "index.html",
+            inject: false
         }),
         // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
         new CopyWebpackPlugin([
             {
-                from: './src/fonts/*',
-                to: outputPath + '/fonts/',
+                from: "./src/fonts/*",
+                to: outputPath + "/fonts/",
                 flatten: true
             },
             {
-                from: '*.png'
+                from: "*.png"
             },
             {
-                from: '*.ico'
+                from: "*.ico"
             },
             {
-                from: './manifest.json'
+                from: "./manifest.json"
             }
         ])
     ],

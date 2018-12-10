@@ -1,6 +1,6 @@
 "use strict";
 
-import {DataSet, Edge} from 'vis/index-network';
+import {DataSet} from 'vis/index-network';
 import help from './util/genericHelpers';
 import GraphImmut from './classes/GraphImmut/GraphImmut';
 import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
@@ -13,7 +13,7 @@ interface UpToDateProperties {
     type: string;
     always?: boolean;
     applyFunc?: (ignoreDuplicate?: boolean) => any;
-    [index: string]: string|boolean|((ignoreDuplicate?: boolean) => any)
+    [index: string]: undefined|string|boolean|((ignoreDuplicate?: boolean) => any)
 }
 
 interface GraphProperties {
@@ -60,7 +60,7 @@ const getInt = (v: string|number): number => {
 };
 
 export default class GraphState {
-    public static workerPool: Worker[] = [];
+    public static workerPool: (Worker|null)[] = [];
     public static backHistory: GraphStateHistory[] = [];
     public static forwardHistory: GraphStateHistory[] = [];
     public static maxHistory = 10;
@@ -88,25 +88,25 @@ export default class GraphState {
         {
             name: "Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components').applyFunc();
+                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components')!.applyFunc();
             }
         },
         {
             name: "connectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components').applyFunc();
+                window.ui.getAlgorithms().find((v) => v.name === 'Connected Components')!.applyFunc();
             }
         },
         {
             name: "Strongly Connected Components", upToDate: false, type: "property",
             applyFunc: () => {
-                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components').applyFunc();
+                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components')!.applyFunc();
             }
         },
         {
             name: "stronglyConnectedComponents", upToDate: false, type: "state",
             applyFunc: () => {
-                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components').applyFunc();
+                window.ui.getAlgorithms().find((v) => v.name === 'Strongly Connected Components')!.applyFunc();
             }
         },
         {
@@ -121,7 +121,7 @@ export default class GraphState {
         connectedComponents: null,
         graphColoring: null,
     };
-    public static graph: GraphImmut = null;
+    public static graph: GraphImmut;
     public static graphProperties: GraphProperties = {
         vertices: 0,
         edges: 0,
@@ -136,7 +136,7 @@ export default class GraphState {
         const all = listOptions === null || typeof listOptions === "undefined";
         let property = false;
         GraphState.upToDate.forEach((v) => {
-            if ((!("always" in v) || !v.always) && (all || listOptions.indexOf(v.name) > -1)) {
+            if ((!("always" in v) || !v.always) && (all || listOptions!.indexOf(v.name) > -1)) {
                 v.upToDate = value;
                 if (v.type === "property") {
                     property = true;
@@ -151,9 +151,9 @@ export default class GraphState {
     static async getProperty(property: string, updateIfNotUpdated = false, ignoreDuplicate = false): Promise<any> {
         const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
-        });
+        })!;
         if (!a.upToDate) {
-            if ("applyFunc" in a && updateIfNotUpdated) {
+            if ("applyFunc" in a && typeof a.applyFunc === "function" && updateIfNotUpdated) {
                 await a.applyFunc(ignoreDuplicate);
             }
             else {
@@ -200,7 +200,7 @@ export default class GraphState {
         });
         p = p.trim();
         p = help.htmlEncode(p);
-        document.getElementById("graphProps").innerHTML = `<p class='nav-link'>${p}</p>`;
+        document.getElementById("graphProps")!.innerHTML = `<p class='nav-link'>${p}</p>`;
     }
 
     static addEdge(from: number|string, to: number|string, weight = 0, graph = GraphState.graph) {
@@ -351,7 +351,7 @@ export default class GraphState {
         let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
             const v = locations[i];
-            const node = newNodes.get(parseInt(i));
+            const node = newNodes.get(parseInt(i))!;
             // Only change when there is actually a new position
             if (node.getAttribute("x") !== v.x || node.getAttribute("y") !== v.y) {
                 // Batch up all changes that we'll be making

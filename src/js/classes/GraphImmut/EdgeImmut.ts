@@ -4,11 +4,11 @@ export interface EdgeImmutPlain {
     label?: string;
     from: number;
     to: number;
-    weight: number
+    weight: number;
 
     [key: string]: any;
 
-    [key: number]: any
+    [key: number]: any;
 }
 
 export default class EdgeImmut {
@@ -17,12 +17,12 @@ export default class EdgeImmut {
     private readonly weight: Readonly<number>;
     private readonly attributes: any;
 
-    constructor(from: number | EdgeImmutPlain, to?: number, weight: any = 1, extraAttrs: any = null) {
+    constructor(from: number | EdgeImmutPlain, to?: number, weight: number | string = 1, extraAttrs: any = null) {
         if (typeof from === "object") {
             extraAttrs = Object.keys(from)
-                .filter((key) => !['from', 'to', 'weight'].includes(key))
+                .filter(key => !["from", "to", "weight"].includes(key))
                 .reduce((obj: any, key: string) => {
-                    obj[key] = (<EdgeImmutPlain> from)[key];
+                    obj[key] = (<EdgeImmutPlain>from)[key];
                     return obj;
                 }, {});
 
@@ -33,15 +33,15 @@ export default class EdgeImmut {
 
         this.attributes = {};
         if (extraAttrs !== null && typeof extraAttrs === "object") {
-            Object.keys(extraAttrs).forEach((key) => {
+            Object.keys(extraAttrs).forEach(key => {
                 this.attributes[key] = Object.freeze(extraAttrs[key]);
             });
         }
 
         this.attributes = Object.freeze(this.attributes);
         this.from = Object.freeze(from);
-        this.to = Object.freeze(to);
-        this.weight = Object.freeze(parseFloat(weight));
+        this.to = Object.freeze(to!);
+        this.weight = Object.freeze(parseFloat(weight as string));
 
         if (new.target === EdgeImmut) {
             Object.freeze(this);
@@ -73,8 +73,8 @@ export default class EdgeImmut {
     }
 
     toPlain(): EdgeImmutPlain {
-        const toReturn: EdgeImmutPlain = {from: this.from, to: this.to, weight: this.weight};
-        Object.keys(this.attributes).forEach((key) => {
+        const toReturn: EdgeImmutPlain = { from: this.from, to: this.to, weight: this.weight };
+        Object.keys(this.attributes).forEach(key => {
             if (!(key in toReturn)) {
                 toReturn[key] = this.attributes[key];
             }
@@ -83,14 +83,18 @@ export default class EdgeImmut {
         return toReturn;
     }
 
-    editEdge(newWeight: number, extraAttrs: any = {}): EdgeImmut {
+    editEdge(newWeight: number | null, extraAttrs: any = {}): EdgeImmut {
         // Merge existing and new attributes favoring the new
         const attributes = Object.assign({}, this.attributes);
-        Object.keys(extraAttrs).forEach((key) => {
+        Object.keys(extraAttrs).forEach(key => {
             attributes[key] = extraAttrs[key];
         });
 
-        return new EdgeImmut(this.getFrom(), this.getTo(),
-            newWeight === null ? this.getWeight() : newWeight, attributes);
+        return new EdgeImmut(
+            this.getFrom(),
+            this.getTo(),
+            newWeight === null ? this.getWeight() : newWeight,
+            attributes
+        );
     }
 }

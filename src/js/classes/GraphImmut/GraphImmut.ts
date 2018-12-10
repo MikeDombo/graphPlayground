@@ -124,8 +124,8 @@ export default class GraphImmut {
     private readonly edges: Readonly<List<EdgeImmut>>;
     private readonly numEdges: Readonly<number>;
 
-    constructor(nodes: number | List<NodeImmut> | NodeImmutPlain[],
-                edges: null | List<EdgeImmut> | EdgeImmutPlain[] = null,
+    constructor(nodes: number | Readonly<List<NodeImmut>> | NodeImmutPlain[],
+                edges: null | Readonly<List<EdgeImmut>> | EdgeImmutPlain[] = null,
                 directed = false, weighted = false) {
         this.directed = Object.freeze(directed);
         this.weighted = Object.freeze(weighted);
@@ -175,10 +175,14 @@ export default class GraphImmut {
         if (id >= this.numNodes) {
             return false;
         }
-        if (rich) {
-            return this.nodes.get(id);
+        const node = this.nodes.get(id);
+        if(typeof node === "undefined"){
+            return false;
         }
-        return this.nodes.get(id).toPlain();
+        if (rich) {
+            return node;
+        }
+        return node.toPlain();
     }
 
     addNode(data: any = null): GraphImmut {
@@ -334,11 +338,11 @@ export default class GraphImmut {
         }).toArray();
     }
 
-    getAllNodesAsImmutableList(): List<NodeImmut> {
+    getAllNodesAsImmutableList(): Readonly<List<NodeImmut>> {
         return this.nodes;
     }
 
-    getAllEdgesAsImmutableList(): List<EdgeImmut> {
+    getAllEdgesAsImmutableList(): Readonly<List<EdgeImmut>> {
         return this.edges;
     }
 

@@ -3,10 +3,8 @@
 export interface NodeImmutPlain {
     id: Readonly<number>;
     label: string;
-
     [key: string]: any;
-
-    [key: number]: any
+    [key: number]: any;
 }
 
 export default class NodeImmut {
@@ -17,14 +15,13 @@ export default class NodeImmut {
     constructor(id: any, label: null | string = null, extraAttrs: null | any = null) {
         if (label === null) {
             this.label = id.toString();
-        }
-        else {
+        } else {
             this.label = label;
         }
 
         this.attributes = {};
         if (extraAttrs !== null && typeof extraAttrs === "object") {
-            Object.keys(extraAttrs).forEach((key) => {
+            Object.keys(extraAttrs).forEach(key => {
                 this.attributes[key] = Object.freeze(extraAttrs[key]);
             });
         }
@@ -39,8 +36,8 @@ export default class NodeImmut {
     }
 
     toPlain(): NodeImmutPlain {
-        const toReturn: NodeImmutPlain = {id: this.id, label: this.label};
-        Object.keys(this.attributes).forEach((key) => {
+        const toReturn: NodeImmutPlain = { id: this.id, label: this.label };
+        Object.keys(this.attributes).forEach(key => {
             if (!(key in toReturn)) {
                 toReturn[key] = this.attributes[key];
             }
@@ -76,8 +73,8 @@ export default class NodeImmut {
 
         // Merge existing and new attributes favoring the new
         const attributes = Object.assign({}, this.attributes);
-        if(extraAttrs !== null) {
-            Object.keys(extraAttrs).forEach((key) => {
+        if (extraAttrs !== null) {
+            Object.keys(extraAttrs).forEach(key => {
                 attributes[key] = extraAttrs[key];
             });
         }

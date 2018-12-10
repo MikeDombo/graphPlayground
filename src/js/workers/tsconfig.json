@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "none",
+        "target": "es2016",
+        "allowJs": false,
+        "sourceMap": true,
+        "strict": true,
+        "lib": ["webworker", "es7"]
+    },
+    "files": ["pwaServiceWorker.ts"]
+}

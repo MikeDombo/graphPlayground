@@ -1,18 +1,24 @@
 "use strict";
 
-import genericH from './util/genericHelpers';
-import graphH from './util/graphHelpers';
-import SpanningTree from './classes/SpanningTree';
-import EdgeImmut from "./classes/GraphImmut/EdgeImmut";
+import genericH from "./util/genericHelpers";
+import graphH from "./util/graphHelpers";
+import SpanningTree from "./classes/SpanningTree";
+import EdgeImmut, { EdgeImmutPlain } from "./classes/GraphImmut/EdgeImmut";
 import NodeImmut from "./classes/GraphImmut/NodeImmut";
 import GraphImmut from "./classes/GraphImmut/GraphImmut";
 import GraphState from "./graphState";
-import {GraphPlain} from "./util/predefinedGraphs";
+import { GraphPlain } from "./util/predefinedGraphs";
 
 type EdgeFlowProp = { from: number; to: number; capacity: number; flow: number };
-export type MSTResult = { mst: EdgeImmut[]; totalWeight: number };
+export type MSTResult = { mst: EdgeImmutPlain[]; totalWeight: number };
 export type FlowResult = { maxFlow: number; flowPath: EdgeFlowProp[] };
-export type ShortestPathResult = { pathExists: boolean; path: number[]; distance: number; cost?: number; weight?: number };
+export type ShortestPathResult = {
+    pathExists: boolean;
+    path: number[];
+    distance: number;
+    cost?: number;
+    weight?: number;
+};
 export type ConnectedComponentResult = { components: { [key: number]: number }; count: number };
 
 export default class GraphAlgorithms {
@@ -34,13 +40,13 @@ export default class GraphAlgorithms {
         const colorIndex: { [key: number]: number } = {};
         let currentColor = 0;
         while (vertexOrder.length > 0) {
-            const root = vertexOrder.shift();
+            const root = vertexOrder.shift()!;
             colorIndex[root] = currentColor;
 
             const myGroup = [];
             myGroup.push(root);
 
-            for (let i = 0; i < vertexOrder.length;) {
+            for (let i = 0; i < vertexOrder.length; ) {
                 const p = vertexOrder[i];
                 let conflict = false;
 
@@ -64,7 +70,7 @@ export default class GraphAlgorithms {
         }
 
         const chromaticNumber = genericH.max(genericH.flatten(colorIndex) as any[]) + 1;
-        return {colors: colorIndex, chromaticNumber};
+        return { colors: colorIndex, chromaticNumber };
     };
 
     public static connectedComponents = (G: GraphImmut = GraphState.graph): ConnectedComponentResult => {
@@ -81,7 +87,7 @@ export default class GraphAlgorithms {
             }
         }
 
-        return {components, count: componentCount};
+        return { components, count: componentCount };
     };
 
     public static depthFirstSearch = (start: number, G = GraphState.graph): number[] => {
@@ -89,10 +95,10 @@ export default class GraphAlgorithms {
         const Stack: number[] = [];
         Stack.push(start);
         while (Stack.length > 0) {
-            const v = Stack.pop();
+            const v = Stack.pop()!;
             if (!visisted.includes(v)) {
                 visisted.push(v);
-                G.getNodeAdjacency(v).forEach((nodeID) => {
+                G.getNodeAdjacency(v).forEach(nodeID => {
                     Stack.push(nodeID);
                 });
             }
@@ -115,12 +121,11 @@ export default class GraphAlgorithms {
             lowlink[v] = index++;
             S.push(v);
 
-            G.getNodeAdjacency(v).forEach((w) => {
+            G.getNodeAdjacency(v).forEach(w => {
                 if (!(w in indices)) {
                     strongConnect(w);
                     lowlink[v] = Math.min(lowlink[v], lowlink[w]);
-                }
-                else if (S.includes(w)) {
+                } else if (S.includes(w)) {
                     lowlink[v] = Math.min(lowlink[v], indices[w]);
                 }
             });
@@ -129,10 +134,9 @@ export default class GraphAlgorithms {
                 let w = -1;
                 if (S.length > 0) {
                     do {
-                        w = S.pop();
+                        w = S.pop()!;
                         components[w] = componentCount;
-                    }
-                    while (w !== v);
+                    } while (w !== v);
                     componentCount++;
                 }
             }
@@ -144,11 +148,14 @@ export default class GraphAlgorithms {
             }
         }
 
-        return {components, count: componentCount};
+        return { components, count: componentCount };
     };
 
-    public static breadthFirstSearch = (startNodeID: number, targetNodeID: number,
-                                        G: GraphImmut = GraphState.graph): ShortestPathResult => {
+    public static breadthFirstSearch = (
+        startNodeID: number,
+        targetNodeID: number,
+        G: GraphImmut = GraphState.graph
+    ): ShortestPathResult => {
         // Perform the BFS
         const visisted: number[] = [];
         const Q: number[] = []; // Use Push and Shift for Queue operations
@@ -156,10 +163,10 @@ export default class GraphAlgorithms {
 
         Q.push(startNodeID);
         while (Q.length > 0) {
-            const x = Q.shift();
+            const x = Q.shift()!;
             if (!visisted.includes(x)) {
                 visisted.push(x);
-                G.getNodeAdjacency(x).forEach((y) => {
+                G.getNodeAdjacency(x).forEach(y => {
                     if (!visisted.includes(y)) {
                         edgeTo[y] = x;
                         Q.push(y);
@@ -183,13 +190,17 @@ export default class GraphAlgorithms {
                 weight += G.getMinWeightEdgeBetween(path[i], path[i + 1]);
             }
 
-            return {pathExists: true, path, distance: path.length, weight};
+            return { pathExists: true, path, distance: path.length, weight };
         }
 
-        return {pathExists: false, path: [], distance: -1, weight: -1};
+        return { pathExists: false, path: [], distance: -1, weight: -1 };
     };
 
-    public static dijkstraSearch = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (ShortestPathResult | boolean) => {
+    public static dijkstraSearch = (
+        startNodeID: number,
+        targetNodeID: number,
+        G: GraphImmut = GraphState.graph
+    ): ShortestPathResult | boolean => {
         if (!G.isDirected()) {
             G = G.asDirected(true);
         }
@@ -197,7 +208,7 @@ export default class GraphAlgorithms {
             G = G.asWeighted();
         }
 
-        const nonNegative = (G.getAllEdges(true) as EdgeImmut[]).find((edge) => {
+        const nonNegative = (G.getAllEdges(true) as EdgeImmut[]).find(edge => {
             return edge.getWeight() < 0;
         });
         if (typeof nonNegative !== "undefined") {
@@ -209,12 +220,12 @@ export default class GraphAlgorithms {
             private readonly _nodes: { key: number | string; priority: number }[] = [];
 
             enqueue(priority: number, key: number): void {
-                this._nodes.push({key, priority});
+                this._nodes.push({ key, priority });
                 this.sort();
             }
 
             dequeue(): number | string {
-                return this._nodes.shift().key;
+                return this._nodes.shift()!.key;
             }
 
             sort(): void {
@@ -230,11 +241,11 @@ export default class GraphAlgorithms {
 
         const queue = new PriorityQueue();
         const distances: { [key: number]: number } = {};
-        const previous: { [key: number]: number } = {};
+        const previous: { [key: number]: number | null } = {};
         let path = [];
 
         // Initialize Queue and distances
-        (G.getAllNodes(true) as NodeImmut[]).forEach((node) => {
+        (G.getAllNodes(true) as NodeImmut[]).forEach(node => {
             let dist = Infinity;
             if (node.getID() === startNodeID) {
                 dist = 0;
@@ -252,7 +263,7 @@ export default class GraphAlgorithms {
                 path = [];
                 while (previous[smallest] !== null) {
                     path.push(smallest);
-                    smallest = previous[smallest];
+                    smallest = previous[smallest]!;
                 }
                 break;
             }
@@ -261,7 +272,7 @@ export default class GraphAlgorithms {
                 continue;
             }
 
-            G.getNodeAdjacency(smallest).forEach((neighbor) => {
+            G.getNodeAdjacency(smallest).forEach(neighbor => {
                 const alt = distances[smallest] + G.getMinWeightEdgeBetween(smallest, neighbor);
 
                 if (alt < distances[neighbor]) {
@@ -277,19 +288,22 @@ export default class GraphAlgorithms {
         path.reverse();
 
         if (distances[targetNodeID] !== Infinity) {
-            return {pathExists: true, path, distance: path.length, cost: distances[targetNodeID]};
+            return { pathExists: true, path, distance: path.length, cost: distances[targetNodeID] };
         }
 
-
-        return {pathExists: false, path: [], distance: -1, cost: 0};
+        return { pathExists: false, path: [], distance: -1, cost: 0 };
     };
 
-    public static bellmanFord = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (ShortestPathResult | boolean) => {
+    public static bellmanFord = (
+        startNodeID: number,
+        targetNodeID: number,
+        G: GraphImmut = GraphState.graph
+    ): ShortestPathResult | boolean => {
         const distances: number[] = [];
-        const parents: number[] = [];
+        const parents: (number | null)[] = [];
 
         // Initialize
-        (G.getAllNodes(true) as NodeImmut[]).forEach((node) => {
+        (G.getAllNodes(true) as NodeImmut[]).forEach(node => {
             distances[node.getID()] = Infinity;
             parents[node.getID()] = null;
         });
@@ -297,7 +311,7 @@ export default class GraphAlgorithms {
         // Relax Edges
         distances[startNodeID] = 0;
         for (let i = 0; i < G.getNumberOfNodes() - 1; i++) {
-            (G.getAllEdges(true) as EdgeImmut[]).forEach((edge) => {
+            (G.getAllEdges(true) as EdgeImmut[]).forEach(edge => {
                 if (distances[edge.getFrom()] + edge.getWeight() < distances[edge.getTo()]) {
                     distances[edge.getTo()] = distances[edge.getFrom()] + edge.getWeight();
                     parents[edge.getTo()] = edge.getFrom();
@@ -307,7 +321,7 @@ export default class GraphAlgorithms {
 
         // Check for negative weight cycles
         let negativeCylce = false;
-        (G.getAllEdges(true) as EdgeImmut[]).forEach((edge) => {
+        (G.getAllEdges(true) as EdgeImmut[]).forEach(edge => {
             if (distances[edge.getFrom()] + edge.getWeight() < distances[edge.getTo()]) {
                 negativeCylce = true;
             }
@@ -316,21 +330,25 @@ export default class GraphAlgorithms {
         if (distances[targetNodeID] !== Infinity) {
             const path: number[] = [targetNodeID];
             while (!path.includes(startNodeID)) {
-                path.push(parents[path.slice().pop()!]);
+                path.push(parents[path.slice().pop()!] as number);
             }
             path.reverse();
 
-            return {pathExists: true, path, distance: path.length, cost: distances[targetNodeID]};
+            return { pathExists: true, path, distance: path.length, cost: distances[targetNodeID] };
         }
 
         if (negativeCylce) {
             return false;
         }
 
-        return {pathExists: false, path: [], distance: -1, cost: 0};
+        return { pathExists: false, path: [], distance: -1, cost: 0 };
     };
 
-    public static fordFulkerson = (startNodeID: number, targetNodeID: number, G: GraphImmut = GraphState.graph): (boolean | FlowResult) => {
+    public static fordFulkerson = (
+        startNodeID: number,
+        targetNodeID: number,
+        G: GraphImmut = GraphState.graph
+    ): boolean | FlowResult => {
         // Must be a directed graph
         if (!G.isDirected()) {
             return false;
@@ -355,10 +373,10 @@ export default class GraphAlgorithms {
         const V = G.getNumberOfNodes();
         let value = 0;
         let marked: boolean[] = [];
-        let edgeTo: string[] = [];
+        let edgeTo: (string | null)[] = [];
 
         const edgeProperties: { [key: string]: EdgeFlowProp } = {};
-        (G.getAllEdges(true) as EdgeImmut[]).forEach((edge) => {
+        (G.getAllEdges(true) as EdgeImmut[]).forEach(edge => {
             edgeProperties[`${edge.getFrom()}_${edge.getTo()}`] = {
                 from: edge.getFrom(),
                 to: edge.getTo(),
@@ -388,8 +406,7 @@ export default class GraphAlgorithms {
             const v = parseInt(edge[0]);
             if (x === v) {
                 edgeProperties[e].flow -= deltaFlow;
-            }
-            else {
+            } else {
                 edgeProperties[e].flow += deltaFlow;
             }
         };
@@ -429,11 +446,11 @@ export default class GraphAlgorithms {
 
         while (hasAugmentedPath()) {
             let bottleneckValue = Infinity;
-            for (let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x], x)) {
-                bottleneckValue = Math.min(bottleneckValue, residualCapacity(edgeTo[x], x));
+            for (let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x]!, x)) {
+                bottleneckValue = Math.min(bottleneckValue, residualCapacity(edgeTo[x]!, x));
             }
-            for (let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x], x)) {
-                addResidualFlow(edgeTo[x], x, bottleneckValue);
+            for (let x = targetNodeID; x !== startNodeID; x = other(edgeTo[x]!, x)) {
+                addResidualFlow(edgeTo[x]!, x, bottleneckValue);
             }
             value += bottleneckValue;
         }
@@ -453,7 +470,7 @@ export default class GraphAlgorithms {
             return f;
         };
 
-        return {maxFlow: value, flowPath: getFlows()};
+        return { maxFlow: value, flowPath: getFlows() };
     };
 
     public static kruskal = (G: GraphImmut = GraphState.graph): MSTResult => {
@@ -482,7 +499,7 @@ export default class GraphAlgorithms {
             return acc + e.getWeight();
         }, 0);
 
-        return {mst: kruskal, totalWeight: weight};
+        return { mst: (kruskal as any) as EdgeImmutPlain[], totalWeight: weight };
     };
 
     public static topologicalSort = (G: GraphImmut = GraphState.graph): boolean | NodeImmut[] => {
@@ -490,7 +507,7 @@ export default class GraphAlgorithms {
         const degrees = graphH.findVertexDegreesDirectional(adjacency);
 
         const L: NodeImmut[] = [];
-        const S: NodeImmut[] = (G.getAllNodes(true) as NodeImmut[]).filter((n) => {
+        const S: NodeImmut[] = (G.getAllNodes(true) as NodeImmut[]).filter(n => {
             return degrees[n.getID()].in === 0;
         });
         let edges = G.getAllEdges(true) as EdgeImmut[];
@@ -502,10 +519,10 @@ export default class GraphAlgorithms {
             const nodeNConnectedTo = adjacency[nodeN.getID()];
 
             // Remove n to m edges for all nodes m
-            edges = edges.filter((edge) => {
+            edges = edges.filter(edge => {
                 if (edge.getFrom() === nodeN.getID() && nodeNConnectedTo.includes(edge.getTo())) {
                     degrees[edge.getTo()].in--;
-                    adjacency[nodeN.getID()] = adjacency[nodeN.getID()].filter((v) => {
+                    adjacency[nodeN.getID()] = adjacency[nodeN.getID()].filter(v => {
                         return v !== edge.getTo();
                     });
                     return false;
@@ -514,7 +531,7 @@ export default class GraphAlgorithms {
             });
 
             // If m has no more incoming edges, add it to S
-            nodeNConnectedTo.forEach((mID) => {
+            nodeNConnectedTo.forEach(mID => {
                 if (degrees[mID].in === 0) {
                     S.push(G.getNode(mID, true) as NodeImmut);
                 }
@@ -550,7 +567,7 @@ export default class GraphAlgorithms {
     };
 
     public static hasEulerianCircuit = (degrees: number[], cc: number[]): boolean => {
-        const oddDegree = degrees.filter((v) => {
+        const oddDegree = degrees.filter(v => {
             return v % 2 !== 0;
         });
 

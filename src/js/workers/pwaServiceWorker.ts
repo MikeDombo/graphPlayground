@@ -1,24 +1,27 @@
-let dataCacheName = 'graphs-v1';
+let dataCacheName = "graphs-v1";
 
-let filesToCache = [
-    'index.html'
-];
+let filesToCache = ["index.html"];
 
-self.addEventListener('install', (event: ExtendableEvent) => {
+// @ts-ignore
+const ctx: ServiceWorkerGlobalScope = self as any;
+
+// @ts-ignore
+ctx.addEventListener("install", (event: ExtendableEvent) => {
     event.waitUntil(
-        caches.open(dataCacheName).then((cache) => cache.addAll(filesToCache))
-            //@ts-ignore
-            .then(() => self.skipWaiting())
+        caches
+            .open(dataCacheName)
+            .then(cache => cache.addAll(filesToCache))
+            .then(() => ctx.skipWaiting())
     );
 });
 
-self.addEventListener('activate', (event: ExtendableEvent) => {
-    //@ts-ignore
-    self.clients.claim();
+ctx.addEventListener("activate", () => {
+    ctx.clients.claim();
 });
 
 // Get files from network first (cache if not cached already), then the cache
-self.addEventListener('fetch', (event: FetchEvent) => {
+// @ts-ignore
+ctx.addEventListener("fetch", (event: FetchEvent) => {
     event.respondWith(
         fetch(event.request)
             .then(response => {
@@ -36,7 +39,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
                 });
             })
             .catch(() => {
-                return caches.match(event.request);
+                return caches.match(event.request) as Promise<Response>;
             })
     );
 });

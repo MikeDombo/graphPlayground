@@ -1,6 +1,6 @@
 "use strict";
 
-import * as $ from 'jquery';
+import * as $ from "jquery";
 
 declare interface ModalFormRow {
     type: string;
@@ -8,7 +8,7 @@ declare interface ModalFormRow {
     initialValue?: any;
     id?: string | number;
     extraAttrs?: any;
-    validationFunc?: (value?: any, container?: JQuery) => boolean | string;
+    validationFunc?: (value: any, container: JQuery) => boolean | string;
     clickDismiss?: boolean;
     onclick?: (...args: any[]) => void;
     optionText?: any[];
@@ -18,11 +18,11 @@ declare interface ModalFormRow {
 declare interface BasicMapType {
     class: string;
     id: string;
-    value: any,
+    value: any;
 
-    [key: number]: any,
+    [key: number]: any;
 
-    [key: string]: any
+    [key: string]: any;
 }
 
 const defaultCancelCb = ($modal: JQuery) => {
@@ -43,12 +43,17 @@ const self = {
             }
 
             // Objects with prototype are plain iff they were constructed by a global Object function
-            let Ctor = ({}).hasOwnProperty.call(proto, "constructor") && proto.constructor;
-            return typeof Ctor === "function" && ({}).hasOwnProperty.toString.call(Ctor) === ({}).hasOwnProperty.toString.call(Object);
+            let Ctor = {}.hasOwnProperty.call(proto, "constructor") && proto.constructor;
+            return (
+                typeof Ctor === "function" &&
+                {}.hasOwnProperty.toString.call(Ctor) === {}.hasOwnProperty.toString.call(Object)
+            );
         };
 
-
-        let options, name, src, copyIsArray,
+        let options,
+            name,
+            src,
+            copyIsArray,
             target = arguments[0] || {},
             i = 1,
             length = arguments.length;
@@ -73,10 +78,8 @@ const self = {
         }
 
         for (; i < length; i++) {
-
             // Only deal with non-null/undefined values
             if ((options = arguments[i]) != null) {
-
                 // Extend the base object
                 for (name in options) {
                     src = target[name];
@@ -88,13 +91,10 @@ const self = {
                     }
 
                     // Recurse if we're merging plain objects or arrays
-                    if (deep && copy && (isPlainObject(copy) ||
-                        (copyIsArray = Array.isArray(copy)))) {
-
+                    if (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
                         if (copyIsArray) {
                             copyIsArray = false;
                             clone = src && Array.isArray(src) ? src : [];
-
                         } else {
                             clone = src && isPlainObject(src) ? src : {};
                         }
@@ -118,9 +118,12 @@ const self = {
         Object.freeze(o);
 
         Object.getOwnPropertyNames(o).forEach((prop: string | number) => {
-            if (o.hasOwnProperty(prop) && (o as any)[prop] !== null
-                && (typeof (o as any)[prop] === "object" || typeof (o as any)[prop] === "function")
-                && !Object.isFrozen((o as any)[prop])) {
+            if (
+                o.hasOwnProperty(prop) &&
+                (o as any)[prop] !== null &&
+                (typeof (o as any)[prop] === "object" || typeof (o as any)[prop] === "function") &&
+                !Object.isFrozen((o as any)[prop])
+            ) {
                 self.deepFreeze((o as any)[prop]);
             }
         });
@@ -144,7 +147,7 @@ const self = {
         arr = arr.slice();
         arr.forEach((v: any) => {
             const k = Object.keys(v);
-            k.forEach((key) => {
+            k.forEach(key => {
                 if (keys.indexOf(key) < 0) {
                     delete v[key];
                 }
@@ -160,7 +163,7 @@ const self = {
     htmlEncode: (string: string): string => {
         const t = document.createElement("textarea");
         t.textContent = string;
-        string = t.innerHTML.replace(/(?:\r\n|\r|\n)/g, '<br/>');
+        string = t.innerHTML.replace(/(?:\r\n|\r|\n)/g, "<br/>");
         return string;
     },
 
@@ -173,19 +176,18 @@ const self = {
 
     flatten: <T>(map: { [key: string]: T }): Readonly<T[]> => {
         const r: T[] = [];
-        Object.keys(map).forEach((i) => {
+        Object.keys(map).forEach(i => {
             r.push(map[i]);
         });
         return self.deepFreeze(r);
     },
 
-    rotate: (map: {[key: string]: any}): Readonly<any> => {
+    rotate: (map: { [key: string]: any }): Readonly<any> => {
         const r: any = {};
-        Object.keys(map).forEach((i) => {
+        Object.keys(map).forEach(i => {
             if (map[i] in r) {
                 r[map[i]].push(i);
-            }
-            else {
+            } else {
                 r[map[i]] = [i];
             }
         });
@@ -199,17 +201,17 @@ const self = {
     },
 
     toTitleCase: (str: string): string => {
-        return str.replace(/(?:^|\s)\w/g, (match) => {
+        return str.replace(/(?:^|\s)\w/g, match => {
             return match.toUpperCase();
         });
     },
 
     showSimpleModal: (title: string, body: string): void => {
-        self.showFormModal(null, title, null, [{type: "html", initialValue: body}], null, false);
+        self.showFormModal(null, title, null, [{ type: "html", initialValue: body }], null, false);
     },
 
-    makeFormModal: (title: string, successText: string|null, form: ModalFormRow[], footer = true): JQuery => {
-        const f = $("<div>", {class: "modal-body form-group"});
+    makeFormModal: (title: string, successText: string | null, form: ModalFormRow[], footer = true): JQuery => {
+        const f = $("<div>", { class: "modal-body form-group" });
         form.forEach((formRow, i) => {
             if (!("initialValue" in formRow)) {
                 formRow.initialValue = "";
@@ -220,44 +222,44 @@ const self = {
                 id = formRow.id;
             }
 
-            const basicMap: BasicMapType = {class: "form-control", id, value: formRow.initialValue};
+            const basicMap: BasicMapType = { class: "form-control", id, value: formRow.initialValue };
 
             if ("extraAttrs" in formRow) {
-                Object.keys(formRow.extraAttrs).forEach((attrname) => {
+                Object.keys(formRow.extraAttrs).forEach(attrname => {
                     if (typeof formRow.extraAttrs[attrname] !== "function") {
                         basicMap[attrname] = formRow.extraAttrs[attrname];
                     }
                 });
             }
 
-            let validFunc = (value?: any, container?: JQuery): string | boolean => true;
+            let validFunc: typeof formRow["validationFunc"] = () => true;
             if ("validationFunc" in formRow && typeof formRow.validationFunc === "function") {
                 validFunc = formRow.validationFunc;
             }
 
-            const generalValidator = (event: any, valueMutator: null|((v: any) => any) = null) => {
+            const generalValidator = (event: any, valueMutator: null | ((v: any) => any) = null) => {
                 const $v = $(event.target);
                 let val = $v.val();
                 if (valueMutator !== null && typeof valueMutator === "function") {
                     val = valueMutator(val);
                 }
-                const valid = validFunc(val, $v);
+                const valid = validFunc!(val, $v);
 
                 if (valid === true) {
-                    $v.removeClass("is-invalid").next("#feedback-" + i).remove();
-                }
-                else {
+                    $v.removeClass("is-invalid")
+                        .next("#feedback-" + i)
+                        .remove();
+                } else {
                     $v.addClass("is-invalid");
                     if ($v.next("#feedback-" + i).length === 0) {
-                        $v.after($("<div>", {class: "invalid-feedback", id: "feedback-" + i}).text(valid));
+                        $v.after($("<div>", { class: "invalid-feedback", id: "feedback-" + i }).text(valid));
                     }
                 }
             };
 
             if (formRow.type === "html") {
                 f.append($(formRow.initialValue));
-            }
-            else if (formRow.type === "checkbox") {
+            } else if (formRow.type === "checkbox") {
                 basicMap.type = "checkbox";
                 basicMap.class = "form-check-input";
                 delete basicMap.value;
@@ -265,14 +267,15 @@ const self = {
                     basicMap.checked = "";
                 }
 
-                f.append($("<div>", {class: "form-check"})
-                    .append($("<label>", {for: id, class: "form-check-label"})
-                        .text(formRow.label!).prepend($("<input>", basicMap))
+                f.append(
+                    $("<div>", { class: "form-check" }).append(
+                        $("<label>", { for: id, class: "form-check-label" })
+                            .text(formRow.label!)
+                            .prepend($("<input>", basicMap))
                     )
                 );
-            }
-            else {
-                f.append($("<label>", {for: id, class: "col-form-label"}).text(formRow.label!));
+            } else {
+                f.append($("<label>", { for: id, class: "col-form-label" }).text(formRow.label!));
 
                 if (formRow.type === "button") {
                     if ("clickDismiss" in formRow && formRow.clickDismiss === true) {
@@ -283,36 +286,32 @@ const self = {
                         $b.on("click", formRow.onclick);
                     }
                     f.append($b);
-                }
-                else if (formRow.type === "numeric") {
+                } else if (formRow.type === "numeric") {
                     basicMap.type = "number";
-                    f.append($("<input>", basicMap).on("blur validate", (e) => {
-                        generalValidator(e, parseFloat);
-                    }));
-                }
-                else if (formRow.type === "text") {
+                    f.append(
+                        $("<input>", basicMap).on("blur validate", e => {
+                            generalValidator(e, parseFloat);
+                        })
+                    );
+                } else if (formRow.type === "text") {
                     basicMap.type = "text";
                     f.append($("<input>", basicMap).on("blur validate", generalValidator));
-                }
-                else if (formRow.type === "file") {
+                } else if (formRow.type === "file") {
                     basicMap.type = "file";
                     basicMap.class = "form-control-file form-control";
                     f.append($("<input>", basicMap).on("blur validate", generalValidator));
-                }
-                else if (formRow.type === "textarea") {
+                } else if (formRow.type === "textarea") {
                     const $b = $("<textarea>", basicMap).on("blur validate", generalValidator);
                     if ("onclick" in formRow) {
                         $b.on("click", formRow.onclick!);
                     }
                     f.append($b);
-                }
-                else if (formRow.type === "select") {
+                } else if (formRow.type === "select") {
                     const $options = $("<select>", basicMap);
                     formRow.optionText!.forEach((oText, oIndex) => {
                         if (oIndex < formRow.optionValues!.length) {
-                            $options.append($("<option>", {value: formRow.optionValues![oIndex]}).text(oText));
-                        }
-                        else {
+                            $options.append($("<option>", { value: formRow.optionValues![oIndex] }).text(oText));
+                        } else {
                             $options.append($("<option>").text(oText));
                         }
                     });
@@ -321,89 +320,106 @@ const self = {
             }
         });
 
-        let $footer: JQuery<HTMLElement>|null = $("<div>", {class: "modal-footer"})
-            .append($("<button>", {class: "btn btn-success", type: "button"}).text(successText!))
-            .append($("<button>", {class: "btn btn-danger btn-cancel", type: "button"}).text("Cancel"));
+        let $footer: JQuery<HTMLElement> | null = $("<div>", { class: "modal-footer" })
+            .append($("<button>", { class: "btn btn-success", type: "button" }).text(successText!))
+            .append($("<button>", { class: "btn btn-danger btn-cancel", type: "button" }).text("Cancel"));
 
         if (footer === false) {
             $footer = null;
         }
 
-        const $modal = ($("<div>", {class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true"}));
-        $modal
-            .append($("<div>", {class: "modal-dialog"})
-                .append($("<div>", {class: "modal-content"})
-                    .append($("<div>", {class: "modal-header"})
-                        .append($("<h5>", {class: "modal-title"}).text(title))
-                        .append($("<button>", {class: "close", "data-dismiss": "modal", "aria-label": "close"})
-                            .append($("<span>", {"aria-hidden": "true"}).html("&times;"))
-                        )
+        const $modal = $("<div>", { class: "modal fade", tabindex: "-1", role: "dialog", "aria-hidden": "true" });
+        $modal.append(
+            $("<div>", { class: "modal-dialog" }).append(
+                $("<div>", { class: "modal-content" })
+                    .append(
+                        $("<div>", { class: "modal-header" })
+                            .append($("<h5>", { class: "modal-title" }).text(title))
+                            .append(
+                                $("<button>", {
+                                    class: "close",
+                                    "data-dismiss": "modal",
+                                    "aria-label": "close"
+                                }).append($("<span>", { "aria-hidden": "true" }).html("&times;"))
+                            )
                     )
                     .append(f)
                     .append($footer!)
-                )
-            );
-        $modal.find("input, textarea").off("keyup").on("keyup", (e) => {
-            if (e.key === "Enter") {
-                $(".btn-success").last().trigger("click");
-            }
-        });
+            )
+        );
+        $modal
+            .find("input, textarea")
+            .off("keyup")
+            .on("keyup", e => {
+                if (e.key === "Enter") {
+                    $(".btn-success")
+                        .last()
+                        .trigger("click");
+                }
+            });
         $modal.on("shown.bs.modal", () => {
-            $modal.find("input[type='text'], input[type='number'], textarea").first().trigger("focus");
+            $modal
+                .find("input[type='text'], input[type='number'], textarea")
+                .first()
+                .trigger("focus");
         });
 
         return $modal;
     },
 
-    showFormModal: (successCb: (null|(($modal: JQuery, vals: any[]) => void)),
-                    title: string, successText: string|null, form: ModalFormRow[],
-                    cancelCb: (null|(($modal: JQuery) => void)) = defaultCancelCb, footer = true) => {
+    showFormModal: (
+        successCb: null | (($modal: JQuery, vals: any[]) => void),
+        title: string,
+        successText: string | null,
+        form: ModalFormRow[],
+        cancelCb: null | (($modal: JQuery) => void) = defaultCancelCb,
+        footer = true
+    ) => {
         const $modal = self.makeFormModal(title, successText, form, footer);
 
-        $modal.on("click", ".btn-cancel", () => {
-            if (typeof cancelCb === "function") {
-                cancelCb($modal);
-            }
-            else {
+        $modal
+            .on("click", ".btn-cancel", () => {
+                if (typeof cancelCb === "function") {
+                    cancelCb($modal);
+                } else {
+                    $modal.modal("hide");
+                }
+            })
+            .on("click", ".btn-dismiss", () => {
                 $modal.modal("hide");
-            }
-        }).on("click", ".btn-dismiss", () => {
-            $modal.modal("hide");
-        }).on("click", ".btn-success", () => {
-            const vals: any[] = [];
-            let hasErrors = false;
+            })
+            .on("click", ".btn-success", () => {
+                const vals: any[] = [];
+                let hasErrors = false;
 
-            $modal.find("input, textarea, select").each((i, v) => {
-                const $v = $(v);
+                $modal.find("input, textarea, select").each((i, v) => {
+                    const $v = $(v);
 
-                if (($v as any).tagName === "SELECT") {
-                    vals.push($v.find(":selected").val());
-                }
-                else if ($v.attr("type") === "checkbox") {
-                    vals.push($v.prop("checked"));
-                }
-                else if ($v.attr("type") === "file") {
-                    vals.push(($v.get(0) as any).files);
-                }
-                else if ($v.attr("type") === "number") {
-                    vals.push(parseFloat($v.val() as string));
-                }
-                else {
-                    vals.push($v.val());
-                }
+                    if (($v as any).tagName === "SELECT") {
+                        vals.push($v.find(":selected").val());
+                    } else if ($v.attr("type") === "checkbox") {
+                        vals.push($v.prop("checked"));
+                    } else if ($v.attr("type") === "file") {
+                        vals.push(($v.get(0) as any).files);
+                    } else if ($v.attr("type") === "number") {
+                        vals.push(parseFloat($v.val() as string));
+                    } else {
+                        vals.push($v.val());
+                    }
 
-                if ($v.trigger("validate").hasClass("is-invalid")) {
-                    hasErrors = true;
+                    if ($v.trigger("validate").hasClass("is-invalid")) {
+                        hasErrors = true;
+                    }
+                });
+
+                if (!hasErrors && typeof successCb === "function") {
+                    successCb($modal, vals);
                 }
-
-            });
-
-            if (!hasErrors && typeof successCb === "function") {
-                successCb($modal, vals);
-            }
-        }).on("hidden.bs.modal", () => {
-            $modal.remove();
-        }).modal("show");
+            })
+            .on("hidden.bs.modal", () => {
+                $modal.remove();
+            })
+            .modal("show");
     }
 };
 
