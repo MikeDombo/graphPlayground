@@ -31,7 +31,7 @@
         "babel-eslint": "^10.0.1",
         "browser-sync": "^2.26.3",
         "browser-sync-webpack-plugin": "^2.2.2",
-        "cache-loader": "^1.2.5",
+        "cache-loader": "^2.0.0",
         "chai": "^4.2.0",
         "clean-webpack-plugin": "^1.0.0",
         "copy-webpack-plugin": "^4.6.0",
