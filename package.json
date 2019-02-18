@@ -54,7 +54,7 @@
         "jquery": "^3.3.1",
         "npm": "^6.7.0",
         "popper.js": "^1.14.7",
-        "randomcolor": "^0.5.3",
+        "randomcolor": "^0.5.4",
         "raven-js": "^3.27.0",
         "vis": "^4.21.0"
     }
