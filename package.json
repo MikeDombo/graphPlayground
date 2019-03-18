@@ -42,7 +42,7 @@
         "nyc": "^13.3.0",
         "ts-loader": "^5.3.3",
         "ts-node": "^8.0.3",
-        "tslint": "^5.13.1",
+        "tslint": "^5.14.0",
         "typescript": "^3.3.3333",
         "webpack": "^4.29.6",
         "webpack-cli": "^3.2.3",
