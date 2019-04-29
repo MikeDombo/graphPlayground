@@ -26,7 +26,7 @@
         "@types/chai": "^4.1.7",
         "@types/jquery": "3.3.29",
         "@types/mocha": "^5.2.6",
-        "@types/vis": "^4.21.14",
+        "@types/vis": "^4.21.15",
         "awesome-typescript-loader": "^5.2.1",
         "babel-eslint": "^10.0.1",
         "browser-sync": "^2.26.3",
