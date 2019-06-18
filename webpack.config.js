@@ -1,6 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
@@ -57,7 +57,7 @@ let webpackOptions = {
             port: 80,
             server: { baseDir: ["dist"] }
         }),
-        new CleanWebpackPlugin([outputPath + "/*.js*"]),
+        new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: "index.html",
             inject: false

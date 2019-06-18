@@ -114,7 +114,7 @@ const self = {
         return target;
     },
 
-    deepFreeze: <T>(o: T): Readonly<T> => {
+    deepFreeze: <T extends Object>(o: T): Readonly<T> => {
         Object.freeze(o);
 
         Object.getOwnPropertyNames(o).forEach((prop: string | number) => {
