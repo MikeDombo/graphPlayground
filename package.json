@@ -22,7 +22,7 @@
     },
     "homepage": "https://github.com/MikeDombo/graphPlayground#readme",
     "devDependencies": {
-        "@types/bootstrap": "^4.3.0",
+        "@types/bootstrap": "^4.3.1",
         "@types/chai": "^4.1.7",
         "@types/jquery": "3.3.30",
         "@types/mocha": "^5.2.7",
@@ -43,18 +43,18 @@
         "ts-loader": "^6.0.4",
         "ts-node": "^8.3.0",
         "tslint": "^5.18.0",
-        "typescript": "^3.5.2",
-        "webpack": "^4.35.2",
-        "webpack-cli": "^3.3.5",
+        "typescript": "^3.5.3",
+        "webpack": "^4.35.3",
+        "webpack-cli": "^3.3.6",
         "worker-loader": "^2.0.0"
     },
     "dependencies": {
+        "@sentry/browser": "^5.5.0",
         "bootstrap": "^4.3.1",
         "immutable": "^4.0.0-rc.12",
         "jquery": "^3.4.1",
         "popper.js": "^1.15.0",
         "randomcolor": "^0.5.4",
-        "raven-js": "^3.27.2",
         "vis": "^4.21.0"
     }
 }

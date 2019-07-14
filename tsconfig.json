@@ -8,13 +8,12 @@
         "lib": ["dom", "es7", "scripthost"],
         "baseUrl": ".",
         "paths": {
-            "vis/index-network": ["./node_modules/@types/vis/index.d.ts"],
-            "raven-js": ["node_modules/raven-js/typescript/raven.d.ts"]
+            "vis/index-network": ["./node_modules/@types/vis/index.d.ts"]
         },
         "moduleResolution": "node"
     },
     "compileOnSave": false,
     "include": ["./src/**/*.ts", "./test/**/*.ts"],
     "exclude": ["./src/js/workers/*.ts"],
-    "files": ["node_modules/immutable/dist/immutable.d.ts", "node_modules/raven-js/typescript/raven.d.ts"]
+    "files": ["node_modules/immutable/dist/immutable.d.ts"]
 }

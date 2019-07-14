@@ -1,12 +1,12 @@
 "use strict";
 
 import "bootstrap";
-import * as Raven from "raven-js";
 import { Network } from "vis/index-network";
 import { default as main, MainI } from "./main";
 import Settings from "./settings";
 import UI from "./UIInteractions";
 import { GraphPlain } from "./util/predefinedGraphs";
+import * as Sentry from '@sentry/browser';
 
 declare global {
     interface Window {
@@ -14,7 +14,6 @@ declare global {
         network: Network;
         settings: typeof Settings;
         ui: typeof UI;
-        Raven: Raven.RavenStatic;
         Worker: Function;
     }
 }
@@ -25,8 +24,9 @@ window.settings = Settings;
 window.ui = UI;
 
 // Initialize Sentry.io error logging
-Raven.config("https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2").install();
-window.Raven = Raven;
+Sentry.init({
+ dsn: "https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2"
+});
 
 main.addNetworkListeners(window.network);
 
