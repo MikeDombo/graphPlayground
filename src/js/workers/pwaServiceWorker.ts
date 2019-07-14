@@ -31,8 +31,8 @@ ctx.addEventListener("fetch", (event: FetchEvent) => {
 
                 return caches.open(dataCacheName).then(cache => {
                     const newResp = response.clone();
-                    // Check if the response is for a real URL, not base64 encoded data
-                    if (!newResp.url.includes("data:")) {
+                    // Check if the response is for a real URL, not base64 encoded data and it is a GET request
+                    if (!newResp.url.includes("data:") && event.request.method === "GET") {
                         cache.put(event.request, newResp);
                     }
                     return response;

@@ -25,7 +25,12 @@ window.ui = UI;
 
 // Initialize Sentry.io error logging
 Sentry.init({
- dsn: "https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2"
+    dsn: "https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2",
+    beforeSend: (event: Sentry.Event) => {
+        event.user = {};
+        event.user.graph = main.graphState.graph;
+        return event;
+    }
 });
 
 main.addNetworkListeners(window.network);
