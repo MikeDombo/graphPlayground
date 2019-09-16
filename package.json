@@ -43,7 +43,7 @@
         "ts-loader": "^6.1.0",
         "ts-node": "^8.4.1",
         "tslint": "^5.20.0",
-        "typescript": "^3.6.2",
+        "typescript": "^3.6.3",
         "webpack": "^4.40.2",
         "webpack-cli": "^3.3.8",
         "worker-loader": "^2.0.0"
