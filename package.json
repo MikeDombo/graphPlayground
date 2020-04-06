@@ -25,7 +25,7 @@
         "@types/bootstrap": "^4.3.1",
         "@types/chai": "^4.2.4",
         "@types/jquery": "3.3.31",
-        "@types/mocha": "^5.2.7",
+        "@types/mocha": "^7.0.2",
         "@types/vis": "^4.21.19",
         "awesome-typescript-loader": "^5.2.1",
         "babel-eslint": "^10.0.3",
