@@ -28,7 +28,7 @@
         "@types/mocha": "^5.2.7",
         "@types/vis": "^4.21.19",
         "awesome-typescript-loader": "^5.2.1",
-        "babel-eslint": "^10.0.3",
+        "babel-eslint": "^10.1.0",
         "browser-sync": "^2.26.7",
         "browser-sync-webpack-plugin": "^2.2.2",
         "cache-loader": "^4.1.0",
