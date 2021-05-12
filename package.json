@@ -24,7 +24,7 @@
     "devDependencies": {
         "@types/bootstrap": "^5.0.13",
         "@types/chai": "^4.2.18",
-        "@types/jquery": "3.3.38",
+        "@types/jquery": "3.5.5",
         "@types/mocha": "^8.2.2",
         "@types/vis": "^4.21.20",
         "awesome-typescript-loader": "^5.2.1",
