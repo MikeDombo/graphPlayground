@@ -37,7 +37,7 @@
         "copy-webpack-plugin": "^6.4.1",
         "cross-env": "^7.0.2",
         "eslint": "^7.1.0",
-        "html-webpack-plugin": "^4.3.0",
+        "html-webpack-plugin": "^4.5.2",
         "mocha": "^8.4.0",
         "nyc": "^15.0.1",
         "ts-loader": "^9.1.2",
