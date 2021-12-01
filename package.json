@@ -23,7 +23,7 @@
     "homepage": "https://github.com/MikeDombo/graphPlayground#readme",
     "devDependencies": {
         "@types/bootstrap": "^5.1.6",
-        "@types/chai": "^4.2.21",
+        "@types/chai": "^4.2.22",
         "@types/jquery": "3.5.6",
         "@types/mocha": "^9.0.0",
         "@types/vis": "^4.21.22",
