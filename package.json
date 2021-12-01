@@ -29,7 +29,7 @@
         "@types/vis": "^4.21.22",
         "awesome-typescript-loader": "^5.2.1",
         "babel-eslint": "^10.1.0",
-        "browser-sync": "^2.27.5",
+        "browser-sync": "^2.27.7",
         "browser-sync-webpack-plugin": "^2.3.0",
         "cache-loader": "^4.1.0",
         "chai": "^4.3.4",
