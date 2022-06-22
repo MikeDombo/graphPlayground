@@ -7,13 +7,43 @@ const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
 const outputPath = path.resolve(__dirname, "dist");
 
+class HtmlWebpackBackwardsCompatibilityPlugin {
+    apply(compiler) {
+        compiler
+            .hooks
+            .compilation
+            .tap("HtmlWebpackBackwardsCompatibilityPlugin", compilation => {
+                HtmlWebpackPlugin
+                    .getHooks(compilation)
+                    .beforeAssetTagGeneration
+                    .tapAsync("HtmlWebpackBackwardsCompatibilityPlugin", (data, callback) => {
+                        const { publicPath } = data.assets;
+                        data.assets.chunks = {};
+
+                        for (const entryPoint of compilation.entrypoints.values()) {
+                            for (const chunk of entryPoint.chunks) {
+                                data.assets.chunks[chunk.name] = {
+                                    entry: chunk.files
+                                        .map(file => publicPath + file)
+                                        .find(file => file.endsWith(".js"))
+                                };
+                            }
+                        }
+
+                        callback(null, data);
+                    }
+                    );
+            });
+    }
+}
+
 let webpackOptions = {
     entry: {
         bundle: "./src/js/app.ts",
         pwaPacked: "./src/js/workers/pwaServiceWorker.ts"
     },
     output: {
-        filename: "[name]-[hash].min.js",
+        filename: "[name]-[contenthash].min.js",
         chunkFilename: "[name]-[chunkhash].min.js",
         path: outputPath,
         publicPath: ""
@@ -58,12 +88,13 @@ let webpackOptions = {
             server: { baseDir: ["dist"] }
         }),
         new CleanWebpackPlugin(),
+        new HtmlWebpackBackwardsCompatibilityPlugin(),
         new HtmlWebpackPlugin({
             template: "index.html",
             inject: false
         }),
         // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
-        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$|moment$/ }),
         new CopyWebpackPlugin([
             {
                 from: "./src/fonts/*",
@@ -98,7 +129,7 @@ let webpackOptions = {
 module.exports = () => {
     if (process.env.npm_lifecycle_script.toString().includes("development")) {
         webpackOptions.watch = true;
-        webpackOptions.plugins.push(new webpack.NamedModulesPlugin());
+        webpackOptions.optimization.moduleIds = 'named';
     }
 
     return webpackOptions;
