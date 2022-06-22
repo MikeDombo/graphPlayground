@@ -20,7 +20,7 @@ let webpackOptions = {
     },
     watch: false,
     watchOptions: {
-        ignored: /node_modules/
+        ignored: /node_modules|\/dist/
     },
     stats: {
         colors: true
@@ -79,7 +79,7 @@ let webpackOptions = {
             {
                 from: "./manifest.json"
             }
-        ])
+        ], { copyUnmodified: true })
     ],
     optimization: {
         splitChunks: {

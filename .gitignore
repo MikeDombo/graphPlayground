@@ -19,3 +19,4 @@
 .htaccess
 /.cache-loader/
 /.nyc_output/
+dist/

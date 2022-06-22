@@ -2,10 +2,10 @@
 
 import help from './util/genericHelpers';
 import GraphImmut from './classes/GraphImmut/GraphImmut';
-import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
-import {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
+import { EdgeImmutPlain } from "./classes/GraphImmut/EdgeImmut";
+import { NodeImmutPlain } from "./classes/GraphImmut/NodeImmut";
 import GraphState from "./graphState";
-import {GraphPlain} from "./util/predefinedGraphs";
+import { GraphPlain } from "./util/predefinedGraphs";
 
 const exportedTextSelector = "exportedText";
 
@@ -30,7 +30,7 @@ const self = {
         }
         else if (format.toLowerCase() === "dimacs") {
             const lines = string.split(/\r?\n/);
-            let graph: GraphImmut|null = null;
+            let graph: GraphImmut | null = null;
             let error = false;
             lines.forEach((l) => {
                 const vals = l.split(/\s+/);
@@ -68,29 +68,29 @@ const self = {
 
     makeImportTextModal: (): void => {
         help.showFormModal(($modal, values) => {
-                $modal.modal("hide");
-                self.importByString(values[0], values[1]);
-            }, "Import Graph From Text", "Import",
-            [{type: "textarea", label: "Input Text", extraAttrs: {style: "height: 20vh; min-height:400px;"}},
-                {type: "select", label: "Format", optionValues: ["json", "dimacs"], optionText: ["JSON", "DIMACS"]}
+            $modal.modal("hide");
+            self.importByString(values[0], values[1]);
+        }, "Import Graph From Text", "Import",
+            [{ type: "textarea", label: "Input Text", extraAttrs: { style: "height: 20vh; min-height:400px;" } },
+            { type: "select", label: "Format", optionValues: ["json", "dimacs"], optionText: ["JSON", "DIMACS"] }
             ]);
     },
 
     makeImportFileModal: (): void => {
         help.showFormModal(($modal, values) => {
-                $modal.modal("hide");
+            $modal.modal("hide");
 
-                const files = values[0];
-                if (files.length === 1) {
-                    const file = files[0];
-                    const reader = new FileReader();
-                    reader.onload = function (event: any) {
-                        self.importByString(event.target.result, help.getFileExtension(file.name));
-                    };
+            const files = values[0];
+            if (files.length === 1) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function (event: any) {
+                    self.importByString(event.target.result, help.getFileExtension(file.name));
+                };
 
-                    reader.readAsText(file);
-                }
-            }, "Import Graph From File", "Import",
+                reader.readAsText(file);
+            }
+        }, "Import Graph From File", "Import",
             [{
                 type: "file", label: "Upload File", validationFunc: (val, $files) => {
                     const files = ($files.get(0) as any).files;
@@ -116,17 +116,17 @@ const self = {
                 },
                 clickDismiss: true
             },
-                {
-                    type: "button",
-                    initialValue: "Export to DIMACS",
-                    onclick: () => {
-                        self.exportToFile("dimacs");
-                    },
-                    extraAttrs: {
-                        class: "btn btn-sm btn-primary"
-                    },
-                    clickDismiss: true
-                }
+            {
+                type: "button",
+                initialValue: "Export to DIMACS",
+                onclick: () => {
+                    self.exportToFile("dimacs");
+                },
+                extraAttrs: {
+                    class: "btn btn-sm btn-primary"
+                },
+                clickDismiss: true
+            }
             ], null, false);
     },
 
@@ -143,27 +143,27 @@ const self = {
                 },
                 clickDismiss: false
             },
-                {
-                    type: "button",
-                    initialValue: "Export to DIMACS",
-                    onclick: () => {
-                        self.exportToText("dimacs");
-                    },
-                    extraAttrs: {
-                        class: "btn btn-sm btn-primary",
-                    },
-                    clickDismiss: false
+            {
+                type: "button",
+                initialValue: "Export to DIMACS",
+                onclick: () => {
+                    self.exportToText("dimacs");
                 },
-                {
-                    type: "textarea", label: "", initialValue: "", extraAttrs: {
-                        style: "height: 20vh;" +
+                extraAttrs: {
+                    class: "btn btn-sm btn-primary",
+                },
+                clickDismiss: false
+            },
+            {
+                type: "textarea", label: "", initialValue: "", extraAttrs: {
+                    style: "height: 20vh;" +
                         " min-height:400px; white-space:nowrap; margin-top: 1rem;"
-                    },
-                    onclick: () => {
-                        (document.getElementById(exportedTextSelector) as HTMLTextAreaElement).select();
-                        document.execCommand("copy");
-                    }, id: "exportedText"
-                }
+                },
+                onclick: () => {
+                    (document.getElementById(exportedTextSelector) as HTMLTextAreaElement).select();
+                    document.execCommand("copy");
+                }, id: "exportedText"
+            }
             ], ($modal) => {
                 $modal.modal("hide");
             }, false);
@@ -233,7 +233,8 @@ const self = {
     },
 
     downloadFile: (filename: string, text: string): void => {
-        const blob = new Blob([text], {type: 'text/plain'});
+        const blob = new Blob([text], { type: 'text/plain' });
+        // @ts-ignore
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveBlob(blob, filename);
         }
