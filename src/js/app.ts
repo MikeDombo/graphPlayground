@@ -1,7 +1,7 @@
 "use strict";
 
 import "bootstrap";
-import { Network } from "vis/index-network";
+import { Network } from "vis-network";
 import { default as main, MainI } from "./main";
 import Settings from "./settings";
 import UI from "./UIInteractions";

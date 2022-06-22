@@ -2,11 +2,13 @@
 
 import help from './util/genericHelpers';
 import randomColor from 'randomcolor';
-import GraphState, {AddNodeI, GraphStateHistory} from './graphState';
+import GraphState, { AddNodeI, GraphStateHistory } from './graphState';
 import GraphImmut from "./classes/GraphImmut/GraphImmut";
-import {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
-import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
-import {GraphPlain} from "./util/predefinedGraphs";
+import { NodeImmutPlain } from "./classes/GraphImmut/NodeImmut";
+import { EdgeImmutPlain } from "./classes/GraphImmut/EdgeImmut";
+import { GraphPlain } from "./util/predefinedGraphs";
+import { Network, Node as VisNode, Edge } from "vis-network";
+import { DataSet } from "vis-data";
 
 export interface MainI {
     graphState: typeof GraphState;
@@ -36,15 +38,15 @@ export interface MainI {
     saveStateLocalStorage: () => void;
     shuffleNetworkLayout: () => void;
     randomizeNetworkLayoutSeed: (network: VisNetworkInternals) => void;
-    addNetworkListeners: (network: vis.Network) => void
+    addNetworkListeners: (network: Network) => void
 }
 
 interface VisNetworkEvent {
-    edges: vis.DataSet<vis.Edge>;
-    nodes: vis.DataSet<vis.Node>;
+    edges: DataSet<Edge>;
+    nodes: DataSet<VisNode>;
 }
 
-interface VisNetworkInternals extends vis.Network {
+interface VisNetworkInternals extends Network {
     layoutEngine: {
         randomSeed: number,
         initialRandomSeed: number
@@ -83,7 +85,7 @@ const self: MainI = {
         ]);
     },
     visOptions: {
-        interaction: {hover: true},
+        interaction: { hover: true },
         manipulation: {
             addNode: async (data, callback) => {
                 const $popup = help.makeFormModal("Add Node", "Save", [
@@ -91,7 +93,7 @@ const self: MainI = {
                         type: "html",
                         initialValue: `<p>Node ID: ${await GraphState.getProperty("vertices")}</p>`
                     },
-                    {type: "text", label: "Label", initialValue: await GraphState.getProperty("vertices")}
+                    { type: "text", label: "Label", initialValue: await GraphState.getProperty("vertices") }
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
@@ -111,7 +113,7 @@ const self: MainI = {
                         type: "html",
                         initialValue: `<p>Node ID: ${data.id}</p>`
                     },
-                    {type: "text", label: "Label", initialValue: data.label}
+                    { type: "text", label: "Label", initialValue: data.label }
                 ]);
 
                 $popup.on("click", ".btn-success", () => {
@@ -143,7 +145,7 @@ const self: MainI = {
             },
             editEdge: (data, callback) => {
                 callback(null);
-                self.visOptions.manipulation.deleteEdge({edges: [data.id]});
+                self.visOptions.manipulation.deleteEdge({ edges: [data.id] });
                 self.visOptions.manipulation.addEdge(data);
             },
             deleteEdge: (data, callback) => {
@@ -201,10 +203,10 @@ const self: MainI = {
         const graphColors = await GraphState.getProperty("graphColoring", true);
         const chromaticNumber = await GraphState.getProperty("Chromatic Number", true);
 
-        const colors = randomColor({count: chromaticNumber, luminosity: "light"});
+        const colors = randomColor({ count: chromaticNumber, luminosity: "light" });
         let G = GraphState.graph;
         (G.getAllNodes() as NodeImmutPlain[]).forEach((v) => {
-            G = G.editNode(v.id, {color: colors[graphColors[v.id]]});
+            G = G.editNode(v.id, { color: colors[graphColors[v.id]] });
         });
         self.setData(GraphState.getGraphData(G), false, false);
     },
@@ -235,7 +237,7 @@ const self: MainI = {
         GraphState.graph = g;
 
         // Set a new random seed so that the layout will be different
-        self.randomizeNetworkLayoutSeed(window.network as VisNetworkInternals);
+        self.randomizeNetworkLayoutSeed(window.network as unknown as VisNetworkInternals);
         window.network.setData(GraphState.getGraphAsDataSet(g));
         GraphState.graph = GraphState.setLocations(window.network.getPositions());
 
@@ -303,7 +305,7 @@ const self: MainI = {
         }
     },
 
-    applyState: (undo = true, newState: null|GraphStateHistory = null) => {
+    applyState: (undo = true, newState: null | GraphStateHistory = null) => {
         const firstLoad = newState !== null;
         const currentState = self.getStateForSaving();
 
@@ -405,7 +407,7 @@ const self: MainI = {
         });
 
         // Delete nodes/edges when hit "Delete"
-        let lastNetworkClickEvent: Event|null = null;
+        let lastNetworkClickEvent: Event | null = null;
         network.on('click', (event) => {
             lastNetworkClickEvent = event;
         });

@@ -1,11 +1,12 @@
 "use strict";
 
-import {DataSet} from 'vis/index-network';
+import { DataSet } from 'vis-data';
+import { Node, Edge } from 'vis-network';
 import help from './util/genericHelpers';
 import GraphImmut from './classes/GraphImmut/GraphImmut';
-import {EdgeImmutPlain} from "./classes/GraphImmut/EdgeImmut";
-import NodeImmut, {NodeImmutPlain} from "./classes/GraphImmut/NodeImmut";
-import {GraphPlain} from "./util/predefinedGraphs";
+import { EdgeImmutPlain } from "./classes/GraphImmut/EdgeImmut";
+import NodeImmut, { NodeImmutPlain } from "./classes/GraphImmut/NodeImmut";
+import { GraphPlain } from "./util/predefinedGraphs";
 
 interface UpToDateProperties {
     name: string;
@@ -13,7 +14,7 @@ interface UpToDateProperties {
     type: string;
     always?: boolean;
     applyFunc?: (ignoreDuplicate?: boolean) => any;
-    [index: string]: undefined|string|boolean|((ignoreDuplicate?: boolean) => any)
+    [index: string]: undefined | string | boolean | ((ignoreDuplicate?: boolean) => any)
 }
 
 interface GraphProperties {
@@ -41,7 +42,7 @@ export interface AddNodeI {
     label: string;
     x: number;
     y: number;
-    color?:string;
+    color?: string;
 }
 
 export interface GraphStateHistory {
@@ -49,18 +50,18 @@ export interface GraphStateHistory {
     state: GraphStateData;
     graph: GraphImmut;
     graphProperties: GraphProperties;
-    [index: string]: UpToDateProperties[]|GraphStateData|GraphImmut|GraphProperties;
+    [index: string]: UpToDateProperties[] | GraphStateData | GraphImmut | GraphProperties;
 }
 
-const getInt = (v: string|number): number => {
-    if(typeof v === 'number'){
+const getInt = (v: string | number): number => {
+    if (typeof v === 'number') {
         return v;
     }
     return parseInt(v);
 };
 
 export default class GraphState {
-    public static workerPool: (Worker|null)[] = [];
+    public static workerPool: (Worker | null)[] = [];
     public static backHistory: GraphStateHistory[] = [];
     public static forwardHistory: GraphStateHistory[] = [];
     public static maxHistory = 10;
@@ -77,8 +78,8 @@ export default class GraphState {
                 return window.ui.makeAndPrintGraphColoring();
             }
         },
-        {name: "vertices", upToDate: true, always: true, type: "property"},
-        {name: "edges", upToDate: true, always: true, type: "property"},
+        { name: "vertices", upToDate: true, always: true, type: "property" },
+        { name: "edges", upToDate: true, always: true, type: "property" },
         {
             name: "eulerian", upToDate: false, type: "property",
             applyFunc: (i) => {
@@ -203,7 +204,7 @@ export default class GraphState {
         document.getElementById("graphProps")!.innerHTML = `<p class='nav-link'>${p}</p>`;
     }
 
-    static addEdge(from: number|string, to: number|string, weight = 0, graph = GraphState.graph) {
+    static addEdge(from: number | string, to: number | string, weight = 0, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         graph = graph.addEdge(edgeFrom, edgeTo, weight);
@@ -214,21 +215,21 @@ export default class GraphState {
     }
 
     static addNode(data: AddNodeI, graph = GraphState.graph) {
-        graph = graph.addNode({label: data.label, x: data.x, y: data.y});
+        graph = graph.addNode({ label: data.label, x: data.x, y: data.y });
         window.main.setData({
             nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
             edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
         });
     }
 
-    static editNode(id: number|string, label: string, graph = GraphState.graph) {
+    static editNode(id: number | string, label: string, graph = GraphState.graph) {
         const iId = getInt(id);
-        graph = graph.editNode(iId, {label});
+        graph = graph.editNode(iId, { label });
         window.main.setData(GraphState.getGraphData(graph), false, false);
     }
 
     static editEdge(from: number | string, to: number | string,
-                    newWeight: number, oldWeight: number, graph = GraphState.graph) {
+        newWeight: number, oldWeight: number, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         const newGraph = graph.editEdge(edgeFrom, edgeTo, newWeight, oldWeight);
@@ -237,7 +238,7 @@ export default class GraphState {
         }
     }
 
-    static deleteEdge(from: number|string, to: number|string, weight: (undefined|null|number) = null, graph = GraphState.graph) {
+    static deleteEdge(from: number | string, to: number | string, weight: (undefined | null | number) = null, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         graph = graph.deleteEdge(edgeFrom, edgeTo, weight, false);
@@ -247,7 +248,7 @@ export default class GraphState {
         });
     }
 
-    static deleteNode(id: number|string, graph = GraphState.graph) {
+    static deleteNode(id: number | string, graph = GraphState.graph) {
         const iId = getInt(id);
         const newGraph = graph.deleteNode(iId);
         if (newGraph instanceof GraphImmut) {
@@ -331,7 +332,7 @@ export default class GraphState {
     }
 
     // Return graph as a Vis compatible dataset
-    static getGraphAsDataSet(graph: GraphImmut): { nodes: DataSet<vis.Node>; edges: DataSet<vis.Edge> } {
+    static getGraphAsDataSet(graph: GraphImmut): { nodes: DataSet<Node>; edges: DataSet<Edge> } {
         const d = GraphState.getGraphData(graph);
         if (graph.isWeighted()) {
             d.edges.forEach((e) => {
@@ -339,15 +340,15 @@ export default class GraphState {
             });
         }
         d.edges.forEach((e) => {
-            if('color' in e) {
-                e.color = {color: e.color};
+            if ('color' in e) {
+                e.color = { color: e.color };
             }
         });
 
-        return {nodes: new DataSet(d.nodes as vis.Node[]), edges: new DataSet(d.edges as vis.Edge[])};
+        return { nodes: new DataSet(d.nodes as Node[]), edges: new DataSet(d.edges as Edge[]) };
     }
 
-    static setLocations(locations: {[key: string]: {x: number; y: number}}, graph = GraphState.graph): GraphImmut {
+    static setLocations(locations: { [key: string]: { x: number; y: number } }, graph = GraphState.graph): GraphImmut {
         let newNodes = graph.getAllNodesAsImmutableList();
         Object.keys(locations).forEach((i) => {
             const v = locations[i];
@@ -355,7 +356,7 @@ export default class GraphState {
             // Only change when there is actually a new position
             if (node.getAttribute("x") !== v.x || node.getAttribute("y") !== v.y) {
                 // Batch up all changes that we'll be making
-                newNodes = newNodes.set(parseInt(i), node.editNode(node.getLabel(), {x: v.x, y: v.y}));
+                newNodes = newNodes.set(parseInt(i), node.editNode(node.getLabel(), { x: v.x, y: v.y }));
             }
         });
 
