@@ -95,22 +95,23 @@ let webpackOptions = {
         }),
         // Don't include momentjs since it isn't used by anything (but would otherwise get bundled
         new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$|moment$/ }),
-        new CopyWebpackPlugin([
-            {
-                from: "./src/fonts/*",
-                to: outputPath + "/fonts/",
-                flatten: true
-            },
-            {
-                from: "*.png"
-            },
-            {
-                from: "*.ico"
-            },
-            {
-                from: "./manifest.json"
-            }
-        ], { copyUnmodified: true })
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: "./src/fonts/*",
+                    to: outputPath + "/fonts/[name][ext]"
+                },
+                {
+                    from: "*.png"
+                },
+                {
+                    from: "*.ico"
+                },
+                {
+                    from: "./manifest.json"
+                }
+            ]
+        })
     ],
     optimization: {
         splitChunks: {
