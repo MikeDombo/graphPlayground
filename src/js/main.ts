@@ -154,12 +154,13 @@ const self: MainI = {
                 }
                 data.edges.forEach((v: any) => {
                     let weight = null;
-                    if (typeof (window.network as any).body.data.edges._data[v].label !== "undefined") {
-                        weight = parseFloat((window.network as any).body.data.edges._data[v].label);
+                    const edge = (window.network as any).body.data.edges.get(v);
+                    const weightFromLabel = edge.label;
+                    if (typeof weightFromLabel !== "undefined") {
+                        weight = parseFloat(weightFromLabel);
                     }
 
-                    GraphState.deleteEdge((window.network as any).body.edges[v].fromId,
-                        (window.network as any).body.edges[v].toId, weight);
+                    GraphState.deleteEdge(edge.from, edge.to, weight);
                 });
             },
             deleteNode: (data, callback) => {
