@@ -204,27 +204,31 @@ export default class GraphState {
         document.getElementById("graphProps")!.innerHTML = `<p class='nav-link'>${p}</p>`;
     }
 
+    private static updateGraph(graph = GraphState.graph) {
+        let nodes = graph.getAllNodes() as NodeImmutPlain[];
+        let edges = graph.getAllEdges() as EdgeImmutPlain[];
+        if (!window.settings.getOption("customColors")) {
+            nodes = GraphState.clearColorFromNodes(nodes);
+            edges = GraphState.clearColorFromEdges(edges);
+        }
+        window.main.setData({ nodes, edges });
+    }
+
     static addEdge(from: number | string, to: number | string, weight = 0, graph = GraphState.graph) {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         graph = graph.addEdge(edgeFrom, edgeTo, weight);
-        window.main.setData({
-            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
-        });
+        this.updateGraph(graph);
     }
 
     static addNode(data: AddNodeI, graph = GraphState.graph) {
-        graph = graph.addNode({ label: data.label, x: data.x, y: data.y });
-        window.main.setData({
-            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
-        });
+        graph = graph.addNode({ label: data.label, x: data.x, y: data.y, color: data.color });
+        this.updateGraph(graph);
     }
 
-    static editNode(id: number | string, label: string, graph = GraphState.graph) {
+    static editNode(id: number | string, label: string, color?: string, graph = GraphState.graph) {
         const iId = getInt(id);
-        graph = graph.editNode(iId, { label });
+        graph = graph.editNode(iId, { label, color });
         window.main.setData(GraphState.getGraphData(graph), false, false);
     }
 
@@ -242,20 +246,14 @@ export default class GraphState {
         const edgeFrom = getInt(from);
         const edgeTo = getInt(to);
         graph = graph.deleteEdge(edgeFrom, edgeTo, weight, false);
-        window.main.setData({
-            nodes: GraphState.clearColorFromNodes(graph.getAllNodes() as NodeImmutPlain[]),
-            edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
-        });
+        this.updateGraph(graph);
     }
 
     static deleteNode(id: number | string, graph = GraphState.graph) {
         const iId = getInt(id);
         const newGraph = graph.deleteNode(iId);
         if (newGraph instanceof GraphImmut) {
-            window.main.setData({
-                nodes: GraphState.clearColorFromNodes(newGraph.getAllNodes() as NodeImmutPlain[]),
-                edges: GraphState.clearColorFromEdges(graph.getAllEdges() as EdgeImmutPlain[])
-            });
+            this.updateGraph(newGraph);
         }
     }
 

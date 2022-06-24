@@ -1,6 +1,6 @@
 "use strict";
 
-import help from './util/genericHelpers';
+import help, { ModalFormRow } from './util/genericHelpers';
 import randomColor from 'randomcolor';
 import GraphState, { AddNodeI, GraphStateHistory } from './graphState';
 import GraphImmut from "./classes/GraphImmut/GraphImmut";
@@ -26,7 +26,7 @@ export interface MainI {
         }
     };
     cancelEdit: (callback: Function) => void;
-    saveData: (data: any, callback: Function, operation: string, label: string) => void;
+    saveData: (data: any, callback: Function, operation: string, label: string, color: string) => Promise<void>;
     nodeLabelIDValidator: (v: string) => (boolean | string);
     applyColors: () => Promise<void>;
     setData: (data: GraphPlain, recalcProps?: boolean, graphChanged?: boolean, rearrangeGraph?: boolean) => void;
@@ -66,6 +66,22 @@ interface VisEdgeInternal {
     label?: string
 }
 
+const customColorPallete = {
+    "Default": "DEFAULT",
+    "Red": "red",
+    "Maroon": "maroon",
+    "Yellow": "yellow",
+    "Olive": "olive",
+    "Lime": "lime",
+    "Green": "green",
+    "Aqua": "aqua",
+    "Teal": "teal",
+    "Blue": "blue",
+    "Navy": "navy",
+    "Fuchsia": "fuchsia",
+    "Purple": "purple",
+};
+
 const self: MainI = {
     graphState: GraphState,
     container: document.getElementById('network')!,
@@ -88,17 +104,22 @@ const self: MainI = {
         interaction: { hover: true },
         manipulation: {
             addNode: async (data, callback) => {
-                const $popup = help.makeFormModal("Add Node", "Save", [
+                const customColors = window.settings.getOption("customColors");
+                const options: ModalFormRow[] = [
                     {
                         type: "html",
                         initialValue: `<p>Node ID: ${await GraphState.getProperty("vertices")}</p>`
                     },
-                    { type: "text", label: "Label", initialValue: await GraphState.getProperty("vertices") }
-                ]);
+                    { type: "text", label: "Label", initialValue: await GraphState.getProperty("vertices") },
+                ];
+                if (customColors) {
+                    options.push({ type: "select", label: "Color", optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete) });
+                }
+                const $popup = help.makeFormModal("Add Node", "Save", options);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");
-                    self.saveData(data, callback, "add", $popup.find("input").first().val() as string);
+                    self.saveData(data, callback, "add", $popup.find("input").first().val() as string, $popup.find("select").first().val() as string);
                 }).on("click", ".btn-cancel", () => {
                     $popup.modal("hide");
                     self.cancelEdit(callback);
@@ -108,17 +129,24 @@ const self: MainI = {
                 }).modal("show");
             },
             editNode: (data, callback) => {
-                const $popup = help.makeFormModal("Edit Node", "Save", [
+                const customColors = window.settings.getOption("customColors");
+                const initialColor = Object.getOwnPropertyNames(data.color).includes("background") ? (data.color as any).background : "DEFAULT";
+
+                const options: ModalFormRow[] = [
                     {
                         type: "html",
                         initialValue: `<p>Node ID: ${data.id}</p>`
                     },
-                    { type: "text", label: "Label", initialValue: data.label }
-                ]);
+                    { type: "text", label: "Label", initialValue: data.label },
+                ];
+                if (customColors) {
+                    options.push({ type: "select", label: "Color", optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete), initialValue: initialColor });
+                }
+                const $popup = help.makeFormModal("Edit Node", "Save", options);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");
-                    self.saveData(data, callback, "editNode", $popup.find("input").first().val() as string);
+                    self.saveData(data, callback, "editNode", $popup.find("input").first().val() as string, $popup.find("select").first().val() as string);
                 }).on("click", ".btn-cancel", () => {
                     $popup.modal("hide");
                     self.cancelEdit(callback);
@@ -178,15 +206,19 @@ const self: MainI = {
         }
     },
 
-    saveData: (data, callback, operation, label) => {
+    saveData: async (data, callback, operation, label, color) => {
         callback(null);
 
         data.label = label;
+        data.color = color;
+        if (color === "DEFAULT") {
+            data.color = undefined;
+        }
         if (operation === "add") {
             GraphState.addNode(data);
         }
         else if (operation === "editNode") {
-            GraphState.editNode(data.id, data.label);
+            GraphState.editNode(data.id, data.label, data.color);
         }
     },
 

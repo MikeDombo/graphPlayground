@@ -2,7 +2,7 @@
 
 import * as $ from "jquery";
 
-declare interface ModalFormRow {
+export declare interface ModalFormRow {
     type: string;
     label?: string;
     initialValue?: any;
@@ -310,9 +310,17 @@ const self = {
                     const $options = $("<select>", basicMap);
                     formRow.optionText!.forEach((oText, oIndex) => {
                         if (oIndex < formRow.optionValues!.length) {
-                            $options.append($("<option>", { value: formRow.optionValues![oIndex] }).text(oText));
+                            let selected = false;
+                            if (formRow.initialValue === formRow.optionValues![oIndex]) {
+                                selected = true;
+                            }
+                            $options.append($("<option>", { value: formRow.optionValues![oIndex], selected }).text(oText));
                         } else {
-                            $options.append($("<option>").text(oText));
+                            let selected = false;
+                            if (formRow.initialValue === oText) {
+                                selected = true;
+                            }
+                            $options.append($("<option>", { selected }).text(oText));
                         }
                     });
                     f.append($options.on("blur validate", generalValidator));

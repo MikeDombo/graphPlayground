@@ -45,15 +45,15 @@ const makeAndPrintShortestPath = (title: string, fn: string, weighted: boolean):
                         help.showSimpleModal(
                             "Dijkstra Error",
                             "<p>The Dijkstra algorithm only works on graphs" +
-                                " with totally non-negative edge weights. Please fix the graph so that there are no" +
-                                " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
-                                " exactly this problem.</p>"
+                            " with totally non-negative edge weights. Please fix the graph so that there are no" +
+                            " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
+                            " exactly this problem.</p>"
                         );
                     } else if (title.includes("Bellman")) {
                         help.showSimpleModal(
                             "Bellman-Ford Error",
                             "<p>The Bellman-Ford algorithm only works on graphs" +
-                                " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>"
+                            " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>"
                         );
                     }
                     return;
@@ -346,9 +346,9 @@ export default class UIInteractions {
         help.showSimpleModal(
             "Help",
             "<h4>For support see the " +
-                "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
-                " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +
-                "GitHub issues</a> to submit bugs or feature requests.</h4>"
+            "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
+            " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +
+            "GitHub issues</a> to submit bugs or feature requests.</h4>"
         );
     }
 
@@ -372,6 +372,9 @@ export default class UIInteractions {
                     G = vals[2] ? G.asWeighted() : G.asUnweighted();
                     window.main.setData(GraphState.getGraphData(G));
                 }
+                if (window.settings.getOption("customColors") !== vals[3]) {
+                    window.settings.changeOption("customColors", vals[3]);
+                }
             },
             "Options",
             "Save",
@@ -389,6 +392,11 @@ export default class UIInteractions {
                 {
                     label: "Weighted Graph",
                     initialValue: window.settings.getOption("weights"),
+                    type: "checkbox"
+                },
+                {
+                    label: "Customize Node Colors",
+                    initialValue: window.settings.getOption("customColors"),
                     type: "checkbox"
                 }
             ],
@@ -626,9 +634,8 @@ export default class UIInteractions {
                     p += "\n\nUsing Capacities:\n\n";
                     p = help.htmlEncode(p);
                     a.flowPath.forEach(v => {
-                        p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)} using ${
-                            v.flow
-                        } of ${v.capacity}\n`;
+                        p += `${GraphState.nodeIDToLabel(v.from)}&rarr;${GraphState.nodeIDToLabel(v.to)} using ${v.flow
+                            } of ${v.capacity}\n`;
                     });
                     p = p.trim();
                     p = "<h3>Ford-Fulkerson MaxFlow-MinCut</h3><hr>" + p;
