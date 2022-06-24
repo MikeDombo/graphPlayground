@@ -7,6 +7,7 @@ import Settings from "./settings";
 import UI from "./UIInteractions";
 import { GraphPlain } from "./util/predefinedGraphs";
 import * as Sentry from '@sentry/browser';
+import * as languages from "./languages";
 
 declare global {
     interface Window {
@@ -21,7 +22,6 @@ declare global {
 window.main = main;
 window.network = new Network(main.container, {}, main.visOptions);
 window.settings = Settings;
-window.ui = UI;
 
 // Initialize Sentry.io error logging
 Sentry.init({
@@ -33,26 +33,30 @@ Sentry.init({
     }
 });
 
-main.addNetworkListeners(window.network);
-
 Settings.loadSettings();
 
-let loadDefault = true;
-if (Settings.checkForLocalStorage()) {
-    const s = localStorage.getItem("graphPlayground.lastState");
-    if (s !== null) {
-        const jsonGraph: any = JSON.parse(s);
-        if ("graph" in jsonGraph && "nodes" in jsonGraph.graph) {
-            loadDefault = false;
-            main.applyState(false, jsonGraph as { graph: GraphPlain });
+
+languages.setLanguage().then(() => {
+    window.ui = UI;
+    window.ui.registerListeners();
+
+    main.addNetworkListeners(window.network);
+
+    let loadDefault = true;
+    if (Settings.checkForLocalStorage()) {
+        const s = localStorage.getItem("graphPlayground.lastState");
+        if (s !== null) {
+            const jsonGraph: any = JSON.parse(s);
+            if ("graph" in jsonGraph && "nodes" in jsonGraph.graph) {
+                loadDefault = false;
+                main.applyState(false, jsonGraph as { graph: GraphPlain });
+            }
         }
     }
-}
-if (loadDefault) {
-    (async () => {
-        const predefined = (await import("./util/predefinedGraphs")).default;
-        main.setData(predefined.Petersen(), false, true, true);
-    })();
-}
-
-window.ui.registerListeners();
+    if (loadDefault) {
+        (async () => {
+            const predefined = (await import("./util/predefinedGraphs")).default;
+            main.setData(predefined.Petersen(), false, true, true);
+        })();
+    }
+});

@@ -7,6 +7,7 @@ import Worker from "worker-loader!./workers/GraphAlgorithmWorker";
 import NodeImmut from "./classes/GraphImmut/NodeImmut";
 import EdgeImmut from "./classes/GraphImmut/EdgeImmut";
 import GraphImmut from "./classes/GraphImmut/GraphImmut";
+import * as languages from "./languages";
 
 interface AlgorithmI {
     name: string;
@@ -17,7 +18,7 @@ interface AlgorithmI {
 }
 
 const makeAndPrintShortestPath = (title: string, fn: string, weighted: boolean): void => {
-    const myName = "Shortest Path";
+    const myName = languages.current.ShortestPath;
     if (UIInteractions.isRunning[myName]) {
         UIInteractions.printAlreadyRunning(myName);
         return;
@@ -43,17 +44,13 @@ const makeAndPrintShortestPath = (title: string, fn: string, weighted: boolean):
                 if (a === false) {
                     if (title.includes("Dijkstra")) {
                         help.showSimpleModal(
-                            "Dijkstra Error",
-                            "<p>The Dijkstra algorithm only works on graphs" +
-                            " with totally non-negative edge weights. Please fix the graph so that there are no" +
-                            " negative edge weights.</p><p>Alternatively, try the Bellman-Ford algorithm which solves" +
-                            " exactly this problem.</p>"
+                            languages.current.DijkstraError,
+                            languages.current.DijkstraErrorHTML
                         );
                     } else if (title.includes("Bellman")) {
                         help.showSimpleModal(
-                            "Bellman-Ford Error",
-                            "<p>The Bellman-Ford algorithm only works on graphs" +
-                            " with no negative edge-weight cycles. Please remove the negative cycle and try again.</p>"
+                            languages.current.BellmanFordError,
+                            languages.current.BellmanFordErrorHTML
                         );
                     }
                     return;
@@ -202,13 +199,13 @@ export default class UIInteractions {
     static getAlgorithms(): AlgorithmI[] {
         return [
             {
-                name: "Graph Coloring",
+                name: languages.current.GraphColoring,
                 directional: false,
                 applyFunc: UIInteractions.makeAndPrintGraphColoring,
                 display: true
             },
             {
-                name: "Connected Components",
+                name: languages.current.ConnectedComponents,
                 directional: false,
                 applyFunc: () => {
                     makeAndPrintComponents(false);
@@ -216,7 +213,7 @@ export default class UIInteractions {
                 display: true
             },
             {
-                name: "Strongly Connected Components",
+                name: languages.current.StronglyConnectedComponents,
                 directional: true,
                 display: true,
                 applyFunc: () => {
@@ -224,7 +221,7 @@ export default class UIInteractions {
                 }
             },
             {
-                name: "Breadth-First Shortest Path",
+                name: languages.current.BFS,
                 directional: false,
                 applyFunc: () => {
                     makeAndPrintShortestPath("Breadth-First Shortest Path", "breadthFirstSearch", false);
@@ -232,14 +229,14 @@ export default class UIInteractions {
                 display: true
             },
             {
-                name: "Dijkstra Shortest Path",
+                name: languages.current.Dijkstra,
                 applyFunc: () => {
                     makeAndPrintShortestPath("Dijkstra Shortest Path", "dijkstraSearch", true);
                 },
                 display: true
             },
             {
-                name: "Bellman-Ford Shortest Path",
+                name: languages.current.BellmanFord,
                 weighted: true,
                 directional: true,
                 applyFunc: () => {
@@ -248,39 +245,39 @@ export default class UIInteractions {
                 display: true
             },
             {
-                name: "Ford-Fulkerson",
+                name: languages.current.FordFulkerson,
                 weighted: true,
                 directional: true,
                 applyFunc: UIInteractions.makeAndPrintFFMCMF,
                 display: true
             },
             {
-                name: "Kruskal Minimum Spanning Tree",
+                name: languages.current.KruskalMST,
                 weighted: true,
                 directional: false,
                 applyFunc: UIInteractions.makeAndPrintKruskal,
                 display: true
             },
             {
-                name: "Cyclic",
+                name: languages.current.Cyclic,
                 applyFunc: UIInteractions.makeAndPrintIsCyclic,
                 directional: true,
                 display: true
             },
             {
-                name: "Topological Sort",
+                name: languages.current.TopoSort,
                 applyFunc: UIInteractions.makeAndPrintTopologicalSort,
                 directional: true,
                 display: true
             },
             {
-                name: "Eulerian",
+                name: languages.current.Eulerian,
                 directional: false,
                 display: false,
                 applyFunc: null
             },
             {
-                name: "Eulerian",
+                name: languages.current.Eulerian,
                 directional: true,
                 display: true,
                 applyFunc: UIInteractions.makeAndPrintDirectionalEulerian
@@ -344,11 +341,8 @@ export default class UIInteractions {
 
     static printHelp(): void {
         help.showSimpleModal(
-            "Help",
-            "<h4>For support see the " +
-            "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
-            " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +
-            "GitHub issues</a> to submit bugs or feature requests.</h4>"
+            languages.current.Help,
+            languages.current.IssuesHTML
         );
     }
 
@@ -376,26 +370,26 @@ export default class UIInteractions {
                     window.settings.changeOption("customColors", vals[3]);
                 }
             },
-            "Options",
-            "Save",
+            languages.current.Options,
+            languages.current.Save,
             [
                 {
-                    label: "Graph Physics",
+                    label: languages.current.GraphPhysics,
                     initialValue: window.settings.getOption("nodePhysics"),
                     type: "checkbox"
                 },
                 {
-                    label: "Directed Graph",
+                    label: languages.current.DiGraph,
                     initialValue: window.settings.getOption("direction"),
                     type: "checkbox"
                 },
                 {
-                    label: "Weighted Graph",
+                    label: languages.current.WeightedGraph,
                     initialValue: window.settings.getOption("weights"),
                     type: "checkbox"
                 },
                 {
-                    label: "Customize Node Colors",
+                    label: languages.current.CustomNodeColors,
                     initialValue: window.settings.getOption("customColors"),
                     type: "checkbox"
                 }
