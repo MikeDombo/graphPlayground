@@ -149,7 +149,7 @@ export default class GraphState {
         }
     }
 
-    static async getProperty(property: string, updateIfNotUpdated = false, ignoreDuplicate = false): Promise<any> {
+    static async getProperty(property: keyof GraphProperties, updateIfNotUpdated = false, ignoreDuplicate = false): Promise<any> {
         const a = GraphState.upToDate.find((v) => {
             return ("name" in v && v.name === property);
         })!;

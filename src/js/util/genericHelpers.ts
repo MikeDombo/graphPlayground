@@ -206,6 +206,12 @@ const self = {
         });
     },
 
+    stringReplacement: (str: string, ...replacements: string[]) => {
+        return replacements.reduce((val, replacement, i) => {
+            return val.replace(`$${i + 1}`, replacement);
+        }, str);
+    },
+
     showSimpleModal: (title: string, body: string): void => {
         self.showFormModal(null, title, null, [{ type: "html", initialValue: body }], null, false);
     },
