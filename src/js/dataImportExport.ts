@@ -157,7 +157,7 @@ const self = {
             {
                 type: "textarea", label: "", initialValue: "", extraAttrs: {
                     style: "height: 20vh;" +
-                        " min-height:400px; white-space:nowrap; margin-top: 1rem;"
+                        " min-height:400px; white-space:pre; margin-top: 1rem;"
                 },
                 onclick: () => {
                     (document.getElementById(exportedTextSelector) as HTMLTextAreaElement).select();
