@@ -47,12 +47,12 @@
         "worker-loader": "^3.0.8"
     },
     "dependencies": {
-        "@sentry/browser": "^5.15.4",
         "bootstrap": "^4.4.1",
         "immutable": "^4.0.0-rc.12",
         "jquery": "^3.4.1",
         "popper.js": "^1.16.1",
         "randomcolor": "^0.5.4",
+        "vis-data": "^7.1.4",
         "vis-network": "^9.1.2"
     }
 }
