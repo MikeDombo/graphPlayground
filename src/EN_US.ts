@@ -79,6 +79,16 @@ export default {
     Algorithms: "Algorithms",
     GraphProperties: "Graph Properties",
     Results: "Results",
+    AddNode: "Add Node",
+    EditEdge: "Edit Edge",
+    EditNode: "Edit Node",
+    WeightCapacity: "Weight/Capacity",
+    LabelLabel: "Label",
+    NodeId: "Node ID: $1",
+    Color: "Color",
+    ConnectNodeToItselfConfirmation: "Do you want to connect the node to itself?",
+    InvalidLabelOrId: "Invalid Label or ID",
+
 
     // Import/Export
     DataImportError: "Data Import Error",
@@ -109,4 +119,25 @@ export default {
     ConfigurableHypercubeGraph: "Configurable Hypercube Graph",
     NumberOfDimensionsLabel: "Number of Dimensions",
     NumberOfDimensionsNonNegativeError: "Number of dimensions must be non-negative",
+
+    // VisJS locale
+    VisLocale: {
+        "en": {}, // Required, even though we will not use it.
+        // Customize the text below...
+        "": {
+            edit: 'Edit',
+            del: 'Delete selected',
+            back: 'Back',
+            addNode: 'Add Node',
+            addEdge: 'Add Edge',
+            editNode: 'Edit Node',
+            editEdge: 'Edit Edge',
+            addDescription: 'Click in an empty space to place a new node.',
+            edgeDescription: 'Click on a node and drag the edge to another node to connect them.',
+            editEdgeDescription: 'Click on the control points and drag them to a node to connect to it.',
+            createEdgeError: 'Cannot link edges to a cluster.',
+            deleteClusterError: 'Clusters cannot be deleted.',
+            editClusterError: 'Clusters cannot be edited.'
+        }
+    }
 };

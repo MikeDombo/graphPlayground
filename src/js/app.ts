@@ -20,7 +20,6 @@ declare global {
 }
 
 window.main = main;
-window.network = new Network(main.container, {}, main.visOptions);
 window.settings = Settings;
 
 // Initialize Sentry.io error logging
@@ -33,12 +32,14 @@ Sentry.init({
     }
 });
 
-Settings.loadSettings();
-
-
 languages.setLanguage().then(() => {
     window.ui = UI;
     window.ui.registerListeners();
+
+    main.visOptions.locales = languages.current.VisLocale;
+    main.visOptions.locale = "";
+    window.network = new Network(main.container, {}, main.visOptions);
+    Settings.loadSettings();
 
     main.addNetworkListeners(window.network);
 
