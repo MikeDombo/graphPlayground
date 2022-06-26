@@ -6,6 +6,7 @@ import { EdgeImmutPlain } from "./classes/GraphImmut/EdgeImmut";
 import { NodeImmutPlain } from "./classes/GraphImmut/NodeImmut";
 import GraphState from "./graphState";
 import { GraphPlain } from "./util/predefinedGraphs";
+import * as languages from "./languages";
 
 const exportedTextSelector = "exportedText";
 
@@ -20,12 +21,12 @@ const self = {
                     window.main.setData(n, false, true, false);
                 }
                 else {
-                    help.showSimpleModal("Data Import Error", "<p>The provided input does not conform the the" +
-                        " import specifications.</p>");
+                    help.showSimpleModal(languages.current.DataImportError,
+                        `<p>${languages.current.DataImportErrorText}</p>`);
                 }
             }
             catch (err) {
-                help.showSimpleModal("JSON Parse Error", `<p>There was an error parsing your input as JSON.</p><pre>${err}</pre>`);
+                help.showSimpleModal(languages.current.JsonParseError, `<p>${languages.current.JsonParseErrorText}</p><pre>${err}</pre>`);
             }
         }
         else if (format.toLowerCase() === "dimacs") {
@@ -36,8 +37,8 @@ const self = {
                 const vals = l.split(/\s+/);
                 if (vals[0].toLowerCase() === "p") {
                     if (vals[1].toLowerCase() !== "edge") {
-                        help.showSimpleModal("DIMACS Parse Error", "<p>Sorry, but I only know how to parse" +
-                            " &quot;edge&quot; formatted DIMACS files.</p>");
+                        help.showSimpleModal(languages.current.DimacsParseError,
+                            `<p>${help.htmlEncode(languages.current.DimacsParseErrorText)}</p>`);
                         error = true;
                         return;
                     }
@@ -49,7 +50,7 @@ const self = {
             });
 
             if (graph === null && !error) {
-                help.showSimpleModal("DIMACS Parse Error", "<p>No program line found!</p>");
+                help.showSimpleModal(languages.current.DimacsParseError, `<p>${languages.current.DimacsParseErrorNoProgram}</p>`);
                 error = true;
             }
 
@@ -62,7 +63,7 @@ const self = {
             }
         }
         else {
-            help.showSimpleModal("Unrecognized Input Format", "<p>The format of your input is incorrect.</p>");
+            help.showSimpleModal(languages.current.UnrecognizedInputError, `<p>${languages.current.UnrecognizedInputError}.</p>`);
         }
     },
 
@@ -70,9 +71,9 @@ const self = {
         help.showFormModal(($modal, values) => {
             $modal.modal("hide");
             self.importByString(values[0], values[1]);
-        }, "Import Graph From Text", "Import",
-            [{ type: "textarea", label: "Input Text", extraAttrs: { style: "height: 20vh; min-height:400px;" } },
-            { type: "select", label: "Format", optionValues: ["json", "dimacs"], optionText: ["JSON", "DIMACS"] }
+        }, languages.current.ImportGraphFromText, languages.current.Import,
+            [{ type: "textarea", label: languages.current.ImportText, extraAttrs: { style: "height: 20vh; min-height:400px;" } },
+            { type: "select", label: languages.current.Format, optionValues: ["json", "dimacs"], optionText: ["JSON", "DIMACS"] }
             ]);
     },
 
@@ -90,23 +91,23 @@ const self = {
 
                 reader.readAsText(file);
             }
-        }, "Import Graph From File", "Import",
+        }, languages.current.ImportGraphFromFile, languages.current.Import,
             [{
-                type: "file", label: "Upload File", validationFunc: (val, $files) => {
+                type: "file", label: languages.current.UploadFile, validationFunc: (val, $files) => {
                     const files = ($files.get(0) as any).files;
                     if (files.length >= 1) {
                         return true;
                     }
-                    return "You must choose a file first";
+                    return languages.current.MustChooseFileError;
                 }
             }]);
     },
 
     makeExportFileModal: (): void => {
-        help.showFormModal(null, "Export Graph To File", null,
+        help.showFormModal(null, languages.current.ExportGraphToFile, null,
             [{
                 type: "button",
-                initialValue: "Export to JSON",
+                initialValue: languages.current.ExportToJson,
                 onclick: () => {
                     self.exportToFile("json");
                 },
@@ -118,7 +119,7 @@ const self = {
             },
             {
                 type: "button",
-                initialValue: "Export to DIMACS",
+                initialValue: languages.current.ExportToDimacs,
                 onclick: () => {
                     self.exportToFile("dimacs");
                 },
@@ -131,10 +132,10 @@ const self = {
     },
 
     makeExportTextModal: (): void => {
-        help.showFormModal(null, "Export Graph To Text", null,
+        help.showFormModal(null, languages.current.ExportGraphToText, null,
             [{
                 type: "button",
-                initialValue: "Export to JSON",
+                initialValue: languages.current.ExportToJson,
                 onclick: () => {
                     self.exportToText("json");
                 },
@@ -145,7 +146,7 @@ const self = {
             },
             {
                 type: "button",
-                initialValue: "Export to DIMACS",
+                initialValue: languages.current.ExportToDimacs,
                 onclick: () => {
                     self.exportToText("dimacs");
                 },
@@ -201,7 +202,7 @@ const self = {
         // If I add direction, DIMACS cannot be used, it only works for undirected graphs
         const g = GraphState.getGraphData();
         let text = "c This Graph was generated and exported from Michael Dombrowski's Graph Playground " +
-            "-- https://md100play.github.io/graphPlayground -- https://mikedombrowski.com\n";
+            "-- https://mikedombo.github.io/graphPlayground -- https://mikedombrowski.com\n";
 
         let adj = GraphState.graph.getFullAdjacency();
         adj = adj.filter((v: number[]) => {

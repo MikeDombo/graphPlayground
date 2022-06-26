@@ -336,6 +336,28 @@ export default class UIInteractions {
             const imp = (await import("./dataImportExport")).default;
             imp.makeExportTextModal();
         });
+        (document.querySelector("#fileDropdown") as HTMLAnchorElement).innerText = languages.current.File;
+        (document.querySelector("#import-file-link") as HTMLAnchorElement).innerText = languages.current.ImportFile;
+        (document.querySelector("#import-text-link") as HTMLAnchorElement).innerText = languages.current.ImportText;
+        (document.querySelector("#export-file-link") as HTMLAnchorElement).innerText = languages.current.ExportFile;
+        (document.querySelector("#export-text-link") as HTMLAnchorElement).innerText = languages.current.ExportText;
+
+        (document.querySelector("#calculate-all-properties-link") as HTMLAnchorElement).innerText = languages.current.CalculateAllProperties;
+        (document.querySelector("#new-graph-layout-link") as HTMLAnchorElement).innerText = languages.current.NewGraphLayout;
+        (document.querySelector("#graph-options-link") as HTMLAnchorElement).innerText = languages.current.GraphOptions;
+        (document.querySelector("#print-help-link") as HTMLAnchorElement).innerText = languages.current.Help;
+
+        (document.querySelector("#example-graphs-label") as HTMLHeadingElement).innerText = languages.current.ExampleGraphs;
+        (document.querySelector("#load-petersen-link") as HTMLAnchorElement).innerText = languages.current.LoadPetersen;
+        (document.querySelector("#load-konigsberg-link") as HTMLAnchorElement).innerText = languages.current.LoadKonigsberg;
+        (document.querySelector("#load-complete-link") as HTMLAnchorElement).innerText = languages.current.LoadComplete;
+        (document.querySelector("#load-hypercube-link") as HTMLAnchorElement).innerText = languages.current.LoadHypercube;
+        (document.querySelector("#load-custom-link") as HTMLAnchorElement).innerText = languages.current.LoadCustom;
+
+        (document.querySelector("#algorithms-label") as HTMLHeadElement).innerText = languages.current.Algorithms;
+
+        (document.querySelector("#graph-properties-label") as HTMLHeadElement).innerText = languages.current.GraphProperties;
+        (document.querySelector("#results-label") as HTMLHeadElement).innerText = languages.current.Results;
     }
 
     static printHelp(): void {
