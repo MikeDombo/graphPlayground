@@ -6,7 +6,6 @@ import { default as main, MainI } from "./main";
 import Settings from "./settings";
 import UI from "./UIInteractions";
 import { GraphPlain } from "./util/predefinedGraphs";
-import * as Sentry from '@sentry/browser';
 import * as languages from "./languages";
 
 declare global {
@@ -21,16 +20,6 @@ declare global {
 
 window.main = main;
 window.settings = Settings;
-
-// Initialize Sentry.io error logging
-Sentry.init({
-    dsn: "https://92aaeee7e2fb4ef4837a2261a029e8ed@sentry.home.mikedombrowski.com/2",
-    beforeSend: (event: Sentry.Event) => {
-        event.user = {};
-        event.user.graph = main.graphState.graph;
-        return event;
-    }
-});
 
 languages.setLanguage().then(() => {
     window.ui = UI;
