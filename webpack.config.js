@@ -65,12 +65,16 @@ let webpackOptions = {
             {
                 test: /\.tsx?$/,
                 loader: "ts-loader",
-                exclude: [/node_modules/, /pwaServiceWorker\.ts/]
+                exclude: [/node_modules/, /pwaServiceWorker\.ts/, /\.d\.ts$/]
             },
             {
                 test: /pwaServiceWorker\.ts/,
                 loader: "ts-loader",
                 options: { configFile: "/src/js/workers/tsconfig.json" }
+            },
+            {
+                test: /\.d\.ts$/,
+                loader: 'ignore-loader'
             },
             {
                 test: /\.GraphAlgorithmWorker\.tsx?$/,
