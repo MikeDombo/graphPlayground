@@ -9,7 +9,7 @@
     "scripts": {
         "dev": "webpack --mode development",
         "build": "webpack --mode production",
-        "deploy": "git subtree push --prefix dist origin gh-pages",
+        "deploy": "git add -f dist && git commit -m \"GitHub pages update\" && git subtree push --prefix dist origin gh-pages && git reset --soft HEAD~2 && git rm -r --cached dist",
         "webpackStats": "webpack --json --mode production | webpack-bundle-size-analyzer",
         "sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat",
         "test": "cross-env TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\"",
