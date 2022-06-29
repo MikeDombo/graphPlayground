@@ -431,6 +431,9 @@ const self = {
                 }
             })
             .on("hidden.bs.modal", () => {
+                if (typeof cancelCb === "function") {
+                    cancelCb($modal);
+                }
                 $modal.remove();
             })
             .modal("show");
