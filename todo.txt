@@ -1,3 +1,0 @@
-max clique
-arboricity
-hamiltonicity
