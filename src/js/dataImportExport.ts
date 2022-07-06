@@ -71,7 +71,7 @@ const self = {
         help.showFormModal(($modal, values) => {
             $modal.modal("hide");
             self.importByString(values[0], values[1]);
-        }, languages.current.ImportGraphFromText, languages.current.Import,
+        }, languages.current.ImportGraphFromText, languages.current.Import, languages.current.Cancel,
             [{ type: "textarea", label: languages.current.ImportText, extraAttrs: { style: "height: 20vh; min-height:400px;" } },
             { type: "select", label: languages.current.Format, optionValues: ["json", "dimacs"], optionText: ["JSON", "DIMACS"] }
             ]);
@@ -91,7 +91,7 @@ const self = {
 
                 reader.readAsText(file);
             }
-        }, languages.current.ImportGraphFromFile, languages.current.Import,
+        }, languages.current.ImportGraphFromFile, languages.current.Import, languages.current.Cancel,
             [{
                 type: "file", label: languages.current.UploadFile, validationFunc: (val, $files) => {
                     const files = ($files.get(0) as any).files;
@@ -104,7 +104,7 @@ const self = {
     },
 
     makeExportFileModal: (): void => {
-        help.showFormModal(null, languages.current.ExportGraphToFile, null,
+        help.showFormModal(null, languages.current.ExportGraphToFile, null, languages.current.Cancel,
             [{
                 type: "button",
                 initialValue: languages.current.ExportToJson,
@@ -132,7 +132,7 @@ const self = {
     },
 
     makeExportTextModal: (): void => {
-        help.showFormModal(null, languages.current.ExportGraphToText, null,
+        help.showFormModal(null, languages.current.ExportGraphToText, null, languages.current.Cancel,
             [{
                 type: "button",
                 initialValue: languages.current.ExportToJson,

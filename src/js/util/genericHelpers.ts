@@ -213,10 +213,10 @@ const self = {
     },
 
     showSimpleModal: (title: string, body: string): void => {
-        self.showFormModal(null, title, null, [{ type: "html", initialValue: body }], null, false);
+        self.showFormModal(null, title, null, null, [{ type: "html", initialValue: body }], null, false);
     },
 
-    makeFormModal: (title: string, successText: string | null, form: ModalFormRow[], footer = true): JQuery => {
+    makeFormModal: (title: string, successText: string | null, cancelText: string | null, form: ModalFormRow[], footer = true): JQuery => {
         const f = $("<div>", { class: "modal-body form-group" });
         form.forEach((formRow, i) => {
             if (!("initialValue" in formRow)) {
@@ -336,7 +336,7 @@ const self = {
 
         let $footer: JQuery<HTMLElement> | null = $("<div>", { class: "modal-footer" })
             .append($("<button>", { class: "btn btn-success", type: "button" }).text(successText!))
-            .append($("<button>", { class: "btn btn-danger btn-cancel", type: "button" }).text("Cancel"));
+            .append($("<button>", { class: "btn btn-danger btn-cancel", type: "button" }).text(cancelText!));
 
         if (footer === false) {
             $footer = null;
@@ -385,11 +385,12 @@ const self = {
         successCb: null | (($modal: JQuery, vals: any[]) => void),
         title: string,
         successText: string | null,
+        cancelText: string | null,
         form: ModalFormRow[],
         cancelCb: null | (($modal: JQuery) => void) = defaultCancelCb,
         footer = true
     ) => {
-        const $modal = self.makeFormModal(title, successText, form, footer);
+        const $modal = self.makeFormModal(title, successText, cancelText, form, footer);
 
         $modal
             .on("click", ".btn-cancel", () => {

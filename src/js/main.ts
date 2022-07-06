@@ -96,7 +96,7 @@ const self: MainI = {
             $modal.modal("hide");
             const value = parseFloat(vals[0]);
             GraphState.editEdge(data.from.id, data.to.id, value, parseFloat(data.label!));
-        }, languages.current.EditEdge, languages.current.Save, [
+        }, languages.current.EditEdge, languages.current.Save, languages.current.Cancel, [
             {
                 type: "numeric",
                 label: languages.current.WeightCapacity,
@@ -119,7 +119,7 @@ const self: MainI = {
                 if (customColors) {
                     options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete) });
                 }
-                const $popup = help.makeFormModal(languages.current.AddNode, languages.current.Save, options);
+                const $popup = help.makeFormModal(languages.current.AddNode, languages.current.Save, languages.current.Cancel, options);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");
@@ -146,7 +146,7 @@ const self: MainI = {
                 if (customColors) {
                     options.push({ type: "select", label: languages.current.Color, optionText: Object.keys(customColorPallete), optionValues: Object.values(customColorPallete), initialValue: initialColor });
                 }
-                const $popup = help.makeFormModal(languages.current.EditNode, languages.current.Save, options);
+                const $popup = help.makeFormModal(languages.current.EditNode, languages.current.Save, languages.current.Cancel, options);
 
                 $popup.on("click", ".btn-success", () => {
                     $popup.modal("hide");

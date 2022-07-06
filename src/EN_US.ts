@@ -51,6 +51,7 @@ export default {
     TaskAlreadyRunningBody: "$1 is already running, please wait for it to finish first.",
     Options: "Options",
     Save: "Save",
+    Cancel: "Cancel",
     IssuesHTML: "<h4>For support see the " +
         "<a href='https://github.com/MikeDombo/graphPlayground' target='_blank'>GitHub repository</a>" +
         " for guides</h4> <h4>See <a href='https://github.com/MikeDombo/graphPlayground/issues' target='_blank'>" +

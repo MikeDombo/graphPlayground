@@ -131,7 +131,7 @@ export default class PredefinedGraphs {
             $modal.modal("hide");
             window.main.setData(completeGraph(vals[0]), false, true, true);
         },
-            languages.current.ConfigurableCompleteGraph, languages.current.Go,
+            languages.current.ConfigurableCompleteGraph, languages.current.Go, languages.current.Cancel,
             [{
                 type: "numeric", initialValue: 5, label: languages.current.NumberOfVerticesLabel, validationFunc: (v) => {
                     return v >= 0 || languages.current.NumberOfVerticesNonNegativeError;
@@ -144,7 +144,7 @@ export default class PredefinedGraphs {
             $modal.modal("hide");
             window.main.setData(hypercubeGraph(vals[0]), false, true, true);
         },
-            languages.current.ConfigurableHypercubeGraph, languages.current.Go,
+            languages.current.ConfigurableHypercubeGraph, languages.current.Go, languages.current.Cancel,
             [{
                 type: "numeric", initialValue: 3, label: languages.current.NumberOfDimensionsLabel, validationFunc: (v) => {
                     return v >= 0 || languages.current.NumberOfDimensionsNonNegativeError;
@@ -157,7 +157,7 @@ export default class PredefinedGraphs {
             $modal.modal("hide");
             window.main.setData(newCustomGraph(vals[0], vals[1], vals[2]), false, true, true);
         },
-            languages.current.ConfigurableGraph, languages.current.Go,
+            languages.current.ConfigurableGraph, languages.current.Go, languages.current.Cancel,
             [
                 {
                     type: "numeric", initialValue: 0, label: languages.current.NumberOfVerticesLabel, validationFunc: (v) => {

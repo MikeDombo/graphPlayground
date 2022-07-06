@@ -95,6 +95,7 @@ const makeAndPrintShortestPath = (title: string, fn: string, weighted: boolean):
         },
         title,
         languages.current.Go,
+        languages.current.Cancel,
         [
             {
                 label: languages.current.StartNode,
@@ -397,6 +398,7 @@ export default class UIInteractions {
             },
             languages.current.Options,
             languages.current.Save,
+            languages.current.Cancel,
             [
                 {
                     label: languages.current.GraphPhysics,
@@ -683,6 +685,7 @@ export default class UIInteractions {
             },
             languages.current.FordFulkersonMaxFlowMinCut,
             languages.current.Go,
+            languages.current.Cancel,
             [
                 {
                     label: languages.current.SourceNode,
