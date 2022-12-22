@@ -433,6 +433,7 @@ const self: MainI = {
                 network.editEdgeMode();
             }
             if ("nodes" in p && p.nodes.length === 1) {
+                lastNetworkClickEvent = null;
                 network.editNode();
             }
         });
