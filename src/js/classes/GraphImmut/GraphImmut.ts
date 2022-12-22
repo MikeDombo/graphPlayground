@@ -369,12 +369,7 @@ export default class GraphImmut {
             degrees[i] = 0;
         });
         this.edges.forEach((edge) => {
-            if (degrees.includes(edge.getFrom())) {
-                degrees[edge.getFrom()]++;
-            }
-            else {
-                degrees[edge.getFrom()] = 1;
-            }
+            degrees[edge.getFrom()]++;
         });
 
         return degrees;
