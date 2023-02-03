@@ -1,8 +1,8 @@
 "use strict";
 
-import {List} from 'immutable';
-import {default as NodeImmut, NodeImmutPlain} from './NodeImmut';
-import {default as EdgeImmut, EdgeImmutPlain} from './EdgeImmut';
+import { List } from 'immutable';
+import { default as NodeImmut, NodeImmutPlain } from './NodeImmut';
+import { default as EdgeImmut, EdgeImmutPlain } from './EdgeImmut';
 
 interface NodeMapping {
     [key: number]: number
@@ -113,7 +113,7 @@ const genericNodesToImmutNodes = (nodes: any): boolean | { nodes: Readonly<List<
         return false;
     }
 
-    return {nodes: Object.freeze(newNodes), map: nodeMap};
+    return { nodes: Object.freeze(newNodes), map: nodeMap };
 };
 
 export default class GraphImmut {
@@ -125,8 +125,8 @@ export default class GraphImmut {
     private readonly numEdges: Readonly<number>;
 
     constructor(nodes: number | Readonly<List<NodeImmut>> | NodeImmutPlain[],
-                edges: null | Readonly<List<EdgeImmut>> | EdgeImmutPlain[] = null,
-                directed = false, weighted = false) {
+        edges: null | Readonly<List<EdgeImmut>> | EdgeImmutPlain[] = null,
+        directed = false, weighted = false) {
         this.directed = Object.freeze(directed);
         this.weighted = Object.freeze(weighted);
         let nodeMap = {};
@@ -161,7 +161,7 @@ export default class GraphImmut {
             this.edges = edges as List<EdgeImmut>;
         }
         else {
-            this.edges = List();
+            this.edges = List<EdgeImmut>();
         }
         this.edges = Object.freeze(this.edges);
         this.numEdges = Object.freeze(this.edges.size);
@@ -176,7 +176,7 @@ export default class GraphImmut {
             return false;
         }
         const node = this.nodes.get(id);
-        if(typeof node === "undefined"){
+        if (typeof node === "undefined") {
             return false;
         }
         if (rich) {
@@ -317,7 +317,7 @@ export default class GraphImmut {
                 if (color !== null) {
                     newEdges = newEdges.set(index,
                         edge.editEdge(newWeight === null ? null : parseFloat(newWeight),
-                            {color: color}));
+                            { color: color }));
                 }
                 else {
                     newEdges = newEdges.set(index, edge.editEdge(newWeight === null ? null : parseFloat(newWeight)));
@@ -509,7 +509,7 @@ export default class GraphImmut {
                         return reducer(acc, edge.getWeight());
                     }, initialValue);
 
-                    multiEdges.push({from: node.getID(), to, weight: parseFloat(newWeight)});
+                    multiEdges.push({ from: node.getID(), to, weight: parseFloat(newWeight) });
                 });
             }
         });
