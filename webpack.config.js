@@ -70,7 +70,7 @@ let webpackOptions = {
             {
                 test: /pwaServiceWorker\.ts/,
                 loader: "ts-loader",
-                options: { configFile: "/src/js/workers/tsconfig.json" }
+                options: { configFile: require.resolve("./src/js/workers/tsconfig.json") }
             },
             {
                 test: /\.d\.ts$/,
