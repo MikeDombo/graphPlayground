@@ -118,6 +118,12 @@ let webpackOptions = {
         })
     ],
     optimization: {
+        // webpack 5.111+ minifies emitted HTML itself, and its inline-script pass
+        // hands terser an `as` option terser rejects. html-webpack-plugin already
+        // minifies index.html, so leave HTML out of webpack's minimizer.
+        minimizeOptions: {
+            html: false
+        },
         splitChunks: {
             cacheGroups: {
                 commons: {
