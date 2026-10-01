@@ -12,8 +12,8 @@
         "deploy": "git add -f dist && git commit -m \"GitHub pages update\" && git subtree push --prefix dist origin gh-pages && git reset --soft HEAD~2 && git rm -r --cached dist",
         "webpackStats": "webpack --json --mode production | webpack-bundle-size-analyzer",
         "sonarqube": "c:\\sonar\\sonar-scanner-3.0.3\\bin\\sonar-scanner.bat",
-        "test": "cross-env TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\"",
-        "test-coverage": "cross-env TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} nyc --extension .ts mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\""
+        "test": "cross-env NODE_OPTIONS=--no-experimental-strip-types TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\"",
+        "test-coverage": "cross-env NODE_OPTIONS=--no-experimental-strip-types TS_NODE_COMPILER_OPTIONS={\\\"module\\\":\\\"commonjs\\\"} nyc --extension .ts mocha -r ts-node/register/transpile-only --recursive \"./test/**/*Test.ts\""
     },
     "keywords": [],
     "author": "Michael Dombrowski",
